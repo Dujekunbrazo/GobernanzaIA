@@ -33,6 +33,29 @@ Con metadatos de workflow:
 python scripts/ops/bitacora_append.py --ia codex --pregunta "..." --respuesta "..." --initiative-id 2026-02-24_bitacora --phase F1
 ```
 
+Con payload JSON por `stdin`:
+
+```bash
+echo '{"ia":"codex","pregunta":"...","respuesta":"...","initiative_id":"2026-03-26_demo","phase":"F6"}' | python scripts/ops/bitacora_append.py --stdin-json
+```
+
+### Bitacora compliance
+
+Script canónico:
+- `scripts/dev/check_bitacora_compliance.py`
+
+Uso:
+
+```bash
+python scripts/dev/check_bitacora_compliance.py --initiative-id 2026-03-26_demo
+```
+
+Filtrando por IA y fase:
+
+```bash
+python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-03-26_demo --phase F8
+```
+
 ### Naming compliance
 
 Script canónico:

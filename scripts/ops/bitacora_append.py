@@ -1,4 +1,5 @@
 import argparse
+import json
 import re
 import sys
 from datetime import datetime
@@ -32,6 +33,28 @@ def sanitize_text(value):
     for pattern in SENSITIVE_PATTERNS:
         sanitized = pattern.sub("[REDACTED]", sanitized)
     return sanitized
+
+
+def read_optional_text(value, file_path, label):
+    direct = (value or "").strip()
+    if direct:
+        return direct
+    path_value = (file_path or "").strip()
+    if path_value:
+        return Path(path_value).read_text(encoding="utf-8").strip()
+    return ""
+
+
+def load_stdin_json(enabled):
+    if not enabled:
+        return {}
+    raw = sys.stdin.read().strip()
+    if not raw:
+        raise ValueError("--stdin-json requires JSON content on stdin")
+    payload = json.loads(raw)
+    if not isinstance(payload, dict):
+        raise ValueError("--stdin-json expects a JSON object")
+    return payload
 
 
 def ensure_header(path, ia_name, day):
@@ -91,9 +114,12 @@ def parse_args(argv):
     parser = argparse.ArgumentParser(
         description="Append one conversation turn to the daily AI bitacora file."
     )
-    parser.add_argument("--ia", required=True, help="AI name. Example: codex, claude, gemini, roo")
-    parser.add_argument("--pregunta", required=True, help="User question")
-    parser.add_argument("--respuesta", required=True, help="AI response")
+    parser.add_argument("--stdin-json", action="store_true", help="Read payload from stdin JSON")
+    parser.add_argument("--ia", help="AI name. Example: codex, claude, gemini, roo")
+    parser.add_argument("--pregunta", help="User question")
+    parser.add_argument("--pregunta-file", default="", help="Read user question from file")
+    parser.add_argument("--respuesta", help="AI response")
+    parser.add_argument("--respuesta-file", default="", help="Read AI response from file")
     parser.add_argument("--initiative-id", default="", help="Optional initiative id")
     parser.add_argument("--phase", default="", help="Optional phase (F1..F9)")
     parser.add_argument(
@@ -101,20 +127,48 @@ def parse_args(argv):
         default=str(DEFAULT_OUTPUT_DIR),
         help="Output directory for bitacora files",
     )
+    parser.add_argument("--print-path-only", action="store_true", help="Print only the output path")
     return parser.parse_args(argv)
 
 
 def main(argv=None):
     args = parse_args(argv if argv is not None else sys.argv[1:])
-    path = append_entry(
-        ia=args.ia,
-        question=args.pregunta,
-        answer=args.respuesta,
-        initiative_id=args.initiative_id,
-        phase=args.phase,
-        output_dir=args.output_dir,
+    payload = load_stdin_json(args.stdin_json)
+
+    ia = (args.ia or payload.get("ia") or "").strip()
+    question = read_optional_text(
+        args.pregunta or payload.get("pregunta", ""),
+        args.pregunta_file or payload.get("pregunta_file", ""),
+        "pregunta",
     )
-    print(f"OK: bitacora updated at {path}")
+    answer = read_optional_text(
+        args.respuesta or payload.get("respuesta", ""),
+        args.respuesta_file or payload.get("respuesta_file", ""),
+        "respuesta",
+    )
+    initiative_id = (args.initiative_id or payload.get("initiative_id") or "").strip()
+    phase = (args.phase or payload.get("phase") or "").strip()
+    output_dir = args.output_dir or payload.get("output_dir") or str(DEFAULT_OUTPUT_DIR)
+
+    if not ia:
+        raise ValueError("Missing required field: ia")
+    if not question:
+        raise ValueError("Missing required field: pregunta")
+    if not answer:
+        raise ValueError("Missing required field: respuesta")
+
+    path = append_entry(
+        ia=ia,
+        question=question,
+        answer=answer,
+        initiative_id=initiative_id,
+        phase=phase,
+        output_dir=output_dir,
+    )
+    if args.print_path_only:
+        print(path)
+    else:
+        print(f"OK: bitacora updated at {path}")
     return 0
 
 

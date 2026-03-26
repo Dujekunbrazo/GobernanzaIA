@@ -39,6 +39,9 @@ Script canónico:
 Wrapper compatibilidad:
 - `scripts/bitacora_append.py`
 
+Validador canónico:
+- `scripts/dev/check_bitacora_compliance.py`
+
 ## 5) Campos mínimos por turno
 
 - `Usuario`
@@ -53,7 +56,11 @@ Wrapper compatibilidad:
 ## 7) Enforcements
 
 - Cada adapter de IA debe registrar turno tras cada respuesta final.
+- Toda instalación del baseline debe incluir el script de append y el
+  validador de cumplimiento.
 - Cierre de iniciativa requiere evidencia de bitácora del periodo trabajado.
+- Esa evidencia debe poder validarse con
+  `scripts/dev/check_bitacora_compliance.py`.
 - En cierre `F8/F9`, el append de bitácora del cierre debe ejecutarse antes del
   commit formal final para evitar commits/push extra por trazabilidad tardía.
 
@@ -68,5 +75,19 @@ Si falla el append:
 En cierre `F8/F9`:
 - si el append falla, no cerrar la iniciativa como completa hasta resolver
   trazabilidad o documentar excepción explícita en `closeout.md`.
+
+## 9) Modos de integración
+
+- CLI directa:
+  `python scripts/ops/bitacora_append.py --ia codex --pregunta "..." --respuesta "..."`
+- Por archivos:
+  `--pregunta-file` y `--respuesta-file`
+- Por `stdin` JSON:
+  `--stdin-json` con claves `ia`, `pregunta`, `respuesta`,
+  `initiative_id`, `phase`
+
+Objetivo:
+- permitir integración homogénea desde distintas superficies/editoriales sin
+  duplicar scripts por IA.
 
 

@@ -34,6 +34,20 @@ python scripts/dev/check_capability_closure.py --initiative-id 2026-03-26_demo
 
 Usa `--required` si la initiative debe tener ese artefacto.
 
+## check_bitacora_compliance.py
+
+Valida que exista evidencia de bitácora para una IA o una iniciativa.
+
+```bash
+python scripts/dev/check_bitacora_compliance.py --initiative-id 2026-03-26_demo
+```
+
+Filtrando por IA y fase:
+
+```bash
+python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-03-26_demo --phase F8
+```
+
 ## check_exception_record.py
 
 Valida `exception_record.md` de una iniciativa.

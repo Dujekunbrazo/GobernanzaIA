@@ -63,6 +63,7 @@ PACKS: dict[str, PackSpec] = {
             Path("scripts/ops/bitacora_append.py"),
             Path("scripts/ops/roo_mcp_config.py"),
             Path("scripts/dev/README.md"),
+            Path("scripts/dev/check_bitacora_compliance.py"),
             Path("scripts/dev/check_capability_closure.py"),
             Path("scripts/dev/check_exception_record.py"),
             Path("scripts/dev/check_naming_compliance.py"),

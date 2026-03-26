@@ -34,6 +34,7 @@ lecciones finales (`F9`).
 - [ ] Decisiones relevantes registradas en `dev/logs/decisions.md`
 - [ ] Scripts tocados cumplen `dev/policies/scripts_rules.md` (si aplica)
 - [ ] Evidencia de bitácora IA disponible en `dev/records/bitacora/` (si hubo trabajo conversacional)
+- [ ] Evidencia de bitácora validada con `scripts/dev/check_bitacora_compliance.py` (si hubo trabajo conversacional)
 - [ ] En cierre `F8/F9`, la bitácora final quedó incluida en el mismo bloque de commit/push de cierre (sin commit residual)
 - [ ] Naming compliance ejecutado (`scripts/dev/check_naming_compliance.py`) sin errores
 - [ ] State0 compliance ejecutado (`scripts/dev/check_state0.py`) sin errores
