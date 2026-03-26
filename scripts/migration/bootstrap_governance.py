@@ -3,52 +3,159 @@ Bootstrap governance files into a target repository.
 
 Usage:
     python scripts/migration/bootstrap_governance.py --target <path>
+    python scripts/migration/bootstrap_governance.py --target <path> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude
+    python scripts/migration/bootstrap_governance.py --target <path> --with-ia codex --with-ia roo --preferred-working-ia codex --preferred-auditor-ia roo --include-pack symdex
+    python scripts/migration/bootstrap_governance.py --target <path> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
+import subprocess
 import sys
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_PACKS = ("core",)
+DEFAULT_SYMDEX_SOURCE = "git+https://github.com/husnainpk/SymDex.git"
+IA_CHOICES = ("claude", "codex", "gemini", "roo")
+IA_PACKS = {
+    "claude": "claude",
+    "codex": "codex",
+    "gemini": "gemini",
+    "roo": "roo",
+}
+MANIFEST_PATH = Path("dev/governance_baseline.json")
 
 
-def collect_sources(include_claude_root: bool) -> list[Path]:
-    required_files = [
-        Path("AGENTS.md"),
-        Path("dev/workflow.md"),
-        Path("dev/ai/README.md"),
-        Path("dev/checklists/state0.md"),
-        Path("dev/logs/decisions.md"),
-        Path("dev/records/README.md"),
-        Path("dev/records/bitacora/README.md"),
-        Path("dev/records/bitacora/.gitkeep"),
-        Path("dev/records/initiatives/.gitkeep"),
-        Path("scripts/README.md"),
-        Path("scripts/ops/bitacora_append.py"),
-        Path("scripts/dev/check_naming_compliance.py"),
-        Path("scripts/dev/check_state0.py"),
-        Path("scripts/bitacora_append.py"),
-    ]
+@dataclass(frozen=True)
+class PackSpec:
+    description: str
+    files: tuple[Path, ...] = ()
+    globs: tuple[tuple[Path, str, bool], ...] = ()
+    post_copy_actions: tuple[str, ...] = ()
 
-    if include_claude_root:
-        required_files.insert(1, Path("CLAUDE.md"))
 
-    required_dirs = [
-        Path("dev/guarantees"),
-        Path("dev/policies"),
-        Path("dev/ai/adapters"),
-        Path("dev/templates/initiative"),
-    ]
+PACKS: dict[str, PackSpec] = {
+    "core": PackSpec(
+        description=(
+            "Baseline canónico reusable: AGENTS, dev, records scaffolding,"
+            " scripts de enforcement y documentación reusable."
+        ),
+        files=(
+            Path("AGENTS.md"),
+            Path("dev/workflow.md"),
+            Path("dev/ai/README.md"),
+            Path("dev/checklists/state0.md"),
+            Path("dev/logs/decisions.md"),
+            Path("dev/records/README.md"),
+            Path("dev/records/bitacora/README.md"),
+            Path("dev/records/bitacora/.gitkeep"),
+            Path("dev/records/initiatives/.gitkeep"),
+            Path("doc/architecture/ai_engineering_dossier.md"),
+            Path("doc/architecture/context_retrieval_architecture.md"),
+            Path("scripts/README.md"),
+            Path("scripts/ops/bitacora_append.py"),
+            Path("scripts/ops/roo_mcp_config.py"),
+            Path("scripts/dev/README.md"),
+            Path("scripts/dev/check_capability_closure.py"),
+            Path("scripts/dev/check_exception_record.py"),
+            Path("scripts/dev/check_naming_compliance.py"),
+            Path("scripts/dev/check_state0.py"),
+            Path("scripts/dev/initiative_preflight.py"),
+            Path("scripts/bitacora_append.py"),
+            Path("scripts/migration/bootstrap_governance.py"),
+        ),
+        globs=(
+            (Path("dev/guarantees"), "*.md", False),
+            (Path("dev/policies"), "*.md", False),
+            (Path("dev/prompts"), "*.md", False),
+            (Path("dev/ai/adapters"), "*.md", False),
+            (Path("dev/templates/initiative"), "*.md", False),
+        ),
+    ),
+    "claude": PackSpec(
+        description=(
+            "Superficie opcional de Claude. Incluye solo artefactos reusables,"
+            " no settings locales."
+        ),
+        files=(Path("CLAUDE.md"),),
+    ),
+    "codex": PackSpec(
+        description=(
+            "Perfil opcional de Codex para instalacion multi-IA. La capa"
+            " normativa de Codex ya viaja dentro de core mediante"
+            " dev/ai/adapters/codex.md."
+        ),
+    ),
+    "gemini": PackSpec(
+        description=(
+            "Perfil opcional de Gemini para instalacion multi-IA. La capa"
+            " normativa de Gemini ya viaja dentro de core mediante"
+            " dev/ai/adapters/gemini.md."
+        ),
+    ),
+    "roo": PackSpec(
+        description=(
+            "Superficie opcional de Roo. Incluye reglas reusables; excluye"
+            " configuraciones locales de MCP."
+        ),
+        globs=((Path(".roo"), "*.md", True),),
+    ),
+    "symdex": PackSpec(
+        description=(
+            "Instala SymDex desde su GitHub oficial y prepara .symdexignore "
+            "mas wiring MCP opcional para Roo."
+        ),
+        files=(Path("scripts/ops/install_symdex.py"),),
+        post_copy_actions=("install_symdex",),
+    ),
+    "governance_search": PackSpec(
+        description=(
+            "Instala el MCP local de governance_search y prepara wiring MCP "
+            "opcional para Roo."
+        ),
+        files=(
+            Path("scripts/ops/install_governance_mcp.py"),
+            Path("scripts/ops/context_mcp/governance_retrieval_server.mjs"),
+            Path("scripts/ops/context_mcp/shared.mjs"),
+            Path("scripts/ops/context_mcp/package.json"),
+            Path("scripts/ops/context_mcp/package-lock.json"),
+            Path("scripts/ops/context_mcp/README.md"),
+            Path("scripts/ops/context_mcp/smoke_governance_mcp.mjs"),
+        ),
+        post_copy_actions=("install_governance_mcp",),
+    ),
+}
 
-    sources = [REPO_ROOT / rel for rel in required_files]
-    for rel_dir in required_dirs:
-        abs_dir = REPO_ROOT / rel_dir
-        for file in sorted(abs_dir.glob("*.md")):
-            sources.append(file)
+
+def iter_globbed_files(rel_dir: Path, pattern: str, recursive: bool) -> list[Path]:
+    abs_dir = REPO_ROOT / rel_dir
+    iterator = abs_dir.rglob(pattern) if recursive else abs_dir.glob(pattern)
+    return sorted(path for path in iterator if path.is_file())
+
+
+def collect_sources(pack_names: list[str]) -> list[Path]:
+    sources: list[Path] = []
+    seen: set[Path] = set()
+
+    for pack_name in pack_names:
+        spec = PACKS[pack_name]
+        for rel in spec.files:
+            abs_path = REPO_ROOT / rel
+            if abs_path not in seen:
+                sources.append(abs_path)
+                seen.add(abs_path)
+        for rel_dir, pattern, recursive in spec.globs:
+            for abs_path in iter_globbed_files(rel_dir, pattern, recursive):
+                if abs_path not in seen:
+                    sources.append(abs_path)
+                    seen.add(abs_path)
 
     missing = [src for src in sources if not src.exists()]
     if missing:
@@ -91,9 +198,49 @@ def parse_args() -> argparse.Namespace:
         description="Copy governance baseline into another repository."
     )
     parser.add_argument(
+        "--list-packs",
+        action="store_true",
+        help="List available packs and exit.",
+    )
+    parser.add_argument(
         "--target",
-        required=True,
         help="Target repository path where governance files will be copied.",
+    )
+    parser.add_argument(
+        "--include-pack",
+        action="append",
+        choices=sorted(PACKS),
+        default=[],
+        help=(
+            "Optional pack to copy in addition to the default core baseline. "
+            "Repeat the flag to include multiple packs."
+        ),
+    )
+    parser.add_argument(
+        "--with-ia",
+        action="append",
+        choices=IA_CHOICES,
+        default=[],
+        help=(
+            "IA to include in the installation profile. Repeat the flag to"
+            " include multiple IAs. Minimum two IAs are required."
+        ),
+    )
+    parser.add_argument(
+        "--preferred-working-ia",
+        choices=IA_CHOICES,
+        help=(
+            "Preferred IA for active work in the installation profile."
+            " This does not assign motor_activo automatically."
+        ),
+    )
+    parser.add_argument(
+        "--preferred-auditor-ia",
+        choices=IA_CHOICES,
+        help=(
+            "Preferred IA for audit in the installation profile."
+            " This does not assign motor_auditor automatically."
+        ),
     )
     parser.add_argument(
         "--force",
@@ -108,29 +255,357 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--skip-claude-root",
         action="store_true",
-        help="Do not copy CLAUDE.md to target root.",
+        help=(
+            "Deprecated compatibility flag. If present, removes CLAUDE.md from "
+            "the selected packs."
+        ),
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--symdex-source",
+        default=DEFAULT_SYMDEX_SOURCE,
+        help="Source used by the optional symdex pack. Defaults to the official GitHub repo.",
+    )
+    parser.add_argument(
+        "--symdex-installer",
+        choices=("auto", "uv", "pip", "none"),
+        default="auto",
+        help="Installer strategy used by the optional symdex pack.",
+    )
+    parser.add_argument(
+        "--governance-mcp-installer",
+        choices=("auto", "npm", "none"),
+        default="auto",
+        help="Installer strategy used by the optional governance_search pack.",
+    )
+    args = parser.parse_args()
+
+    if args.list_packs:
+        return args
+
+    if not args.target:
+        parser.error("--target is required unless --list-packs is used")
+
+    resolve_ia_profile(parser, args)
+
+    return args
+
+
+def print_available_packs() -> None:
+    print("Available governance packs")
+    print("--------------------------")
+    for pack_name in sorted(PACKS):
+        default_suffix = " (default)" if pack_name in DEFAULT_PACKS else ""
+        print(f"- {pack_name}{default_suffix}: {PACKS[pack_name].description}")
+
+
+def dedupe(values: list[str]) -> list[str]:
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        if value not in seen:
+            ordered.append(value)
+            seen.add(value)
+    return ordered
+
+
+def parse_ia_csv(raw_value: str) -> list[str]:
+    raw_items = [item.strip().lower() for item in raw_value.split(",")]
+    values = [item for item in raw_items if item]
+    invalid = [item for item in values if item not in IA_CHOICES]
+    if invalid:
+        valid_rendered = ", ".join(IA_CHOICES)
+        invalid_rendered = ", ".join(invalid)
+        raise ValueError(
+            f"Invalid IA values: {invalid_rendered}. Valid options: {valid_rendered}."
+        )
+    return dedupe(values)
+
+
+def prompt_text(message: str) -> str:
+    return input(message).strip()
+
+
+def prompt_ias(current_values: list[str]) -> list[str]:
+    prompt = (
+        "IAs para este repo (minimo 2, separadas por comas: "
+        + ", ".join(IA_CHOICES)
+        + ")"
+    )
+    if current_values:
+        prompt += f" [{', '.join(current_values)}]"
+    prompt += ": "
+
+    while True:
+        raw_value = prompt_text(prompt)
+        if not raw_value and current_values:
+            return current_values
+        try:
+            values = parse_ia_csv(raw_value)
+        except ValueError as exc:
+            print(exc)
+            continue
+        if len(values) < 2:
+            print("Se requieren al menos dos IAs para el perfil de instalacion.")
+            continue
+        return values
+
+
+def prompt_choice(message: str, allowed: list[str], current_value: str | None) -> str:
+    prompt = f"{message} ({', '.join(allowed)})"
+    if current_value:
+        prompt += f" [{current_value}]"
+    prompt += ": "
+
+    while True:
+        raw_value = prompt_text(prompt).lower()
+        if not raw_value and current_value:
+            return current_value
+        if raw_value in allowed:
+            return raw_value
+        print(f"Valor invalido. Opciones validas: {', '.join(allowed)}.")
+
+
+def resolve_ia_profile(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    installed_ias = dedupe(args.with_ia)
+    interactive = sys.stdin.isatty() and sys.stdout.isatty()
+
+    if not installed_ias:
+        if interactive:
+            installed_ias = prompt_ias(current_values=installed_ias)
+        else:
+            parser.error(
+                "the installation profile requires at least two --with-ia values"
+            )
+
+    if len(installed_ias) < 2:
+        if interactive:
+            installed_ias = prompt_ias(current_values=installed_ias)
+        else:
+            parser.error("the installation profile requires at least two IAs")
+
+    working_ia = args.preferred_working_ia
+    auditor_ia = args.preferred_auditor_ia
+
+    if working_ia and working_ia not in installed_ias:
+        parser.error("--preferred-working-ia must be present in --with-ia")
+    if auditor_ia and auditor_ia not in installed_ias:
+        parser.error("--preferred-auditor-ia must be present in --with-ia")
+
+    if not working_ia:
+        if interactive:
+            working_ia = prompt_choice(
+                "IA preferida para trabajo",
+                installed_ias,
+                current_value=None,
+            )
+        else:
+            parser.error("--preferred-working-ia is required in non-interactive mode")
+
+    remaining_auditors = [ia for ia in installed_ias if ia != working_ia]
+    if not remaining_auditors:
+        parser.error("the auditor IA must be different from the working IA")
+
+    if auditor_ia == working_ia:
+        parser.error("the auditor IA must be different from the working IA")
+
+    if not auditor_ia:
+        if interactive:
+            auditor_ia = prompt_choice(
+                "IA preferida para auditoria",
+                remaining_auditors,
+                current_value=None,
+            )
+        else:
+            parser.error("--preferred-auditor-ia is required in non-interactive mode")
+
+    if auditor_ia not in installed_ias:
+        parser.error("--preferred-auditor-ia must be present in --with-ia")
+    if auditor_ia == working_ia:
+        parser.error("the auditor IA must be different from the working IA")
+
+    args.with_ia = installed_ias
+    args.preferred_working_ia = working_ia
+    args.preferred_auditor_ia = auditor_ia
+
+
+def resolve_selected_packs(args: argparse.Namespace) -> list[str]:
+    selected = list(DEFAULT_PACKS)
+    for ia_name in args.with_ia:
+        pack_name = IA_PACKS[ia_name]
+        if pack_name not in selected:
+            selected.append(pack_name)
+    for pack_name in args.include_pack:
+        if pack_name not in selected:
+            selected.append(pack_name)
+
+    if args.skip_claude_root and "claude" in selected:
+        selected.remove("claude")
+
+    return selected
+
+
+def git_value(*args: str) -> str | None:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="ignore",
+    )
+    if result.returncode != 0:
+        return None
+    value = result.stdout.strip()
+    return value or None
+
+
+def run_post_copy_actions(
+    selected_packs: list[str],
+    target_root: Path,
+    force: bool,
+    dry_run: bool,
+    symdex_source: str,
+    symdex_installer: str,
+    governance_mcp_installer: str,
+) -> None:
+    action_names = {
+        action_name
+        for pack_name in selected_packs
+        for action_name in PACKS[pack_name].post_copy_actions
+    }
+
+    if "install_symdex" in action_names:
+        command = [
+            sys.executable,
+            str(target_root / "scripts" / "ops" / "install_symdex.py"),
+            "--repo-root",
+            str(target_root),
+            "--source",
+            symdex_source,
+            "--installer",
+            symdex_installer,
+        ]
+        if "roo" in selected_packs:
+            command.append("--write-roo-mcp")
+        if force:
+            command.append("--force")
+        if dry_run:
+            command.append("--dry-run")
+            print(f"POST-COPY ACTION: {' '.join(command)}")
+        else:
+            subprocess.run(command, check=True)
+
+    if "install_governance_mcp" not in action_names:
+        return
+
+    command = [
+        sys.executable,
+        str(target_root / "scripts" / "ops" / "install_governance_mcp.py"),
+        "--repo-root",
+        str(target_root),
+        "--installer",
+        governance_mcp_installer,
+    ]
+    if "roo" in selected_packs:
+        command.append("--write-roo-mcp")
+    if force:
+        command.append("--force")
+    if dry_run:
+        command.append("--dry-run")
+        print(f"POST-COPY ACTION: {' '.join(command)}")
+        return
+
+    subprocess.run(command, check=True)
+
+
+def write_manifest(
+    *,
+    target_root: Path,
+    selected_packs: list[str],
+    installed_ias: list[str],
+    preferred_working_ia: str,
+    preferred_auditor_ia: str,
+    copied: int,
+    dry_run: bool,
+    symdex_source: str,
+) -> None:
+    payload = {
+        "baseline": "GobernanzaIA",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "source_repo_path": str(REPO_ROOT),
+        "source_git_commit": git_value("rev-parse", "HEAD"),
+        "source_git_branch": git_value("branch", "--show-current"),
+        "source_git_remote": git_value("remote", "get-url", "origin"),
+        "packs": selected_packs,
+        "installation_profile": {
+            "installed_ias": installed_ias,
+            "preferred_working_ia": preferred_working_ia,
+            "preferred_auditor_ia": preferred_auditor_ia,
+            "governance_note": (
+                "Installation preferences only. Governance runtime still requires"
+                " explicit motor_activo and motor_auditor designation by the user."
+            ),
+        },
+        "file_count": copied,
+        "symdex_source": symdex_source if "symdex" in selected_packs else None,
+    }
+    manifest_path = target_root / MANIFEST_PATH
+    if dry_run:
+        print(f"WRITE MANIFEST: {manifest_path}")
+        return
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"WROTE: {MANIFEST_PATH}")
 
 
 def main() -> int:
     args = parse_args()
+
+    if args.list_packs:
+        print_available_packs()
+        return 0
+
+    selected_packs = resolve_selected_packs(args)
     target_root = Path(args.target).expanduser().resolve()
 
     if not args.dry_run:
         target_root.mkdir(parents=True, exist_ok=True)
 
-    sources = collect_sources(include_claude_root=not args.skip_claude_root)
+    sources = collect_sources(pack_names=selected_packs)
     copied, skipped = copy_sources(
         sources=sources,
         target_root=target_root,
         force=args.force,
         dry_run=args.dry_run,
     )
+    run_post_copy_actions(
+        selected_packs=selected_packs,
+        target_root=target_root,
+        force=args.force,
+        dry_run=args.dry_run,
+        symdex_source=args.symdex_source,
+        symdex_installer=args.symdex_installer,
+        governance_mcp_installer=args.governance_mcp_installer,
+    )
+    write_manifest(
+        target_root=target_root,
+        selected_packs=selected_packs,
+        installed_ias=args.with_ia,
+        preferred_working_ia=args.preferred_working_ia,
+        preferred_auditor_ia=args.preferred_auditor_ia,
+        copied=copied,
+        dry_run=args.dry_run,
+        symdex_source=args.symdex_source,
+    )
 
     print("\nGovernance bootstrap summary")
     print("----------------------------")
     print(f"Target: {target_root}")
+    print(f"IAs: {', '.join(args.with_ia)}")
+    print(f"Preferred work IA: {args.preferred_working_ia}")
+    print(f"Preferred audit IA: {args.preferred_auditor_ia}")
+    print(f"Packs: {', '.join(selected_packs)}")
     print(f"Copied: {copied}")
     print(f"Skipped: {skipped}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")

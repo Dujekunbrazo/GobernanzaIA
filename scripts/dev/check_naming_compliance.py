@@ -15,7 +15,11 @@ INITIATIVE_ALLOWED_FILES = {
     "execution.md",
     "post_audit.md",
     "closeout.md",
+    "lessons_learned.md",
     "handoff.md",
+    "baseline_freeze.md",
+    "capability_closure.md",
+    "exception_record.md",
 }
 
 TEMPLATE_REQUIRED_FILES = {
@@ -26,6 +30,7 @@ TEMPLATE_REQUIRED_FILES = {
     "execution.md",
     "post_audit.md",
     "closeout.md",
+    "lessons_learned.md",
 }
 
 ADAPTER_REQUIRED_FILES = {"codex.md", "claude.md", "gemini.md", "roo.md"}
@@ -54,6 +59,16 @@ def check_initiatives(errors, warnings):
                 continue
             if child.name not in INITIATIVE_ALLOWED_FILES:
                 warnings.append(f"Non-standard file in initiative {entry.name}: {child.name}")
+
+        ask_path = entry / "ask.md"
+        if ask_path.exists():
+            try:
+                ask_text = ask_path.read_text(encoding="utf-8", errors="ignore")
+            except OSError as exc:
+                warnings.append(f"Could not read ask.md for {entry.name}: {exc}")
+                continue
+            if "Modo:" not in ask_text:
+                warnings.append(f"ask.md without explicit 'Modo:' in initiative {entry.name}")
 
 
 def check_bitacora(errors):

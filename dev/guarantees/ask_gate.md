@@ -6,32 +6,35 @@ Propósito: validar Ask antes de permitir planificación.
 
 - Initiative ID:
 - Ruta: `dev/records/initiatives/<initiative_id>/`
+- Modo:
+- motor_activo:
+- motor_auditor:
 - Fecha:
-- Responsable:
 
 ## Checklist F1-F2
 
 - [ ] Existe `ask.md` para la iniciativa
 - [ ] `ask.md` tiene estado `PROPUESTO` o `VALIDADO`
+- [ ] `ask.md` incluye cabecera mínima (`Modo`, `motor_activo`, rama, `baseline_mit`)
 - [ ] Incluye objetivo, alcance preliminar y restricciones
 - [ ] Incluye evidencia verificable del repo
 - [ ] Incluye supuestos explícitos
 - [ ] Incluye preguntas bloqueantes/no bloqueantes
 - [ ] Incluye opciones y trade-offs
-- [ ] El usuario validó Ask (F2)
+- [ ] El usuario validó Ask (`F2`)
 
-## Checklist F2.5 (Auditoría Codex de Ask)
+## Checklist F3 (Auditoría + congelado de Ask)
 
 - [ ] Existe `ask_audit.md`
-- [ ] El resultado de auditoría es `PASS` o `PASS_WITH_OBSERVATIONS`
-- [ ] Si hubo observaciones, quedaron registradas
-- [ ] No hay bloqueantes abiertos
+- [ ] El resultado de auditoría es `PASS`
+- [ ] `ask.md` quedó en estado `CONGELADO`
+- [ ] No hay hallazgos abiertos
 
-## Condición para F3
+## Condición para F4
 
-- [ ] Ask puede congelarse (`ask.md` en `CONGELADO`)
+- [ ] Ask apto para planificación (`ask.md` en `CONGELADO`)
 
 ## Regla de bloqueo
 
 Si este gate no está en verde:
-- Architect no puede iniciar F4.
+- el `motor_activo` no puede iniciar `F4`.

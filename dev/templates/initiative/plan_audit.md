@@ -1,12 +1,23 @@
 # PLAN AUDIT
 
 - Initiative ID:
-- Auditor: Codex
+- Fase: F5
+- Auditor:
 - Fecha:
-- Veredicto: PASS
+- Veredicto: PASS | FAIL
 
 ## Hallazgos
 
-1.
+- `Sin hallazgos materiales.` o lista numerada con:
+  - Severidad
+  - Evidencia
+  - Impacto
+  - Decisión
 
-## Condición para F6
+## Observaciones
+
+- `Sin observaciones.` o lista numerada con:
+  - Evidencia
+  - Impacto
+
+## Condición para F5

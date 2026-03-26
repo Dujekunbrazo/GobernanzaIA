@@ -1,9 +1,14 @@
 # PLAN
 
 - Initiative ID:
+- Modo:
 - Estado: PROPUESTO
 - Fecha:
-- Responsable:
+- motor_activo:
+- motor_auditor:
+- Rama:
+- baseline_mit:
+- Etiqueta: PENDIENTE DE AUDITORIA DEL MOTOR_AUDITOR
 
 ## Objetivo
 

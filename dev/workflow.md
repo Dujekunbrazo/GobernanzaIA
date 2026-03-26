@@ -1,228 +1,331 @@
-# Dev Workflow — SOP Operativo (Codex Auditor Interno)
+# Dev Workflow — SOP Operativo Multi-IA
 
 Este documento define el proceso oficial de trabajo para cambios técnicos.
-No define comportamiento del runtime de la app; solo define gobernanza de desarrollo.
+No define el runtime de la app; define la gobernanza de desarrollo.
 
 ## Fuente de verdad
 
-- `AGENTS.md` (contrato universal multi-IA)
-- `dev/workflow.md` (este documento)
-- `dev/guarantees/*.md` (gates)
-- `dev/policies/*.md` (reglas duras transversales)
+- `AGENTS.md`
+- `dev/workflow.md`
+- `dev/guarantees/*.md`
+- `dev/ai/adapters/*.md`
+- `dev/policies/*.md`
 
-Si alguna capa de herramienta (Roo, Claude, etc.) difiere, se corrige en el mismo cambio.
+Si una capa difiere, se corrige en el mismo cambio.
 
-## Roles
+## Roles operativos
 
-- Ask: análisis, evidencia, preguntas y recomendación.
-- Architect: plan técnico commit por commit.
-- Code: implementación estricta sobre plan congelado.
-- Codex Auditor: auditoría interna en F2.5, F5 y F8.
-- Documentation Writer: actualización incremental de documentación.
-- Orchestrator: verificación de fases/gates y cierre formal.
+- `motor_activo`: propone, planifica e implementa.
+- `motor_auditor`: audita y decide `PASS` o `FAIL`.
+
+No hay motores por defecto.
+El usuario designa el motor según disponibilidad y contexto.
 
 ## Modos operativos
 
-- `M0 CONVERSACION`: discusión/ideación sin ejecución técnica.
+- `M0 CONVERSACION`: discusión y aclaración sin ejecución técnica.
 - `M1 ANALISIS`: análisis técnico sin cambios de código.
-- `M2 DEBUG`: diagnóstico y reproducción de fallos sin aplicar fixes.
-- `M3 IMPLEMENTACION_MENOR`: cambio acotado de bajo riesgo.
-- `M4 INICIATIVA_COMPLETA`: pipeline formal F1-F9.
+- `M2 DEBUG`: diagnóstico sin fix.
+- `M3 IMPLEMENTACION_MENOR`: cambio acotado y trazable.
+- `M4 INICIATIVA_COMPLETA`: pipeline formal `F1-F9`.
 
-Reglas de activación:
-- si no se declara modo, iniciar en `M1`.
-- para pasar a `M3` o `M4` se requiere aprobación explícita del usuario.
-- las transiciones se registran con formato: `TRANSICION: Mx -> My | motivo | impacto | decision`.
+Reglas:
 
-Reglas duras por modo:
-- `M0/M1/M2`: prohibido editar código.
-- `M3`: implementación permitida solo para alcance acotado y trazable.
-- `M4`: aplica F1-F9 completo y sus gates.
+- si el usuario no declara modo, iniciar en `M0`
+- para pasar a `M3` o `M4`, se requiere aprobación explícita del usuario
+- toda transición se registra como:
+  `TRANSICION: Mx -> My | motivo | impacto | decision`
+- en `M0/M1/M2` no se modifica código
 
-## Estructura de artefactos por iniciativa
-
-Cada iniciativa usa un ID único:
-`YYYY-MM-DD_tema_corto`
+## Artefactos por iniciativa
 
 Ruta canónica:
 `dev/records/initiatives/<initiative_id>/`
 
-Archivos estándar:
-- `ask.md`
-- `ask_audit.md`
-- `plan.md`
-- `plan_audit.md`
-- `execution.md`
-- `post_audit.md`
-- `closeout.md`
+Cabecera mínima obligatoria:
 
-## Pipeline oficial (solo M4)
+- `Initiative ID`
+- `Modo`
+- `Estado`
+- `Fecha`
+- `motor_activo`
+- `motor_auditor` (obligatorio en `M4`)
+- `Rama`
+- `baseline_mit`
 
-### F1 — Ask Propuesto
+Set mínimo:
 
-Entrada obligatoria:
-- seed plan inicial (usuario + asistente)
-- evidencia mínima del repo (código/docs/logs)
+- `M3`: `ask.md`, `execution.md`, `closeout.md`, `lessons_learned.md`
+- `M4`: `ask.md`, `ask_audit.md`, `plan.md`, `plan_audit.md`, `execution.md`,
+  `post_audit.md`, `closeout.md`, `lessons_learned.md`
 
-Salida:
-- `ask.md` con estado `PROPUESTO`
+Artefactos opcionales:
 
-Gate:
-- `dev/guarantees/ask_gate.md`
+- `handoff.md`
+- `baseline_freeze.md`
+- `capability_closure.md`
+- `exception_record.md`
 
-### F2 — Ask Validación (Usuario)
+## Protocolo operativo M3
 
 Objetivo:
+- ejecutar un cambio acotado y trazable sin abrir pipeline `F1-F9`.
+
+Secuencia mínima:
+1. `ask.md` con alcance, no-alcance, evidencia y criterio de aceptación.
+2. `scripts/dev/initiative_preflight.py` antes de implementación o cierre.
+3. Implementación acotada con registro en `execution.md`.
+4. Validación de entrega mediante `dev/guarantees/m3_delivery_gate.md`.
+5. Cierre en `closeout.md` y `lessons_learned.md`.
+
+Reglas:
+- `M3` no autoriza refactor estructural encubierto.
+- Si el cambio toca una capability transversal, `M3` exige el mismo estándar
+  de abstracción canónica, owner arquitectónico, wiring común, capability
+  closure y retiro de legacy que `M4`.
+- Si el cambio toca una capability transversal, `M3` debe registrar
+  `capability_closure.md` y validar su consistencia con
+  `scripts/dev/check_capability_closure.py`.
+- Si el cambio requiere excepción formal, `M3` debe registrar
+  `exception_record.md` y cumplir `dev/policies/exception_rules.md`.
+- En `M3` no se puede cerrar una capability con wiring parcial, integraciones
+  huérfanas, coverage vertical aislada o paths paralelos.
+- Antes de implementar o cerrar una iniciativa formal, ejecutar
+  `scripts/dev/initiative_preflight.py`.
+- Si durante `M3` el alcance deja de ser acotado o exige plan multi-commit con
+  auditoría formal, corresponde transición a `M4`.
+
+## Apertura durable de M4
+
+Tras la transición `M0 -> M4`, y antes de `F1`, puede existir un artefacto
+opcional de apertura de iniciativa:
+
+- `dev/records/initiatives/<initiative_id>/handoff.md`
+
+Propósito:
+
+- persistir el análisis y la planificación previa generados en conversación o
+  en modos de producto antes de abrir la fase Ask
+- evitar que el plan preliminar quede solo en chat
+- servir como fuente canónica para derivar `ask.md` y `plan.md`
+
+Reglas:
+
+- en `M0` no se crean artefactos de iniciativa
+- `handoff.md` nace ya dentro de `M4`, antes de `F1`
+- `handoff.md` es el artefacto primogénito opcional de apertura de una
+  iniciativa `M4`
+- no sustituye `ask.md` ni `plan.md`
+- no autoriza planificar ni implementar fuera de `F1-F9`
+- si existe, `F1` debe derivar el Ask desde ese artefacto
+- si existe, `F4` debe derivar el Plan desde ese artefacto y justificar
+  cualquier delta material respecto al handoff
+
+## Pipeline oficial M4
+
+### F1 — Ask propuesto
+
+- salida: `ask.md` en `PROPUESTO`
+- gate: `dev/guarantees/ask_gate.md`
+- si existe `handoff.md`, `ask.md` deriva de ese artefacto y preserva
+  evidencia, supuestos, preguntas y trade-offs relevantes
+
+### F2 — Validación usuario
+
 - validar alcance, supuestos y preguntas bloqueantes
+- designar `motor_auditor`
+- salida: `ask.md` en `VALIDADO` o `BLOQUEADO`
 
-Salida:
-- `ask.md` actualizado con estado `VALIDADO` o `BLOQUEADO`
+### F3 — Auditoría + congelado de ask
 
-### F2.5 — Auditoría Codex de Ask
+- audita el `motor_auditor`
+- salida:
+  - `ask_audit.md`
+  - `ask.md` en `CONGELADO` si hay `PASS`
 
-Objetivo:
-- revisar consistencia, huecos y riesgos antes de congelar
-
-Salida:
-- `ask_audit.md` con resultado `PASS`, `PASS_WITH_OBSERVATIONS` o `FAIL`
-
-Regla:
-- si `FAIL`, no se puede avanzar a F3
-
-### F3 — Ask Congelado
-
-Objetivo:
-- consolidar versión final del Ask
-
-Salida:
-- `ask.md` en estado `CONGELADO`
-
-Regla:
-- cualquier cambio de alcance reabre F1
-
-### F4 — Plan Propuesto (Architect)
+### F4 — Plan propuesto
 
 Prerequisito:
 - `ask.md` en `CONGELADO`
 
 Salida:
-- `plan.md` con estado `PROPUESTO`
-- etiqueta obligatoria: `PENDIENTE DE AUDITORÍA CODEX`
+- `plan.md` en `PROPUESTO`
+- etiqueta `PENDIENTE DE AUDITORIA DEL MOTOR_AUDITOR`
+- si existe `handoff.md`, `plan.md` debe conservar su planificación útil y
+  explicar cualquier delta material respecto al handoff
+- si el plan toca una capability transversal, debe existir
+  `capability_closure.md`
 
 Gate:
 - `dev/guarantees/plan_gate.md`
 
-### F5 — Auditoría Codex de Plan
+### F5 — Auditoría + congelado de plan
 
-Objetivo:
-- detectar inconsistencias técnicas, riesgos de regresión y complejidad innecesaria
+- audita el `motor_auditor`
+- salida:
+  - `plan_audit.md`
+  - `plan.md` en `CONGELADO` si hay `PASS`
 
-Salida:
-- `plan_audit.md` con resultado `PASS`, `PASS_WITH_OBSERVATIONS` o `FAIL`
-
-Regla:
-- si `FAIL`, no se puede avanzar a F6
-
-### F6 — Plan Congelado
-
-Objetivo:
-- congelar plan final tras auditoría
-
-Salida:
-- `plan.md` en estado `CONGELADO`
-
-Regla:
-- cualquier cambio posterior reabre F4
-
-### F7 — Implementación (Code)
+### F6 — Implementación
 
 Prerequisito:
 - `plan.md` en `CONGELADO`
+- `scripts/dev/initiative_preflight.py` ejecutado
 
 Salida:
-- `execution.md` con commits ejecutados, validaciones y evidencias
-
-Gate:
-- `dev/guarantees/implementation_gate.md`
+- `execution.md`
 
 Restricciones:
-- 1 cambio lógico por commit
+
+- un cambio lógico por commit
 - prohibido refactor encubierto
-- prohibido alcance fuera de plan congelado
+- prohibido alcance fuera del plan congelado
 
-### F8 — Post-auditoría/Debug Codex
+### F7 — Post-auditoría / Debug
 
-Objetivo:
-- verificar comportamiento real vs plan congelado
-- detectar bugs/regresiones/tests faltantes
+- audita el `motor_auditor`
+- salida:
+  - `post_audit.md`
+  - decisión `PASS` o `FAIL`
+- si existe `handoff.md`, puede usarse como referencia de intención original,
+  pero el criterio formal de ejecución sigue siendo `plan.md` congelado
+- si la initiative tocó una capability transversal, `post_audit.md` y
+  `closeout.md` deben ser consistentes con `capability_closure.md`
 
-Salida:
-- `post_audit.md` con hallazgos numerados por severidad
-- decisión `PASS`, `PASS_WITH_OBSERVATIONS` o `FAIL`
+### F8 — Docs + cierre
 
-Regla:
-- si `FAIL`, no se cierra y se programan fixes atómicos
-
-### F9 — Docs + Cierre (Orchestrator)
-
-Objetivo:
 - actualizar docs incrementalmente
-- confirmar gates en verde y cerrar iniciativa
+- confirmar gates en verde
+- ejecutar cierre conforme a `dev/policies/git_workflow_rules.md`
 
 Salida:
-- `closeout.md` con trazabilidad completa de fases
+- `closeout.md`
 
-Gate:
-- `dev/guarantees/docs_gate.md`
+### F9 — Lecciones finales
+
+Salida:
+- `lessons_learned.md`
+
+## Reglas de auditoría formal
+
+Aplica a `F3`, `F5` y `F7`.
+
+Reglas:
+
+- solo existen `PASS` y `FAIL`
+- no se permite `PASS` con hallazgos pendientes
+- solo cuentan como `hallazgos` los problemas materiales para:
+  - mandato de la fase
+  - consistencia de fuentes canónicas
+  - ejecutabilidad real
+  - validación
+  - seguridad
+  - cierre real de fase
+- los problemas editoriales o cosméticos sin impacto material deben ir a
+  `observaciones`
+- las `observaciones` no bloquean el `PASS`
+- máximo 1 auditoría inicial y 2 re-auditorías por fase
+- en re-auditoría no se permite goteo de hallazgos nuevos salvo por cambios
+  nuevos o evidencia antes no visible
 
 ## Reglas no negociables
 
-1. En `M4`, no implementar sin `PLAN CONGELADO`.
-2. En `M4`, no planificar sin `ASK CONGELADO`.
+1. En `M4`, no planificar sin `ASK CONGELADO`.
+2. En `M4`, no implementar sin `PLAN CONGELADO`.
 3. Un cambio lógico por commit.
 4. README solo incremental.
 5. No inventar rutas/comandos/features.
 6. Si falta precondición, bloquear avance con evidencia.
-7. Runbooks heredados no aplicables quedan fuera del flujo operativo.
-8. En `M0/M1/M2`, no se modifica código.
+7. En `M0/M1/M2`, no se modifica código.
+8. No se permite cerrar una fase con hallazgos pendientes.
+9. Las observaciones no sustituyen a los hallazgos.
+10. `Roo` no define workflow propio por encima del contrato canónico.
+11. En `M3` y `M4`, toda capability transversal debe cerrar con wiring canónico completo, sin convivencia legacy/canónico y sin branching oportunista.
 
-## Python en Windows
+## Contexto y recuperación
 
-Orden obligatorio:
-- usar `.venv\Scripts\python.exe` si existe
-- si no existe, usar `py -3`
-- usar `python` solo si está validado en la sesión
+### Capa estática
 
-## Registro de decisiones
+Siempre presente:
 
-Toda decisión de diseño/proceso debe registrarse en:
-`dev/logs/decisions.md`
+- reglas duras
+- resumen de pipeline
+- precedencia técnica
+- instrucciones de recuperación
 
-## Políticas complementarias obligatorias
+### Gobernanza recuperable
 
-- Documentación: `dev/policies/documentation_rules.md`
-- Scripts: `dev/policies/scripts_rules.md`
-- Bitácora IA: `dev/policies/bitacora_rules.md`
-- Nomenclatura: `dev/policies/naming_rules.md`
-- Layout repo: `dev/policies/repo_layout_rules.md`
+Usar recuperación híbrida sobre:
 
-## Registro continuo de conversación IA
+- `dev/policies/`
+- `dev/guarantees/`
+- `dev/prompts/`
+- `dev/templates/initiative/`
+- `dev/ai/adapters/`
+- `doc/architecture/`
 
-Además de F1-F9, todo turno de trabajo con IA debe registrarse en:
-`dev/records/bitacora/YYYY-MM-DD_<ia>.md`
+Excluir:
 
-Mecanismo oficial:
-- `scripts/ops/bitacora_append.py`
+- `dev/records/`
+- `.roo/`
+- legacy y salidas generadas
 
-## Control de nomenclatura
+Uso operativo:
 
-Validación obligatoria antes de cierre:
-- `scripts/dev/check_naming_compliance.py`
+- consultar primero `dev/policies/governance_manifest.md` para routing de carga
+  mínima cuando la tarea sea de gobernanza o exista ambigüedad de contexto
+- consultar `governance_search` para workflow, gates, prompts, templates,
+  adapters y arquitectura
+- aplicar primero filtros por `phase`, `document_type` y `motor` cuando
+  existan
+- si la recuperación devuelve ambigüedad, cargar el documento canónico por ruta
 
-## Control de estado 0
+### SymDex
 
-Checklist:
-- `dev/checklists/state0.md`
+Usar `SymDex` solo para código vivo:
 
-Validación obligatoria antes de cierre:
-- `scripts/dev/check_state0.py`
+- `core/`
+- `integrations/MCP-Microsoft-Office/src/`
+- `scripts/`
+- `tests/`
+- `manifests/`
+
+Excluir:
+
+- `node_modules`
+- caches
+- logs
+- `state`
+- `sessions`
+- `content`
+- gobernanza
+
+Uso operativo:
+
+- consultar `symdex_search_code` para localizar código vivo por intención,
+  símbolo o runtime
+- consultar `symdex_read_code` para leer el bloque concreto después de la
+  búsqueda
+- no usar `SymDex` para workflow, policies, logs, records o bitácora
+
+## Gobernanza de ingeniería
+
+Referencia corta:
+- `dev/policies/ai_engineering_governance.md`
+
+Referencia larga:
+- `doc/architecture/ai_engineering_dossier.md`
+
+Precedencia técnica:
+1. MIT
+2. Clean Code
+3. Krug
+4. Rendimiento con evidencia
+5. Validación
+
+## Controles operativos
+
+- Bitácora: `scripts/ops/bitacora_append.py`
+- Naming: `scripts/dev/check_naming_compliance.py`
+- State0: `scripts/dev/check_state0.py`
+- Decisiones: `dev/logs/decisions.md`

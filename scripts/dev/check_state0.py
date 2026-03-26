@@ -6,26 +6,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ROOT_REQUIRED_FILES = {
     "README.md",
     "AGENTS.md",
-    "CLAUDE.md",
     ".gitignore",
-    ".env.example",
-    "requirements.txt",
-    "start_kiminion.bat",
-    "kiminion_ui.py",
-    "memory_concept.py",
-    "kiminion_logging.py",
 }
+ROOT_OPTIONAL_COMPAT_FILES = {"CLAUDE.md"}
 
 ROOT_REQUIRED_DIRS = {
     "dev",
     "scripts",
-    "doc",
-    "state",
-    "logs",
-    "reports",
-    "sessions",
-    "content",
 }
+ROOT_OPTIONAL_DIRS = {"doc"}
 
 RUNBOOK_ACTIVE_ALLOWED = {"README.md", "REGISTRY.md"}
 SCRIPTS_ROOT_ALLOWED = {"README.md", "export_incident.py", "bitacora_append.py"}
@@ -67,7 +56,6 @@ def check_scripts(errors, warnings):
 def check_runbooks(errors, warnings):
     runbooks_dir = REPO_ROOT / "dev" / "runbooks"
     if not runbooks_dir.exists():
-        errors.append("Missing dev/runbooks directory")
         return
 
     files = {p.name for p in runbooks_dir.iterdir() if p.is_file()}
@@ -76,13 +64,18 @@ def check_runbooks(errors, warnings):
             warnings.append(f"Unexpected file in active runbooks folder: dev/runbooks/{file_name}")
 
     legacy_runbooks = REPO_ROOT / "dev" / "records" / "legacy" / "runbooks"
-    if not legacy_runbooks.exists():
-        errors.append("Missing legacy runbooks quarantine folder")
+    if files and not legacy_runbooks.exists():
+        warnings.append("Active runbooks present without legacy quarantine folder")
 
 
 def check_policies(errors):
     policy_dir = REPO_ROOT / "dev" / "policies"
     required = {
+        "action_policy.md",
+        "ai_engineering_governance.md",
+        "exception_rules.md",
+        "git_workflow_rules.md",
+        "governance_manifest.md",
         "documentation_rules.md",
         "scripts_rules.md",
         "bitacora_rules.md",

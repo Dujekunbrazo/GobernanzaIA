@@ -1,8 +1,10 @@
 # EXECUTION
 
 - Initiative ID:
+- Modo:
 - Fecha:
-- Responsable:
+- motor_activo:
+- Rama:
 
 ## Referencia al plan congelado
 

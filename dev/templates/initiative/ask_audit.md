@@ -1,12 +1,23 @@
 # ASK AUDIT
 
 - Initiative ID:
-- Auditor: Codex
+- Fase: F3
+- Auditor:
 - Fecha:
-- Veredicto: PASS
+- Veredicto: PASS | FAIL
 
 ## Hallazgos
 
-1.
+- `Sin hallazgos materiales.` o lista numerada con:
+  - Severidad
+  - Evidencia
+  - Impacto
+  - Decisión
+
+## Observaciones
+
+- `Sin observaciones.` o lista numerada con:
+  - Evidencia
+  - Impacto
 
 ## Condición para F3

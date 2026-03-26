@@ -4,16 +4,23 @@ Estas reglas definen el estado base de organización del repositorio.
 
 ## 1) Estructura raíz mínima esperada
 
-En la raíz solo deben existir:
-- archivos de arranque/configuración (`README.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`, `.env.example`, `requirements.txt`, `start_kiminion.bat`)
-- código runtime temporalmente heredado (`kiminion_ui.py`, `memory_concept.py`, `kiminion_logging.py`)
-- carpetas de dominio (`dev/`, `scripts/`, `doc/`, `state/`, `logs/`, `reports/`, `sessions/`, `content/`)
+En un repo con gobernanza instalada, la raíz debe contener como mínimo:
+- archivos base (`README.md`, `AGENTS.md`, `.gitignore`)
+- superficies opcionales de compatibilidad según packs instalados
+  (`CLAUDE.md` y equivalentes)
+- carpetas de gobernanza (`dev/`, `scripts/`)
+- `doc/` cuando exista documentación arquitectónica compartida
+
+Los artefactos de runtime del proyecto consumidor pueden existir en la raíz o
+en carpetas propias del producto, pero no forman parte del baseline mínimo de
+gobernanza.
 
 ## 2) Gobernanza centralizada
 
 - Reglas: `AGENTS.md`, `dev/workflow.md`, `dev/policies/*.md`
 - Gates: `dev/guarantees/*.md`
 - Evidencia: `dev/records/*`
+- Política Git/GitHub: `dev/policies/git_workflow_rules.md`
 - No mezclar gobernanza con runtime: artefactos de proceso (reglas, gates, plantillas, bitácora, iniciativas) deben vivir en `dev/` y nunca en rutas runtime de la app.
 
 ## 3) Scripts
@@ -23,8 +30,11 @@ En la raíz solo deben existir:
 
 ## 4) Runbooks heredados
 
-- Activos solo: `dev/runbooks/README.md`, `dev/runbooks/REGISTRY.md`
-- Heredados en cuarentena: `dev/records/legacy/runbooks/`
+- Si existen runbooks activos, solo se admiten `dev/runbooks/README.md` y
+  `dev/runbooks/REGISTRY.md`
+- Si el repositorio conserva runbooks heredados, deben vivir en
+  `dev/records/legacy/runbooks/`
+- Un baseline reusable puede omitir runbooks por completo
 
 ## 5) Artefactos transitorios
 
@@ -39,9 +49,13 @@ Script oficial:
 Si falla:
 - no hay cierre formal de iniciativa.
 
-## 7) Frontera proyecto Python vs gobernanza
+## 7) Frontera producto vs gobernanza
 
-- Código y artefactos runtime del proyecto: raíz Python, `state/`, `logs/`, `sessions/`, `reports/`, `content/`.
-- Gobernanza IA y proceso: `dev/` (`workflow`, `policies`, `guarantees`, `templates`, `records`, `ai/adapters`).
-- Prohibido mover reglas de gobernanza a carpetas runtime o mezclar código de aplicación dentro de `dev/`.
+- Código y artefactos runtime del proyecto consumidor: rutas del producto,
+  cualesquiera que sean (`core/`, `src/`, raíz Python, `state/`, `logs/`,
+  `sessions/`, `reports/`, `content/`, etc.).
+- Gobernanza IA y proceso: `dev/` (`workflow`, `policies`, `guarantees`,
+  `templates`, `records`, `ai/adapters`) y `scripts/` de soporte.
+- Prohibido mover reglas de gobernanza a carpetas runtime o mezclar código de
+  aplicación dentro de `dev/`.
 

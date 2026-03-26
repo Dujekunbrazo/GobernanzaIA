@@ -11,15 +11,26 @@ Patrón de `<initiative_id>`:
 - `YYYY-MM-DD_tema_corto`
 - regex: `^\d{4}-\d{2}-\d{2}_[a-z0-9_]+$`
 
-Archivos estándar permitidos por iniciativa:
-- `ask.md`
-- `ask_audit.md`
-- `plan.md`
-- `plan_audit.md`
-- `execution.md`
-- `post_audit.md`
-- `closeout.md`
-- `handoff.md` (opcional)
+Cabecera mínima esperada en artefactos principales:
+- `Initiative ID`
+- `Modo`
+- `Estado`
+- `Fecha`
+- `motor_activo`
+- `motor_auditor` (obligatorio en `M4`)
+- `Rama`
+- `baseline_mit`
+
+Set mínimo por modo:
+- `M3`: `ask.md`, `execution.md`, `closeout.md`, `lessons_learned.md`
+- `M4`: `ask.md`, `ask_audit.md`, `plan.md`, `plan_audit.md`, `execution.md`,
+  `post_audit.md`, `closeout.md`, `lessons_learned.md`
+
+Archivos opcionales permitidos:
+- `handoff.md` (`PRE-F1`, artefacto primogénito para conservar planificación previa)
+- `baseline_freeze.md`
+- `capability_closure.md`
+- `exception_record.md`
 
 ## 2) Bitácora diaria por IA
 
@@ -44,6 +55,11 @@ Archivos requeridos:
 - `execution.md`
 - `post_audit.md`
 - `closeout.md`
+- `lessons_learned.md`
+
+Archivos opcionales recomendados:
+- `capability_closure.md`
+- `exception_record.md`
 
 ## 4) Adaptadores IA
 

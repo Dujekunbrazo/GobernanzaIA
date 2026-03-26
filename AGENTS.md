@@ -1,199 +1,207 @@
 # Directrices Maestras Multi-IA
 
-Este archivo define las reglas universales para cualquier IA que trabaje en este repo:
-- Codex
-- Claude
-- Gemini
-- Roo Code
+## 1) Fuente de verdad
 
-## 1) Fuente de verdad (orden de precedencia)
+Orden de precedencia:
 
-1. `AGENTS.md` (este archivo)
+1. `AGENTS.md`
 2. `dev/workflow.md`
 3. `dev/guarantees/*.md`
-4. Adaptadores por motor en `dev/ai/adapters/*.md`
-5. Políticas transversales en `dev/policies/*.md`
-6. Reglas de ejecución de la herramienta (por ejemplo `.roo/rules/*`)
+4. `dev/ai/adapters/*.md`
+5. `dev/policies/*.md`
+6. superficies nativas de producto (`.roo/*`, `.claude/*`, `CLAUDE.md` y equivalentes) como capa de compatibilidad/adaptación
 
 Si hay conflicto, prevalece el nivel superior.
 
 ## 2) Objetivo operativo
 
 Trabajar con un proceso cerrado, repetible y auditable.
-Ninguna IA puede saltarse fases ni inventar rutas, artefactos o estados.
+La gobernanza define como se procede; el código define sobre qué se trabaja.
 
-## 3) Estados operativos obligatorios (M0-M4)
+## 3) Modos M0-M4
 
-- M0 `CONVERSACION`: ideación, aclaraciones y discusión técnica sin ejecución.
-- M1 `ANALISIS`: diagnóstico de repo/sistema sin cambios de código.
-- M2 `DEBUG`: reproducción y aislamiento de fallos sin implementar fix.
-- M3 `IMPLEMENTACION_MENOR`: cambio acotado de bajo riesgo (un objetivo técnico pequeño).
-- M4 `INICIATIVA_COMPLETA`: cambio mediano/grande con trazabilidad formal completa.
+- `M0 CONVERSACION`: ideación, aclaraciones y discusión técnica sin ejecución.
+- `M1 ANALISIS`: diagnóstico técnico sin cambios de código.
+- `M2 DEBUG`: reproducción y aislamiento de fallos sin implementar fix.
+- `M3 IMPLEMENTACION_MENOR`: cambio acotado de bajo riesgo.
+- `M4 INICIATIVA_COMPLETA`: cambio mediano/grande con trazabilidad formal.
 
-Activación por defecto:
-- Si el usuario no declara modo, iniciar en `M1`.
+Reglas de activación:
 
-Protocolo de transición:
-- Formato obligatorio: `TRANSICION: Mx -> My | motivo | impacto | decision`.
+- Si el usuario no declara modo, iniciar en `M0`.
 - Para entrar en `M3` o `M4` se requiere aprobación explícita del usuario.
-- Si sube alcance o riesgo durante `M3`, escalar a `M4`.
-- Si faltan precondiciones, marcar `BLOQUEADO`.
+- Toda transición usa:
+  `TRANSICION: Mx -> My | motivo | impacto | decision`.
+- No existe motor por defecto.
+- El usuario designa `motor_activo`.
+- En `M4`, el usuario designa `motor_auditor` en `F2`.
 
-Reglas duras por modo:
-- `M0/M1/M2`: prohibido editar código.
-- `M3`: permitido implementar cambio acotado, sin refactor encubierto.
-- `M4`: aplica pipeline F1-F9 completo.
+## 4) Reglas duras no negociables
 
-## 4) Pipeline oficial obligatorio (solo M4)
+1. Si el usuario no declara modo, iniciar en `M0`.
+2. Para entrar en `M3` o `M4` se requiere aprobación explícita del usuario.
+3. Toda transición usa el formato `TRANSICION: Mx -> My | motivo | impacto | decision`.
+4. En `M0/M1/M2` está prohibido editar código.
+5. En `M3` solo se permite cambio acotado y trazable.
+6. En `M4` aplica pipeline `F1-F9` completo.
+7. En `M4` no se planifica sin `ASK CONGELADO`.
+8. En `M4` no se implementa sin `PLAN CONGELADO`.
+9. Si cambia el alcance, se reabre la fase previa correspondiente.
+10. Las auditorías formales solo admiten `PASS` o `FAIL`.
+11. No se permite `PASS` mientras exista cualquier hallazgo pendiente.
+12. Solo cuentan como hallazgos los problemas materiales para mandato, consistencia canónica, validación, seguridad o cierre real de fase.
+13. Las observaciones no bloquean si no tienen impacto material.
+14. Máximo 1 auditoría inicial y 2 re-auditorías por fase.
+15. Un cambio lógico por commit.
+16. Prohibido refactor encubierto.
+17. README solo incremental.
+18. No inventar rutas, comandos o features.
+19. Prohibido mezclar runtime del proyecto con artefactos de gobernanza.
+20. Sin compliance de nomenclatura y state0 no hay cierre formal.
+21. Toda capability transversal del sistema debe resolverse mediante abstracción canónica, owner arquitectónico explícito, punto de extensión definido y wiring común.
+22. Queda prohibido resolver capabilities transversales mediante branching por `tool`/`path`/`channel`/`filter`, coverage vertical aislada, paths paralelos, fallback legacy conviviendo con el camino canónico o lógica específica por herramienta en `planner`/`generator`/`router`/`execute` cuando corresponda `descriptor`/`policy`/`registry` común.
+23. Ninguna capability se considera completada mientras no esté conectada en su wiring canónico sobre todas las superficies incluidas en alcance.
+24. Queda prohibido cerrar una iniciativa con wiring parcial, integraciones huérfanas, convivencia legacy/canónico o paths paralelos para la misma capability.
 
-- F1: Ask propuesto
-- F2: Validación de Ask (usuario)
-- F2.5: Auditoría Codex de Ask
-- F3: Ask congelado
-- F4: Plan propuesto (Architect)
-- F5: Auditoría Codex de Plan
-- F6: Plan congelado
-- F7: Implementación (Code)
-- F8: Post-auditoría/Debug Codex
-- F9: Docs + Cierre (Orchestrator)
+## 4.1) Apertura durable de M4
 
-Reglas duras:
-- Prohibido implementar en `M4` sin `PLAN CONGELADO`.
-- Prohibido planificar en `M4` sin `ASK CONGELADO`.
-- Si cambia alcance, se reabre fase previa (F1 o F4).
+- `handoff.md` no puede nacer en `M0`; en `M0` no se crean artefactos.
+- Tras la transición `M0 -> M4`, y antes de `F1`, puede crearse
+  `dev/records/initiatives/<initiative_id>/handoff.md`.
+- `handoff.md` es el artefacto primogénito opcional para conservar análisis y
+  planificación previa cuando la conversación o el modo del producto generen
+  contenido valioso antes de `F1`.
+- `handoff.md` no sustituye `ask.md` ni `plan.md` y no redefine el pipeline
+  `F1-F9`.
+- Si existe `handoff.md`, `F1` debe derivar el `ask.md` desde ese artefacto.
+- Si existe `handoff.md`, `F4` debe derivar el `plan.md` desde ese artefacto y
+  desde el `ask.md` congelado.
 
-## 5) Rutas canónicas de artefactos
+## 5) Pipeline F1-F9
 
-Toda iniciativa vive en:
+| Fase | Propósito |
+| ---- | --------- |
+| `F1` | Ask propuesto |
+| `F2` | Validación de ask por usuario + designación de `motor_auditor` |
+| `F3` | Auditoría y congelado de ask |
+| `F4` | Plan propuesto |
+| `F5` | Auditoría y congelado de plan |
+| `F6` | Implementación |
+| `F7` | Post-auditoría / debug |
+| `F8` | Docs + cierre |
+| `F9` | Lecciones finales y feedback de gobernanza |
 
-`dev/records/initiatives/<initiative_id>/`
+Reglas:
 
-Archivos estándar:
-- `ask.md`
-- `ask_audit.md`
-- `plan.md`
-- `plan_audit.md`
-- `execution.md`
-- `post_audit.md`
-- `closeout.md`
+- En `F3`, `F5` y `F7` solo el `motor_auditor` emite la auditoría formal.
+- Si el resultado es `FAIL`, no se avanza de fase.
+- Si falta precondición, el estado correcto es `BLOQUEADO`.
+- Si existe `handoff.md`, se usa como fuente canónica de apertura de `M4`, pero
+  la ejecutabilidad formal sigue dependiendo de `ask.md` y `plan.md`.
 
-`<initiative_id>` recomendado:
-`YYYY-MM-DD_tema_corto`
+## 6) Precedencia técnica
 
-## 6) Máquina de estados de documentos
+1. MIT Concept-Sync para macroarquitectura.
+2. Clean Code para microimplementación.
+3. Krug para UI, CLI, DX y respuestas orientadas a usuario.
+4. Rendimiento puede excepcionar Clean Code solo en hot paths con evidencia.
+5. Validación determina aceptabilidad final.
 
-Estados permitidos:
-- `PROPUESTO`
-- `VALIDADO`
-- `CONGELADO`
-- `BLOQUEADO`
+## 7) Corpus de contexto
 
-Cada documento debe mostrar estado explícito y fecha.
+### Capa estática siempre presente
 
-## 7) Política de cambios
+- reglas duras no negociables
+- resumen del workflow
+- precedencia técnica
+- instrucciones de recuperación de contexto
 
-- 1 cambio lógico por commit.
-- Prohibido refactor encubierto.
-- README siempre incremental.
-- No documentar rutas/comandos/features no verificables.
-- Si falta evidencia, la IA debe bloquear y pedir aclaración.
+### Gobernanza dinámica bajo demanda
 
-## 8) Política de runbooks heredados
+Corpus canónico:
 
-Cualquier runbook heredado debe estar etiquetado como:
-- `APLICA`
-- `PENDIENTE_ADAPTACION`
-- `HEREDADO_NO_APLICA`
+- `dev/policies/`
+- `dev/guarantees/`
+- `dev/prompts/`
+- `dev/templates/initiative/`
+- `dev/ai/adapters/`
+- `dev/workflow.md`
+- `doc/architecture/`
 
-Los `HEREDADO_NO_APLICA` no pueden usarse como base operativa.
+Exclusiones duras:
 
-## 9) Rol de Codex en auditorías
+- `dev/records/`
+- `dev/records/legacy/`
+- `.roo/` como corpus de retrieval
+- `.claude/` y `CLAUDE.md` como corpus de retrieval
+- histórico, bitácoras y salidas generadas
 
-Codex es auditor interno en `M4`:
-- F2.5 (Ask audit)
-- F5 (Plan audit)
-- F8 (Post-audit/debug)
+La recuperación de gobernanza debe ser híbrida:
 
-La auditoría debe listar hallazgos numerados con severidad, evidencia y decisión:
-- `PASS`
-- `PASS_WITH_OBSERVATIONS`
-- `FAIL`
+- filtro determinista por fase, tipo de documento y motor
+- ranking semántico dentro del subconjunto
+- fallback al documento canónico completo si hay ambigüedad
+- herramienta operativa: `governance_search`
+- routing obligatorio:
+  - consulta de gobernanza -> `governance_search` y luego lectura canónica
+  - consulta de código -> `symdex_search_code` y luego `symdex_read_code`
+- `Glob`, `Globpattern`, `Grep`, `find`, `rg` o lecturas directas no cuentan
+  como vía principal si el MCP correspondiente está disponible
+- herramientas internas solo como fallback si el MCP falla, no está expuesto o
+  para lectura final puntual del archivo ya localizado
 
-## 10) Bootstrap mínimo del repo
+### SymDex
 
-Todo entorno operativo debe tener:
-- control de versiones (`git`)
-- `.gitignore` con exclusiones de secretos/runtime
-- trazabilidad de decisiones en `dev/logs/decisions.md`
+`SymDex` se usa solo para código vivo del producto.
 
-## 11) Contrato de cumplimiento
+Incluir:
 
-Si una IA no puede cumplir una regla por falta de contexto o archivos, debe:
+- `core/`
+- `integrations/MCP-Microsoft-Office/src/`
+- `scripts/`
+- `tests/`
+- `manifests/`
+
+Excluir:
+
+- `node_modules`
+- `.venv`
+- `__pycache__`
+- caches
+- logs
+- `state`
+- `sessions`
+- `content`
+- gobernanza y artefactos históricos
+- herramientas operativas:
+  - `symdex_search_code`
+  - `symdex_read_code`
+- en respuestas técnicas se debe declarar herramienta usada y fuente canónica
+  usada
+
+## 8) Motores
+
+- `Codex`, `Claude`, `Gemini` y `Roo` pueden actuar como `motor_activo` o `motor_auditor` si el usuario los designa explícitamente.
+- `Roo` debe comportarse como motor general bajo el mismo contrato.
+- Los modos nativos de Roo son solo una capa de producto; no redefinen `M0-M4` ni `F1-F9`.
+- Los únicos roles operativos de la gobernanza son `motor_activo` y `motor_auditor`.
+
+## 9) Rutas canónicas
+
+- Gobernanza activa: `dev/`
+- Iniciativas: `dev/records/initiatives/<initiative_id>/`
+- Handoff de apertura M4 pre-F1:
+  `dev/records/initiatives/<initiative_id>/handoff.md`
+- Bitácora diaria: `dev/records/bitacora/`
+- Script oficial de bitácora: `scripts/ops/bitacora_append.py`
+- Validadores de cierre:
+  - `scripts/dev/check_naming_compliance.py`
+  - `scripts/dev/check_state0.py`
+
+## 10) Contrato de bloqueo
+
+Si falta contexto, evidencia o precondición, la IA debe:
+
 1. Parar.
 2. Declarar bloqueo con evidencia.
-3. Proponer siguiente paso mínimo seguro.
-
-## 12) Reglas duras de documentación
-
-Las reglas de documentación viven en:
-- `dev/policies/documentation_rules.md`
-
-Resumen no negociable:
-- no inventar rutas/comandos/features
-- README incremental
-- separar plantilla (`dev/guarantees`) de historial (`dev/records`)
-
-## 13) Reglas duras de scripts
-
-Las reglas de scripts viven en:
-- `dev/policies/scripts_rules.md`
-
-Resumen no negociable:
-- estructura por categorías (`dev`, `ops`, `migration`)
-- paths robustos (independientes de `cwd`)
-- wrappers de compatibilidad cuando haya movimiento de rutas
-
-## 14) Bitácora automática de trabajo con IA
-
-Las reglas de bitácora viven en:
-- `dev/policies/bitacora_rules.md`
-
-Resumen no negociable:
-- un archivo diario por IA en `dev/records/bitacora/`
-- registrar pregunta y respuesta por turno
-- usar `scripts/ops/bitacora_append.py` tras cada respuesta final
-
-## 15) Nomenclatura obligatoria
-
-Las reglas de nomenclatura viven en:
-- `dev/policies/naming_rules.md`
-
-Validación oficial:
-- `scripts/dev/check_naming_compliance.py`
-
-Sin compliance de nomenclatura:
-- no hay cierre formal de iniciativa
-
-## 16) Estado 0 de organización
-
-Reglas de layout:
-- `dev/policies/repo_layout_rules.md`
-
-Checklist operativo:
-- `dev/checklists/state0.md`
-
-Validación oficial:
-- `scripts/dev/check_state0.py`
-
-## 17) Separación obligatoria: proyecto Python vs gobernanza IA
-
-Para cualquier trabajo asistido por IA en este repo:
-- Directriz maestra: `AGENTS.md`
-- Workflow operativo: `dev/workflow.md`
-- Gates de proceso: `dev/guarantees/`
-- Adaptadores por motor (Codex/Claude/Gemini/Roo): `dev/ai/adapters/`
-- Bitácora diaria por IA: `dev/records/bitacora/` (script: `scripts/ops/bitacora_append.py`)
-
-Regla dura:
-- Prohibido mezclar código runtime del proyecto Python con artefactos de gobernanza.
-- La gobernanza vive en `dev/` y sus subcarpetas; el runtime de la app no debe usarse para guardar reglas, gates, plantillas o bitácoras.
+3. Proponer el siguiente paso mínimo seguro.

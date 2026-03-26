@@ -7,13 +7,15 @@ Objetivo: asegurar que el repo cumple organización base según reglas vigentes.
 - [ ] `AGENTS.md` actualizado
 - [ ] `dev/workflow.md` actualizado
 - [ ] Políticas en `dev/policies/` completas y coherentes
-- [ ] Reglas Roo alineadas a políticas
+- [ ] `dev/policies/git_workflow_rules.md` presente y referenciado
 
 ## Estructura
 
-- [ ] Layout raíz cumple `dev/policies/repo_layout_rules.md`
+- [ ] Layout raíz cumple `dev/policies/repo_layout_rules.md` para el tipo de
+      repo actual (baseline reusable o repo consumidor)
 - [ ] `scripts/` en estructura `dev/ops/migration`
-- [ ] Runbooks heredados en cuarentena
+- [ ] Si existen runbooks, los activos y heredados respetan las rutas
+      canónicas
 
 ## Calidad de nombres
 

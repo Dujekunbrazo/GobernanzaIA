@@ -1,9 +1,13 @@
 # ASK
 
 - Initiative ID:
+- Modo:
 - Estado: PROPUESTO
 - Fecha:
-- Responsable:
+- motor_activo:
+- motor_auditor:
+- Rama:
+- baseline_mit:
 
 ## Objetivo y contexto
 
@@ -17,4 +21,4 @@
 
 ## Recomendación Ask
 
-## Criterios de aceptación para Architect
+## Criterios de aceptación para el motor_activo
