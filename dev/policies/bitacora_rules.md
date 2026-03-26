@@ -10,7 +10,7 @@ Aplica a interacciones de trabajo con:
 - Gemini
 - Roo
 
-No aplica al runtime de Kiminion.
+No aplica al runtime de un producto consumidor.
 
 ## 2) Ruta canónica
 

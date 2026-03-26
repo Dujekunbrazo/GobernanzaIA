@@ -2,7 +2,7 @@
 
 Baseline reusable de gobernanza multi-IA para proyectos de software.
 
-`GobernanzaIA` extrae del ecosistema de `Kiminion` la parte que debe ser
+`GobernanzaIA` concentra la parte que debe ser
 canonica, repetible e instalable en cualquier repo nuevo, sin arrastrar
 runtime de producto, historicos de iniciativas ni configuraciones locales
 acopladas a una herramienta concreta.
@@ -20,7 +20,7 @@ acopladas a una herramienta concreta.
 - [Estructura del repo](#estructura-del-repo)
 - [Instalacion en otro proyecto](#instalacion-en-otro-proyecto)
 - [Packs opcionales](#packs-opcionales)
-- [Flujo de sincronizacion con Kiminion](#flujo-de-sincronizacion-con-kiminion)
+- [Flujo de sincronizacion con repos consumidores](#flujo-de-sincronizacion-con-repos-consumidores)
 - [Requisitos](#requisitos)
 - [FAQ](#faq)
 
@@ -65,7 +65,7 @@ El baseline instala:
 
 El baseline no instala:
 
-- runtime de `Kiminion`
+- runtime de una aplicacion consumidora
 - historicos reales de `dev/records/`
 - `state/`, `logs/`, `sessions/`, `content/`, `reports/`
 - settings locales como `.claude/settings.local.json`
@@ -230,26 +230,26 @@ Instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera
 
 ---
 
-## Flujo de sincronizacion con Kiminion
+## Flujo de sincronizacion con repos consumidores
 
 Modelo recomendado:
 
 1. Mejorar lo reusable en `GobernanzaIA`.
 2. Publicar una version o snapshot limpio del baseline.
-3. Reimportarlo en `Kiminion` o en otro repo consumidor con
+3. Reimportarlo en un repo consumidor con
    `bootstrap_governance.py`.
 4. Mantener en cada proyecto solo overlays locales y `dev/records/` propios.
 
 Regla operativa:
 
 - si una mejora es reusable, nace o se promociona a `GobernanzaIA`
-- si es especifica del runtime de `Kiminion`, se queda en `Kiminion`
+- si es especifica del runtime de un producto, se queda en ese repo consumidor
 
-Ejemplo de reimportacion en `Kiminion`:
+Ejemplo de reimportacion en un repo consumidor:
 
 ```bash
 python scripts/migration/bootstrap_governance.py \
-  --target <ruta_kiminion> \
+  --target <ruta_repo_consumidor> \
   --force \
   --with-ia codex \
   --with-ia claude \
@@ -279,7 +279,7 @@ Segun packs:
 
 ## FAQ
 
-### Esto sustituye el runtime de Kiminion
+### Esto sustituye el runtime de una aplicacion de producto
 
 No. `GobernanzaIA` solo contiene gobernanza reusable y tooling asociado.
 
@@ -293,6 +293,6 @@ trabajo y auditoria separados.
 No. Solo dejan constancia de tooling instalado. La designacion real de
 `motor_activo` y `motor_auditor` sigue siendo explicita por usuario.
 
-### Puedo usarlo fuera de Kiminion
+### Puedo usarlo fuera del repo donde nacio originalmente
 
 Si. Esa es precisamente la finalidad del baseline.

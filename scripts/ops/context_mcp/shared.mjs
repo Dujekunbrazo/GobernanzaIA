@@ -31,8 +31,10 @@ export const GOVERNANCE_EXCLUDE = [
 ];
 
 export const SYMDEX_INCLUDE = [
+  "src",
   "core",
-  "integrations/MCP-Microsoft-Office/src",
+  "app",
+  "packages",
   "scripts",
   "tests",
   "manifests"

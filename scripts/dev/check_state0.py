@@ -17,7 +17,7 @@ ROOT_REQUIRED_DIRS = {
 ROOT_OPTIONAL_DIRS = {"doc"}
 
 RUNBOOK_ACTIVE_ALLOWED = {"README.md", "REGISTRY.md"}
-SCRIPTS_ROOT_ALLOWED = {"README.md", "export_incident.py", "bitacora_append.py"}
+SCRIPTS_ROOT_ALLOWED = {"README.md", "bitacora_append.py"}
 
 
 def check_root(errors, warnings):

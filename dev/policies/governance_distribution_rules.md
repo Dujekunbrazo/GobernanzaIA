@@ -6,7 +6,7 @@ entre el repositorio canónico de baseline y los repositorios consumidores.
 ## 1) Repositorio canónico
 
 - `GobernanzaIA` es la fuente canónica del baseline reusable.
-- Los repositorios de producto, como `Kiminion`, consumen ese baseline.
+- Los repositorios de producto consumen ese baseline.
 - `dev/records/` nunca se exporta como histórico entre repositorios.
 
 ## 2) Separación de responsabilidades
@@ -41,7 +41,7 @@ entre el repositorio canónico de baseline y los repositorios consumidores.
 
 1. Trabajar la mejora reusable en `GobernanzaIA`.
 2. Validar y versionar el baseline en `GobernanzaIA`.
-3. Reimportar en `Kiminion` con `bootstrap_governance.py --force`.
+3. Reimportar en el repo consumidor con `bootstrap_governance.py --force`.
 4. Revisar el diff del consumidor y validar sus gates locales.
 
 ## 6) Excepciones

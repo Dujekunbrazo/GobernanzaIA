@@ -284,8 +284,10 @@ Uso operativo:
 
 Usar `SymDex` solo para código vivo:
 
+- `src/`
 - `core/`
-- `integrations/MCP-Microsoft-Office/src/`
+- `app/`
+- `packages/`
 - `scripts/`
 - `tests/`
 - `manifests/`

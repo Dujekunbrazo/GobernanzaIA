@@ -156,8 +156,10 @@ La recuperación de gobernanza debe ser híbrida:
 
 Incluir:
 
+- `src/`
 - `core/`
-- `integrations/MCP-Microsoft-Office/src/`
+- `app/`
+- `packages/`
 - `scripts/`
 - `tests/`
 - `manifests/`

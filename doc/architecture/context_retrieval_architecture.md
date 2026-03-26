@@ -71,8 +71,10 @@ Implementación operativa local:
 
 Incluir:
 
+- `src/`
 - `core/`
-- `integrations/MCP-Microsoft-Office/src/`
+- `app/`
+- `packages/`
 - `scripts/`
 - `tests/`
 - `manifests/`

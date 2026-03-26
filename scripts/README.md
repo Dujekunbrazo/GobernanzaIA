@@ -11,27 +11,7 @@ Reglas:
 - No dejar scripts nuevos sueltos en `scripts/` (excepto wrappers de compatibilidad).
 - Los scripts deben resolver paths contra el repo y no depender del `cwd`.
 
-## Script operativo actual
-
-### Export incident bundle
-
-Ruta canónica:
-- `scripts/ops/export_incident.py`
-
-Wrapper de compatibilidad:
-- `scripts/export_incident.py`
-
-Uso:
-
-```bash
-python scripts/export_incident.py <trace_id>
-```
-
-Opciones avanzadas:
-
-```bash
-python scripts/ops/export_incident.py <trace_id> --log-file logs/kiminion_trace.jsonl --output-dir reports/incidents
-```
+## Scripts operativos actuales
 
 ### Bitacora diaria por IA
 
@@ -73,23 +53,6 @@ Uso:
 
 ```bash
 python scripts/dev/check_state0.py
-```
-
-### Smoke baseline chat + memoria
-
-Script canónico:
-- `scripts/dev/smoke_chat_memory.py`
-
-Uso local (sin red):
-
-```bash
-python scripts/dev/smoke_chat_memory.py
-```
-
-Uso completo (incluye llamada real a Kimi):
-
-```bash
-python scripts/dev/smoke_chat_memory.py --probe-api
 ```
 
 ### Governance bootstrap (repos nuevos)
@@ -143,7 +106,7 @@ Reglas:
 - `codex` y `gemini` existen como packs explícitos de perfil multi-IA, aunque hoy no añaden superficie raíz adicional porque su capa normativa ya viaja en `core` dentro de `dev/ai/adapters/`.
 - `roo` instala solo reglas Markdown reusables; no instala `.roo/mcp.json`.
 - `governance_search` instala el MCP local de retrieval de gobernanza, ejecuta instalación `npm` en `scripts/ops/context_mcp` y, si también se instala `roo`, añade `governance_retrieval` a `.roo/mcp.json`.
-- `symdex` no copia código desde `Kiminion`: instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera `.symdexignore` y, si también se instala `roo`, prepara `.roo/mcp.json` con `uvx --from <source> symdex serve`.
+- `symdex` no copia código desde un repo consumidor: instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera `.symdexignore` y, si también se instala `roo`, prepara `.roo/mcp.json` con `uvx --from <source> symdex serve`.
 - `roo + symdex` exige `uvx` en el entorno destino para que el wiring MCP funcione.
 - El instalador exige un perfil de al menos dos IAs y una preferencia separada para trabajo y auditoría.
 - Ese perfil se guarda en `dev/governance_baseline.json` como metadata de instalación; no asigna `motor_activo` ni `motor_auditor` por defecto.
@@ -183,7 +146,7 @@ Con wiring Roo:
 python scripts/ops/install_symdex.py --repo-root <ruta_repo_destino> --write-roo-mcp
 ```
 
-### Trabajo en `GobernanzaIA` y reimportación en `Kiminion`
+### Trabajo en `GobernanzaIA` y reimportación en repos consumidores
 
 Flujo recomendado:
 
@@ -192,8 +155,8 @@ Flujo recomendado:
 2. Desde ese repo fuente, ejecutar:
 
 ```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_kiminion> --force --with-ia codex --with-ia claude --with-ia roo --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search --include-pack symdex
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_consumidor> --force --with-ia codex --with-ia claude --with-ia roo --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search --include-pack symdex
 ```
 
-3. Revisar el diff en `Kiminion` y validar gates locales.
+3. Revisar el diff en el repo consumidor y validar sus gates locales.
 
