@@ -1,8 +1,9 @@
 """
-Install governance retrieval MCP support and optional Roo wiring.
+Install governance retrieval MCP support and optional MCP wiring.
 
 Usage:
     python scripts/ops/install_governance_mcp.py --repo-root <path>
+    python scripts/ops/install_governance_mcp.py --repo-root <path> --write-root-mcp
     python scripts/ops/install_governance_mcp.py --repo-root <path> --write-roo-mcp
 """
 
@@ -13,7 +14,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from roo_mcp_config import upsert_roo_server
+from roo_mcp_config import upsert_root_server, upsert_roo_server
 
 
 TOOLS = ("governance_search", "governance_scope")
@@ -33,6 +34,11 @@ def parse_args() -> argparse.Namespace:
         choices=("auto", "npm", "none"),
         default="auto",
         help="Dependency installer strategy for scripts/ops/context_mcp.",
+    )
+    parser.add_argument(
+        "--write-root-mcp",
+        action="store_true",
+        help="Generate or merge .mcp.json with governance retrieval server wiring.",
     )
     parser.add_argument(
         "--write-roo-mcp",
@@ -78,6 +84,30 @@ def install_dependencies(repo_root: Path, installer: str, dry_run: bool, force: 
     return "none"
 
 
+def governance_server_config() -> dict:
+    return {
+        "type": "stdio",
+        "command": "node",
+        "args": ["scripts/ops/context_mcp/governance_retrieval_server.mjs"],
+        "alwaysAllow": list(TOOLS),
+    }
+
+
+def ensure_root_mcp(repo_root: Path, force: bool, dry_run: bool) -> None:
+    if not dry_run and shutil.which("node") is None:
+        raise RuntimeError(
+            "Root MCP wiring for governance_search requires node in PATH. Install Node or omit --write-root-mcp."
+        )
+
+    upsert_root_server(
+        repo_root=repo_root,
+        server_name="governance_retrieval",
+        server_config=governance_server_config(),
+        force=force,
+        dry_run=dry_run,
+    )
+
+
 def ensure_roo_mcp(repo_root: Path, force: bool, dry_run: bool) -> None:
     if not dry_run and shutil.which("node") is None:
         raise RuntimeError(
@@ -87,12 +117,7 @@ def ensure_roo_mcp(repo_root: Path, force: bool, dry_run: bool) -> None:
     upsert_roo_server(
         repo_root=repo_root,
         server_name="governance_retrieval",
-        server_config={
-            "type": "stdio",
-            "command": "node",
-            "args": ["scripts/ops/context_mcp/governance_retrieval_server.mjs"],
-            "alwaysAllow": list(TOOLS),
-        },
+        server_config=governance_server_config(),
         force=force,
         dry_run=dry_run,
     )
@@ -112,6 +137,9 @@ def main() -> int:
     )
     print(f"Installer used: {chosen_installer}")
 
+    if args.write_root_mcp:
+        ensure_root_mcp(repo_root=repo_root, force=args.force, dry_run=args.dry_run)
+
     if args.write_roo_mcp:
         ensure_roo_mcp(repo_root=repo_root, force=args.force, dry_run=args.dry_run)
 
@@ -119,6 +147,7 @@ def main() -> int:
     print("-------------------------------")
     print(f"Repo root: {repo_root}")
     print(f"Installer: {chosen_installer}")
+    print(f"Root MCP wiring: {'yes' if args.write_root_mcp else 'no'}")
     print(f"Roo MCP wiring: {'yes' if args.write_roo_mcp else 'no'}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")
     return 0

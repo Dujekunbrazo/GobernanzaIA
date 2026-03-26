@@ -3,6 +3,7 @@ Install SymDex from its official GitHub repository and prepare optional local wi
 
 Usage:
     python scripts/ops/install_symdex.py --repo-root <path>
+    python scripts/ops/install_symdex.py --repo-root <path> --write-root-mcp
     python scripts/ops/install_symdex.py --repo-root <path> --write-roo-mcp
 """
 
@@ -14,7 +15,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from roo_mcp_config import upsert_roo_server
+from roo_mcp_config import upsert_root_server, upsert_roo_server
 
 
 DEFAULT_SOURCE = "git+https://github.com/husnainpk/SymDex.git"
@@ -78,6 +79,11 @@ def parse_args() -> argparse.Namespace:
         choices=("auto", "uv", "pip", "none"),
         default="auto",
         help="Runtime installer strategy. Defaults to auto.",
+    )
+    parser.add_argument(
+        "--write-root-mcp",
+        action="store_true",
+        help="Generate .mcp.json wired to SymDex over uvx.",
     )
     parser.add_argument(
         "--write-roo-mcp",
@@ -157,6 +163,31 @@ def ensure_symdexignore(repo_root: Path, force: bool, dry_run: bool) -> None:
     write_text_file(repo_root / ".symdexignore", content, force=force, dry_run=dry_run)
 
 
+def symdex_server_config(source: str) -> dict:
+    return {
+        "type": "stdio",
+        "command": "uvx",
+        "args": ["--from", source, "symdex", "serve"],
+        "env": {"SYMDEX_STATE_DIR": ".symdex"},
+        "alwaysAllow": list(SYMDEX_TOOLS),
+    }
+
+
+def ensure_root_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) -> None:
+    if not dry_run and shutil.which("uvx") is None:
+        raise RuntimeError(
+            "Root MCP wiring for SymDex requires uvx in PATH. Install uv or omit --write-root-mcp."
+        )
+
+    upsert_root_server(
+        repo_root=repo_root,
+        server_name="symdex_code",
+        server_config=symdex_server_config(source),
+        force=force,
+        dry_run=dry_run,
+    )
+
+
 def ensure_roo_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) -> None:
     if not dry_run and shutil.which("uvx") is None:
         raise RuntimeError(
@@ -165,14 +196,8 @@ def ensure_roo_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) -> 
 
     upsert_roo_server(
         repo_root=repo_root,
-        server_name="symdex",
-        server_config={
-            "type": "stdio",
-            "command": "uvx",
-            "args": ["--from", source, "symdex", "serve"],
-            "env": {"SYMDEX_STATE_DIR": ".symdex"},
-            "alwaysAllow": list(SYMDEX_TOOLS),
-        },
+        server_name="symdex_code",
+        server_config=symdex_server_config(source),
         force=force,
         dry_run=dry_run,
     )
@@ -195,6 +220,14 @@ def main() -> int:
 
     ensure_symdexignore(repo_root=repo_root, force=args.force, dry_run=args.dry_run)
 
+    if args.write_root_mcp:
+        ensure_root_mcp(
+            repo_root=repo_root,
+            source=args.source,
+            force=args.force,
+            dry_run=args.dry_run,
+        )
+
     if args.write_roo_mcp:
         ensure_roo_mcp(
             repo_root=repo_root,
@@ -208,6 +241,7 @@ def main() -> int:
     print(f"Repo root: {repo_root}")
     print(f"Source: {args.source}")
     print(f"Installer: {chosen_installer}")
+    print(f"Root MCP wiring: {'yes' if args.write_root_mcp else 'no'}")
     print(f"Roo MCP wiring: {'yes' if args.write_roo_mcp else 'no'}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")
     return 0

@@ -95,16 +95,16 @@ Uso no interactivo minimo (`core` + dos IAs):
 python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude
 ```
 
-Con `Roo` + `SymDex` externo desde GitHub:
+Con `SymDex` externo desde GitHub:
 
 ```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia roo --preferred-working-ia codex --preferred-auditor-ia roo --include-pack symdex
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude --include-pack symdex
 ```
 
-Con `Claude` + `Roo` + `governance_search` + `SymDex`:
+Con `Claude` + `Codex` + `governance_search` + `SymDex`:
 
 ```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia claude --with-ia roo --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search --include-pack symdex
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search --include-pack symdex
 ```
 
 Simulación sin escritura:
@@ -128,9 +128,9 @@ Reglas:
 - `claude` instala solo `CLAUDE.md`; no instala `.claude/settings.local.json`.
 - `codex` y `gemini` existen como packs explícitos de perfil multi-IA, aunque hoy no añaden superficie raíz adicional porque su capa normativa ya viaja en `core` dentro de `dev/ai/adapters/`.
 - `roo` instala solo reglas Markdown reusables; no instala `.roo/mcp.json`.
-- `governance_search` instala el MCP local de retrieval de gobernanza, ejecuta instalación `npm` en `scripts/ops/context_mcp` y, si también se instala `roo`, añade `governance_retrieval` a `.roo/mcp.json`.
-- `symdex` no copia código desde un repo consumidor: instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera `.symdexignore` y, si también se instala `roo`, prepara `.roo/mcp.json` con `uvx --from <source> symdex serve`.
-- `roo + symdex` exige `uvx` en el entorno destino para que el wiring MCP funcione.
+- `governance_search` instala el MCP local de retrieval de gobernanza, ejecuta instalación `npm` en `scripts/ops/context_mcp` y escribe `governance_retrieval` en `.mcp.json`. Si también se instala `roo`, añade además el mismo servidor a `.roo/mcp.json`.
+- `symdex` no copia código desde un repo consumidor: instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera `.symdexignore` y escribe `symdex_code` en `.mcp.json` con `uvx --from <source> symdex serve`. Si también se instala `roo`, añade además el mismo servidor a `.roo/mcp.json`.
+- `symdex` con wiring MCP exige `uvx` en el entorno destino.
 - El instalador exige un perfil de al menos dos IAs y una preferencia separada para trabajo y auditoría.
 - Ese perfil se guarda en `dev/governance_baseline.json` como metadata de instalación; no asigna `motor_activo` ni `motor_auditor` por defecto.
 - Toda instalación escribe metadata en `dev/governance_baseline.json`.
@@ -144,6 +144,12 @@ Uso:
 
 ```bash
 python scripts/ops/install_governance_mcp.py --repo-root <ruta_repo_destino>
+```
+
+Con wiring MCP raíz:
+
+```bash
+python scripts/ops/install_governance_mcp.py --repo-root <ruta_repo_destino> --write-root-mcp
 ```
 
 Con wiring Roo:
@@ -161,6 +167,12 @@ Uso:
 
 ```bash
 python scripts/ops/install_symdex.py --repo-root <ruta_repo_destino>
+```
+
+Con wiring MCP raíz:
+
+```bash
+python scripts/ops/install_symdex.py --repo-root <ruta_repo_destino> --write-root-mcp
 ```
 
 Con wiring Roo:

@@ -487,6 +487,7 @@ def run_post_copy_actions(
             symdex_source,
             "--installer",
             symdex_installer,
+            "--write-root-mcp",
         ]
         if "roo" in selected_packs:
             command.append("--write-roo-mcp")
@@ -508,6 +509,7 @@ def run_post_copy_actions(
         str(target_root),
         "--installer",
         governance_mcp_installer,
+        "--write-root-mcp",
     ]
     if "roo" in selected_packs:
         command.append("--write-roo-mcp")

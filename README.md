@@ -169,7 +169,6 @@ python scripts/migration/bootstrap_governance.py \
   --target <ruta_repo_destino> \
   --with-ia codex \
   --with-ia claude \
-  --with-ia roo \
   --preferred-working-ia codex \
   --preferred-auditor-ia claude \
   --include-pack governance_search \
@@ -181,8 +180,9 @@ python scripts/migration/bootstrap_governance.py \
 - baseline en el repo destino
 - `dev/governance_baseline.json` con metadata de instalacion
 - perfil multi-IA instalado
-- `governance_search` opcional con wiring MCP para `Roo`
+- `governance_search` opcional con wiring MCP en `.mcp.json`
 - `SymDex` opcional desde su GitHub oficial
+- `symdex_code` opcional con wiring MCP en `.mcp.json`
 
 Nota importante:
 
@@ -220,13 +220,15 @@ local del repo fuente.
 ### `governance_search`
 
 Instala el MCP local de retrieval de gobernanza y, si tambien se instala
-`roo`, fusiona `governance_retrieval` en `.roo/mcp.json`.
+fusiona `governance_retrieval` en `.mcp.json`. Si tambien se instala `roo`,
+añade el mismo servidor a `.roo/mcp.json`.
 
 ### `symdex`
 
 Instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera
-`.symdexignore` repo-agnostico y, si tambien se instala `roo`, fusiona
-`symdex` en `.roo/mcp.json` usando `uvx --from <source> symdex serve`.
+`.symdexignore` repo-agnostico y fusiona `symdex_code` en `.mcp.json` usando
+`uvx --from <source> symdex serve`. Si tambien se instala `roo`, añade el
+mismo servidor a `.roo/mcp.json`.
 
 ---
 
@@ -253,7 +255,6 @@ python scripts/migration/bootstrap_governance.py \
   --force \
   --with-ia codex \
   --with-ia claude \
-  --with-ia roo \
   --preferred-working-ia codex \
   --preferred-auditor-ia claude \
   --include-pack governance_search \
@@ -271,9 +272,9 @@ Base:
 Segun packs:
 
 - `governance_search`: `node` + `npm`
-- `roo + symdex`: `uv`/`uvx`
-- `symdex` sin `uv`: puede instalar runtime por `pip`, pero el wiring MCP de
-  `Roo` sigue requiriendo `uvx`
+- `symdex`: `uv`/`uvx` para wiring MCP en `.mcp.json` o `.roo/mcp.json`
+- `symdex` sin `uv`: puede instalar runtime por `pip`, pero el wiring MCP
+  sigue requiriendo `uvx`
 
 ---
 
