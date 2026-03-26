@@ -48,6 +48,7 @@ PACKS: dict[str, PackSpec] = {
             " scripts de enforcement y documentación reusable."
         ),
         files=(
+            Path(".gitignore"),
             Path("AGENTS.md"),
             Path("dev/workflow.md"),
             Path("dev/ai/README.md"),
