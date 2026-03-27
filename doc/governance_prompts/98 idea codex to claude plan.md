@@ -9,7 +9,7 @@ Actúa como `motor_activo` bajo la gobernanza canónica del repositorio.
 
 ## Herramientas y routing obligatorio
 - Gobernanza: usar `governance_search` y luego lectura canónica.
-- Código vivo: usar `symdex_search_code` y luego `symdex_read_code`.
+- Código vivo: usar `semantic_search` y luego `get_symbol` (via symdex_code).
 - No usar búsquedas o lecturas directas como vía principal si los MCP están disponibles.
 
 ## Modo operativo

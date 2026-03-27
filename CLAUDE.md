@@ -13,9 +13,11 @@ Si hay contradicción, prevalece `AGENTS.md`.
 - Si `governance_search` está disponible:
   - cualquier consulta de gobernanza debe empezar por `governance_search`
   - después puede hacerse lectura canónica puntual del archivo localizado
-- Si `symdex_search_code` y `symdex_read_code` están disponibles:
-  - cualquier consulta de código debe empezar por `symdex_search_code`
-  - después debe usarse `symdex_read_code` sobre el bloque relevante
+- Si `semantic_search` y `get_symbol` (via symdex_code) están disponibles:
+  - cualquier consulta de código debe empezar por `semantic_search`
+    (o `search_symbols`/`search_text`)
+  - después debe usarse `get_symbol` (o `get_file_outline`/`get_symbols`)
+    sobre el bloque relevante
 - `Glob`, `Globpattern`, `Grep`, `find`, `rg`, `Read` o `Bash` no cuentan como
   vía principal para gobernanza o código si el MCP correspondiente está
   disponible
@@ -36,7 +38,7 @@ En respuestas técnicas, Claude debe declarar explícitamente:
 Al inicio de sesión o tras recarga, Claude debe comprobar si están disponibles:
 
 - `governance_search`
-- `symdex_search_code`
-- `symdex_read_code`
+- `semantic_search` (via symdex_code)
+- `get_symbol` (via symdex_code)
 
 Si no están disponibles, debe declararlo antes de continuar.

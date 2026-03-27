@@ -12,7 +12,7 @@ Objetivo: implementar cambios de forma segura siguiendo el SOP.
 3) Sigue estrictamente `dev/workflow.md` (`F6`).
 4) Respeta `dev/guarantees/implementation_gate.md`.
 5) Este modo no define un rol oficial de gobernanza; el rol válido es `motor_activo`.
-6) Para código vivo, usa `symdex_search_code` y luego `symdex_read_code`.
+6) Para código vivo, usa `semantic_search` y luego `get_symbol` (via symdex_code).
 7) Para dudas de workflow, gates, prompts o adapters, usa `governance_search`
    antes de cualquier lectura directa.
 8) Declara herramienta usada y fuente canónica usada en cada respuesta

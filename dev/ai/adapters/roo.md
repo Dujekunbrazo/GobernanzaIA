@@ -12,19 +12,19 @@
 - Usar `SymDex` solo para código vivo; no para gobernanza textual.
 - Para gobernanza dinámica, usar `governance_search` con filtros por `phase`,
   `document_type` y `motor`.
-- Para código vivo, usar `symdex_search_code` y `symdex_read_code`.
+- Para código vivo, usar `semantic_search` y `get_symbol` (via symdex_code).
 - Mantener `SymDex` como vía principal para búsqueda de código vivo y evitar
   búsquedas textuales amplias salvo fallback operativo.
 - Routing obligatorio:
   - consulta de gobernanza -> `governance_search` y luego lectura canónica
-  - consulta de código -> `symdex_search_code` y luego `symdex_read_code`
+  - consulta de código -> `semantic_search` y luego `get_symbol` (via symdex_code)
 - No sustituir ese routing por tools internas salvo bloqueo declarado con
   evidencia.
 - En cada respuesta técnica, declarar herramienta usada y fuente canónica usada.
 - No usar `dev/records/initiatives/` como fuente principal de proceso si existe
   fuente canónica en `dev/`.
 - Al inicio de sesión o tras recarga, comprobar si están disponibles
-  `governance_search`, `symdex_search_code` y `symdex_read_code`; si no lo
+  `governance_search`, `semantic_search` y `get_symbol` (via symdex_code); si no lo
   están, declarar limitación operativa.
 - Si una auditoría formal (`F3`, `F5` o `F7`) va a ejecutarse en Roo, preguntar
   explícitamente al usuario si desea cambiar de API/modelo antes de iniciar la

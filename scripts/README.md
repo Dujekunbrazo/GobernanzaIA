@@ -56,6 +56,30 @@ Filtrando por IA y fase:
 python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-03-26_demo --phase F9
 ```
 
+### Ping-pong de gobernanza M4
+
+Ruta canonica:
+- `scripts/dev/governance_ping_pong.py`
+- `scripts/dev/governance_ping_pong_launcher.bat`
+
+Uso base:
+
+```bash
+python scripts/dev/governance_ping_pong.py init --initiative-id 2026-03-27_demo --with-handoff
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-03-27_demo --motor-auditor codex
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+```
+
+El script automatiza los bucles `F1 <-> F3`, `F4 <-> F5` y `F6 <-> F7`, y se
+detiene en los checkpoints manuales `F2` y `F8`.
+
+La metadata `Rama` se reserva desde `F1`, pero la rama `initiative/...` se
+crea o se activa al iniciar `F6`.
+
+En Windows existe tambien un launcher `.bat` pensado para accesos directos por
+repo consumidor.
+
 ### Naming compliance
 
 Script canónico:

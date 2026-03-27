@@ -338,9 +338,9 @@ Excluir:
 
 Uso operativo:
 
-- consultar `symdex_search_code` para localizar código vivo por intención,
+- consultar `semantic_search` (via symdex_code) para localizar código vivo por intención,
   símbolo o runtime
-- consultar `symdex_read_code` para leer el bloque concreto después de la
+- consultar `get_symbol` (via symdex_code) para leer el bloque concreto después de la
   búsqueda
 - no usar `SymDex` para workflow, policies, logs, records o bitácora
 

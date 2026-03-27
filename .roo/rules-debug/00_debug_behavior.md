@@ -23,8 +23,8 @@ El rol oficial de gobernanza sigue siendo `motor_activo`.
 4) No mezclar fix con refactor.
 5) Si la consulta es de gobernanza, usar `governance_search` antes de cualquier
    lectura directa.
-6) Si la consulta es de código vivo, usar `symdex_search_code` y luego
-   `symdex_read_code`.
+6) Si la consulta es de código vivo, usar `semantic_search` y luego
+   `get_symbol` (via symdex_code).
 7) Declarar herramienta usada y fuente canónica usada en cada respuesta
    técnica.
 8) Si faltan MCPs activos, declarar limitación operativa.
@@ -37,7 +37,7 @@ El rol oficial de gobernanza sigue siendo `motor_activo`.
 - Declarar el modo operativo si no está claro.
 - Resumir el problema en 1–3 frases.
 - Si la sesión acaba de arrancar o se ha recargado, confirma si están activos
-  `governance_search`, `symdex_search_code` y `symdex_read_code`.
+  `governance_search`, `semantic_search` y `get_symbol` (via symdex_code).
 - Si Roo va a intervenir como canal de auditoría en `F7`, pregunta antes si el
   usuario desea mantener o cambiar la API/modelo para esa auditoría.
 - Identificar qué información falta, si aplica.

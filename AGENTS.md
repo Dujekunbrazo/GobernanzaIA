@@ -164,7 +164,7 @@ La recuperación de gobernanza debe ser híbrida:
 - herramienta operativa: `governance_search`
 - routing obligatorio:
   - consulta de gobernanza -> `governance_search` y luego lectura canónica
-  - consulta de código -> `symdex_search_code` y luego `symdex_read_code`
+  - consulta de código -> `semantic_search` y luego `get_symbol` (via symdex_code)
 - `Glob`, `Globpattern`, `Grep`, `find`, `rg` o lecturas directas no cuentan
   como vía principal si el MCP correspondiente está disponible
 - herramientas internas solo como fallback si el MCP falla, no está expuesto o
@@ -193,9 +193,9 @@ Excluir:
 - `sessions`
 - `content`
 - gobernanza y artefactos históricos
-- herramientas operativas:
-  - `symdex_search_code`
-  - `symdex_read_code`
+- herramientas operativas (via symdex_code):
+  - `semantic_search`, `search_symbols`, `search_text`
+  - `get_symbol`, `get_file_outline`, `get_symbols`
 - en respuestas técnicas se debe declarar herramienta usada y fuente canónica
   usada
 

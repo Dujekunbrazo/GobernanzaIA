@@ -13,7 +13,7 @@
 - Si Codex es `motor_auditor`, auditar en `F3`, `F5` y `F7`.
 - Para gobernanza dinámica, usar `governance_search` con filtros por `phase`,
   `document_type` y `motor` antes de cargar documentos completos.
-- Para código vivo, usar `symdex_search_code` y luego `symdex_read_code`.
+- Para código vivo, usar `semantic_search` y luego `get_symbol` (via symdex_code).
 - Mantener `SymDex` como vía principal para búsqueda de código vivo y evitar
   búsquedas textuales amplias salvo fallback operativo.
 - En auditorías, registrar como `hallazgos` solo problemas materiales.

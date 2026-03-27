@@ -95,9 +95,9 @@ Excluir:
 Implementación operativa local:
 
 - servidor MCP: `scripts/ops/context_mcp/symdex_code_server.mjs`
-- herramientas MCP:
-  - `symdex_search_code`
-  - `symdex_read_code`
+- herramientas MCP (via symdex_code):
+  - `semantic_search`, `search_symbols`, `search_text`
+  - `get_symbol`, `get_file_outline`, `get_symbols`
 - índice persistente: `state/context_retrieval/symdex_code_index.json`
 
 ## Routing de consultas
@@ -105,7 +105,7 @@ Implementación operativa local:
 - si la consulta pide workflow, gates, prompts, templates, adapters o
   arquitectura, consultar `governance_search`
 - si la consulta pide runtime, símbolos, tests o navegación de código,
-  consultar `symdex_search_code`
+  consultar `semantic_search` (via symdex_code)
 - si hay ambigüedad, cargar el documento/fichero canónico correspondiente
 
 ## Motores

@@ -37,7 +37,7 @@ Propósito:
   - `dev/policies/exception_rules.md`
   - `exception_record.md` de la iniciativa si existe
 - Código vivo:
-  - `symdex_search_code` y luego `symdex_read_code`
+  - `semantic_search` y luego `get_symbol` (via symdex_code)
   - evitar `rg` o lecturas amplias salvo fallback operativo real
 - Cierre documental:
   - `dev/guarantees/docs_gate.md`
