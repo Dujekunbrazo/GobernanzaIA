@@ -27,7 +27,7 @@ El usuario designa el motor según disponibilidad y contexto.
 - `M1 ANALISIS`: análisis técnico sin cambios de código.
 - `M2 DEBUG`: diagnóstico sin fix.
 - `M3 IMPLEMENTACION_MENOR`: cambio acotado y trazable.
-- `M4 INICIATIVA_COMPLETA`: pipeline formal `F1-F9`.
+- `M4 INICIATIVA_COMPLETA`: pipeline formal `F1-F10`.
 
 Reglas:
 
@@ -65,11 +65,12 @@ Artefactos opcionales:
 - `baseline_freeze.md`
 - `capability_closure.md`
 - `exception_record.md`
+- `real_validation.md`
 
 ## Protocolo operativo M3
 
 Objetivo:
-- ejecutar un cambio acotado y trazable sin abrir pipeline `F1-F9`.
+- ejecutar un cambio acotado y trazable sin abrir pipeline `F1-F10`.
 
 Secuencia mínima:
 1. `ask.md` con alcance, no-alcance, evidencia y criterio de aceptación.
@@ -116,7 +117,7 @@ Reglas:
 - `handoff.md` es el artefacto primogénito opcional de apertura de una
   iniciativa `M4`
 - no sustituye `ask.md` ni `plan.md`
-- no autoriza planificar ni implementar fuera de `F1-F9`
+- no autoriza planificar ni implementar fuera de `F1-F10`
 - si existe, `F1` debe derivar el Ask desde ese artefacto
 - si existe, `F4` debe derivar el Plan desde ese artefacto y justificar
   cualquier delta material respecto al handoff
@@ -192,7 +193,42 @@ Restricciones:
 - si la initiative tocó una capability transversal, `post_audit.md` y
   `closeout.md` deben ser consistentes con `capability_closure.md`
 
-### F8 — Docs + cierre
+### F8 — Validación real guiada
+
+Aplica cuando la iniciativa modifica comportamiento observable del producto,
+UX verificable en ejecución o integración real que deba probarse en Kiminion
+o superficie equivalente.
+
+Salida:
+- `real_validation.md`
+
+Objetivo:
+- ejecutar un barrido real completo antes de volver a tocar código
+- consolidar todos los hallazgos de pruebas reales en un único artefacto
+- decidir con evidencia si la iniciativa está apta para `F9` o si debe
+  reabrirse `F6`
+
+Reglas:
+
+- no es una auditoría formal nueva; no emite `PASS` o `FAIL`
+- si no aplica, debe trazarse explícitamente como `NO_APLICA`
+- el `motor_activo` prepara el script de pruebas real usando
+  `dev/prompts/real_validation.md`
+- cada caso probado debe registrar:
+  - frase o acción
+  - criterio o CA cubierto
+  - esperado
+  - observado
+  - resultado `PASS` / `FAIL` / `BLOQUEADO`
+  - evidencia de logs, traces o resultados visibles
+- durante el barrido no se modifica código tras el primer fallo material,
+  salvo bloqueo crítico que impida seguir
+- si hay fallos materiales, se consolida el artefacto y se reabre `F6`
+- si tras la reapertura hay cambios, deben repetirse `F7` y `F8` antes de `F9`
+- `F9` solo puede empezar cuando `real_validation.md` declare
+  `Decisión final: APTA_PARA_F9`
+
+### F9 — Docs + cierre
 
 - actualizar docs incrementalmente
 - confirmar gates en verde
@@ -201,7 +237,7 @@ Restricciones:
 Salida:
 - `closeout.md`
 
-### F9 — Lecciones finales
+### F10 — Lecciones finales
 
 Salida:
 - `lessons_learned.md`
@@ -284,10 +320,8 @@ Uso operativo:
 
 Usar `SymDex` solo para código vivo:
 
-- `src/`
 - `core/`
-- `app/`
-- `packages/`
+- `integrations/MCP-Microsoft-Office/src/`
 - `scripts/`
 - `tests/`
 - `manifests/`

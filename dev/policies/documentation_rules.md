@@ -22,9 +22,9 @@ Estas reglas son obligatorias para cualquier IA y cualquier contribución humana
 ## 4) Estado documental por iniciativa
 
 Cada iniciativa debe cerrar con:
-- `closeout.md` (cierre de ejecución/documentación en `F8`)
-- `lessons_learned.md` (lecciones finales en `F9`)
-- estado de fases F1-F9
+- `closeout.md` (cierre de ejecución/documentación en `F9`)
+- `lessons_learned.md` (lecciones finales en `F10`)
+- estado de fases F1-F10
 - evidencia de gates en verde o bloqueos aceptados explícitamente
 
 ## 5) Runbooks heredados

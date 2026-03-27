@@ -35,7 +35,7 @@ cerrado, trazable y auditable.
 El baseline actual prioriza:
 
 - `AGENTS.md` como contrato universal y fuente primaria de verdad.
-- Workflow canonico `M0-M4` y pipeline formal `F1-F9`.
+- Workflow canonico `M0-M4` y pipeline formal `F1-F10`.
 - Gates de proceso reutilizables para `ask`, `plan`, `implementacion` y
   `docs`.
 - Adaptadores por motor para `Codex`, `Claude`, `Gemini` y `Roo`.

@@ -4,9 +4,9 @@
 - Toda regla de Roo debe apuntar a `AGENTS.md` y `dev/workflow.md`.
 - Cargar antes `dev/policies/governance_manifest.md` como manifiesto corto de
   routing y carga mínima.
-- Los modos nativos de Roo no redefinen `M0-M4` ni `F1-F9`.
+- Los modos nativos de Roo no redefinen `M0-M4` ni `F1-F10`.
 - Los modos nativos `Ask/Architect/Code/Debug/Orchestrator` son solo una piel
-  de producto; el proceso real sigue siendo `M0-M4` y `F1-F9`.
+  de producto; el proceso real sigue siendo `M0-M4` y `F1-F10`.
 - Roo puede actuar como `motor_activo` o `motor_auditor` solo si el usuario lo designa explícitamente.
 - Usar la capa estática mínima siempre presente y recuperar gobernanza bajo demanda.
 - Usar `SymDex` solo para código vivo; no para gobernanza textual.

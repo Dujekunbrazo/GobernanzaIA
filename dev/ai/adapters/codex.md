@@ -20,7 +20,7 @@
 - En auditorías, mover el ruido editorial o cosmético a `observaciones`.
 - No promover congelado/cierre si el resultado de auditoría es `FAIL`.
 - Usar solo terminología activa: `motor_activo` y `motor_auditor`.
-- En cierres Git (`F8/F9`) con historial de `Permission denied` en `.git`,
+- En cierres Git (`F9/F10`) con historial de `Permission denied` en `.git`,
   pedir permisos efectivos al inicio del bloque de cierre y evitar reintentos
   en bucle de `git add/commit/push`.
 - Registrar bitácora tras cada respuesta final con:

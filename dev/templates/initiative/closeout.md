@@ -17,7 +17,7 @@
 - exception_open: yes | no
 - capability_closure_verified: yes | no | n/a
 
-## Fases completadas (F1-F9)
+## Fases completadas (F1-F10)
 
 ## Gates
 

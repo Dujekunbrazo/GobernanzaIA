@@ -121,7 +121,7 @@ def parse_args(argv):
     parser.add_argument("--respuesta", help="AI response")
     parser.add_argument("--respuesta-file", default="", help="Read AI response from file")
     parser.add_argument("--initiative-id", default="", help="Optional initiative id")
-    parser.add_argument("--phase", default="", help="Optional phase (F1..F9)")
+    parser.add_argument("--phase", default="", help="Optional phase (F1..F10)")
     parser.add_argument(
         "--output-dir",
         default=str(DEFAULT_OUTPUT_DIR),

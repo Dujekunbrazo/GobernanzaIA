@@ -45,7 +45,7 @@ python scripts/dev/check_bitacora_compliance.py --initiative-id 2026-03-26_demo
 Filtrando por IA y fase:
 
 ```bash
-python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-03-26_demo --phase F8
+python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-03-26_demo --phase F9
 ```
 
 ## check_exception_record.py
