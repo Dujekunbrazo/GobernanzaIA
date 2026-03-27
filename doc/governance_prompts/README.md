@@ -16,7 +16,7 @@ La idea es simple:
 ## Orden de uso
 
 1. `00_abrir_m4_y_handoff.md`
-2. `01_m4_f1_ask.md`
+2. `01_f1_ask.md`
 3. `02_f2_validacion_ask.md`
 4. `03_f3_auditoria_ask.md`
 5. `04_f4_plan.md`
@@ -24,8 +24,14 @@ La idea es simple:
 7. `06_f6_ejecucion.md`
 8. `07_f7_post_auditoria.md`
 9. `08_f8_validacion_real_guiada.md`
-10. `09_f9_cierre.md`
-11. `10_f10_lecciones.md`
+10. `09_f9_f10_cierre_y_lecciones.md`
+
+## Prompts especiales
+
+- `96 handoff codex audit.md`
+- `97 idea codex.md`
+- `98 idea codex to claude plan.md`
+- `99 prompt plan a codex.md`
 
 ## Regla rápida
 
@@ -35,8 +41,7 @@ La idea es simple:
 - `F6`: `execution.md`
 - `F7`: `post_audit.md`
 - `F8`: `real_validation.md` cuando aplica
-- `F9`: `closeout.md`
-- `F10`: `lessons_learned.md`
+- `F9/F10`: `closeout.md` + `lessons_learned.md`
 
 ## Regla operativa
 

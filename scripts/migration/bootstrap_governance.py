@@ -31,6 +31,21 @@ IA_PACKS = {
     "roo": "roo",
 }
 MANIFEST_PATH = Path("dev/governance_baseline.json")
+PRESERVE_IF_EXISTS = {
+    Path(".gitignore"),
+    Path("dev/logs/decisions.md"),
+}
+REMOVE_ON_FORCE_IF_EXISTS = {
+    Path("doc/governance_prompts/01_m4_f1_ask.md"),
+    Path("doc/governance_prompts/07b_validacion_real_guiada.md"),
+    Path("doc/governance_prompts/08_f8_cierre.md"),
+    Path("doc/governance_prompts/08_f8_f9_cierre y lecciones.md"),
+    Path("doc/governance_prompts/09_f9_cierre.md"),
+    Path("doc/governance_prompts/09_f9_f10_cierre y lecciones.md"),
+    Path("doc/governance_prompts/09_f9_lecciones.md"),
+    Path("doc/governance_prompts/10_f10_lecciones.md"),
+    Path("doc/governance_prompts/97 handoff codex audit.md"),
+}
 
 
 @dataclass(frozen=True)
@@ -60,6 +75,7 @@ PACKS: dict[str, PackSpec] = {
             Path("dev/records/initiatives/.gitkeep"),
             Path("doc/architecture/ai_engineering_dossier.md"),
             Path("doc/architecture/context_retrieval_architecture.md"),
+            Path("doc/governance_prompts/README.md"),
             Path("scripts/README.md"),
             Path("scripts/ops/bitacora_append.py"),
             Path("scripts/ops/roo_mcp_config.py"),
@@ -72,6 +88,7 @@ PACKS: dict[str, PackSpec] = {
             Path("scripts/dev/initiative_preflight.py"),
             Path("scripts/bitacora_append.py"),
             Path("scripts/migration/bootstrap_governance.py"),
+            Path("scripts/migration/sync_governance_consumers.py"),
         ),
         globs=(
             (Path("dev/guarantees"), "*.md", False),
@@ -79,6 +96,7 @@ PACKS: dict[str, PackSpec] = {
             (Path("dev/prompts"), "*.md", False),
             (Path("dev/ai/adapters"), "*.md", False),
             (Path("dev/templates/initiative"), "*.md", False),
+            (Path("doc/governance_prompts"), "*.md", False),
         ),
     ),
     "claude": PackSpec(
@@ -114,7 +132,10 @@ PACKS: dict[str, PackSpec] = {
             "Instala SymDex desde su GitHub oficial y prepara .symdexignore "
             "mas wiring MCP opcional para Roo."
         ),
-        files=(Path("scripts/ops/install_symdex.py"),),
+        files=(
+            Path("scripts/ops/install_symdex.py"),
+            Path("scripts/ops/run_symdex_mcp.py"),
+        ),
         post_copy_actions=("install_symdex",),
     ),
     "governance_search": PackSpec(
@@ -176,6 +197,11 @@ def copy_sources(sources: list[Path], target_root: Path, force: bool, dry_run: b
         rel = src.relative_to(REPO_ROOT)
         dst = target_root / rel
 
+        if rel in PRESERVE_IF_EXISTS and dst.exists():
+            skipped += 1
+            print(f"SKIP (preserve local): {rel}")
+            continue
+
         if dst.exists() and not force:
             skipped += 1
             print(f"SKIP (exists): {rel}")
@@ -193,6 +219,26 @@ def copy_sources(sources: list[Path], target_root: Path, force: bool, dry_run: b
         print(f"COPIED: {rel}")
 
     return copied, skipped
+
+
+def prune_obsolete_files(target_root: Path, force: bool, dry_run: bool) -> int:
+    if not force:
+        return 0
+
+    removed = 0
+    for rel in sorted(REMOVE_ON_FORCE_IF_EXISTS):
+        dst = target_root / rel
+        if not dst.exists():
+            continue
+        if dry_run:
+            print(f"REMOVE: {rel}")
+            removed += 1
+            continue
+        dst.unlink()
+        removed += 1
+        print(f"REMOVED: {rel}")
+
+    return removed
 
 
 def parse_args() -> argparse.Namespace:
@@ -583,6 +629,11 @@ def main() -> int:
         force=args.force,
         dry_run=args.dry_run,
     )
+    removed = prune_obsolete_files(
+        target_root=target_root,
+        force=args.force,
+        dry_run=args.dry_run,
+    )
     run_post_copy_actions(
         selected_packs=selected_packs,
         target_root=target_root,
@@ -612,6 +663,7 @@ def main() -> int:
     print(f"Packs: {', '.join(selected_packs)}")
     print(f"Copied: {copied}")
     print(f"Skipped: {skipped}")
+    print(f"Removed obsolete: {removed}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")
 
     return 0
