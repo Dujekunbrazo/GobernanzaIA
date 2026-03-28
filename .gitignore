@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 .venv/
 .env
+.orchestrator_local/
+.tmp_governance_orchestrator_tests/

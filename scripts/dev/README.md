@@ -118,3 +118,29 @@ El launcher:
 - intenta localizar `codex` aunque no este en `PATH`
 - lista iniciativas del repo destino
 - permite `init`, `status`, `approve-f2`, `advance` y `advance --dry-run`
+
+Uso recomendado:
+
+- usar el launcher contra repos consumidores
+- evitar poblar `dev/records/initiatives/` en `GobernanzaIA`
+
+## governance_orchestrator.py
+
+Orquestador canónico por fases: `Codex` coordina desde el repo fuente y lanza
+`Claude` o `Codex` dentro del repo objetivo.
+
+Uso base:
+
+```bash
+python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id 2026-03-28_demo init-session
+python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id 2026-03-28_demo next-step
+python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id 2026-03-28_demo run-current-step
+```
+
+Puntos clave:
+
+- crea `.orchestrator_local/` en primer uso
+- guarda runtime local fuera del baseline exportable
+- trabaja una fase por comando
+- usa prompts `01-07` y prompts de remediación `13/15/17`
+- mantiene `F2` y `F8` como checkpoints humanos

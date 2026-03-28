@@ -33,6 +33,12 @@ La idea es simple:
 - `98 idea codex to claude plan.md`
 - `99 prompt plan a codex.md`
 
+## Prompts de remediacion
+
+- `13_f1_remediacion_ask.md`
+- `15_f4_remediacion_plan.md`
+- `17_f6_remediacion_ejecucion.md`
+
 ## Regla rápida
 
 - al abrir `M4`, antes de `F1`: `handoff.md`

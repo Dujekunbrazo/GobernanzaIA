@@ -80,6 +80,30 @@ crea o se activa al iniciar `F6`.
 En Windows existe tambien un launcher `.bat` pensado para accesos directos por
 repo consumidor.
 
+### Orquestador canónico por fases
+
+Ruta canonica:
+- `scripts/dev/governance_orchestrator.py`
+
+Uso base:
+
+```bash
+python scripts/dev/governance_orchestrator.py --target-repo <ruta_repo_consumidor> --initiative-id 2026-03-28_demo init-session
+python scripts/dev/governance_orchestrator.py --target-repo <ruta_repo_consumidor> --initiative-id 2026-03-28_demo run-current-step
+```
+
+Modelo:
+
+- `Codex@repo_fuente` orquesta
+- `Claude@repo_destino` actua como `motor_activo`
+- `Codex@repo_destino` actua como `motor_auditor`
+
+El runtime local del orquestador se crea automaticamente en:
+
+- `.orchestrator_local/`
+
+Esa carpeta es privada, no exportable y no forma parte del baseline reusable.
+
 ### Naming compliance
 
 Script canónico:

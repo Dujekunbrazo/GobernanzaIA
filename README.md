@@ -44,6 +44,7 @@ El baseline actual prioriza:
   `docs`.
 - Adaptadores por motor para `Codex`, `Claude`, `Gemini` y `Roo`.
 - Bootstrap oficial para instalar la gobernanza en repos nuevos.
+- Orquestador canónico por fases para separar ejecución, auditoría y runtime local.
 - Perfil multi-IA de instalacion con minimo dos IAs y preferencia separada de
   trabajo y auditoria.
 - Packs operativos opcionales para `governance_search` y `SymDex`.
@@ -80,6 +81,10 @@ El baseline no instala:
 - `state/`, `logs/`, `sessions/`, `content/`, `reports/`
 - settings locales como `.claude/settings.local.json`
 - wiring MCP legado o paths hardcodeados de otro repo
+
+El baseline puede crear runtime local en primer uso de ciertas utilidades
+canónicas. Ese runtime no forma parte del baseline exportable y se materializa
+solo en la máquina donde se ejecuta la herramienta.
 
 ---
 
