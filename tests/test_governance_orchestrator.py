@@ -53,6 +53,27 @@ class GovernanceOrchestratorTests(unittest.TestCase):
             finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 
+    def test_f4_remediation_prompt_does_not_include_pre00_prompt_99(self) -> None:
+        with self.make_tempdir() as repo_root:
+            (repo_root / ".git" / "info").mkdir(parents=True)
+            target_repo = repo_root / "target"
+            initiative_root = target_repo / "dev" / "records" / "initiatives" / "2026-03-28_demo"
+            initiative_root.mkdir(parents=True)
+            (initiative_root / "handoff.md").write_text("# handoff\n", encoding="utf-8")
+            (initiative_root / "ask.md").write_text("# ASK\n\n- Estado: CONGELADO\n", encoding="utf-8")
+            (initiative_root / "ask_audit.md").write_text("# ASK AUDIT\n\n- Veredicto: PASS\n", encoding="utf-8")
+            (initiative_root / "plan_audit.md").write_text("# PLAN AUDIT\n\n- Veredicto: FAIL\n", encoding="utf-8")
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                ctx = orch.build_session_context(target_repo, "2026-03-28_demo")
+                prompt = orch.build_prompt(ctx, "F4_REMEDIATION")
+                self.assertIn("15_f4_remediacion_plan", str(orch.base_prompt_file_for_phase("F4_REMEDIATION")))
+                self.assertNotIn("A continuación, el plan a analizar:", prompt)
+                self.assertNotIn("99 prompt plan a codex", prompt)
+            finally:
+                orch.ensure_local_runtime = original_ensure_runtime
+
     def test_snapshot_uses_ping_pong_state_machine(self) -> None:
         with self.make_tempdir() as repo_root:
             root = repo_root / "initiative"
@@ -171,6 +192,27 @@ class GovernanceOrchestratorTests(unittest.TestCase):
                 self.assertEqual(session["snapshot"]["next_step"], "RUN_F5")
             finally:
                 orch.gpp.TEMPLATE_ROOT = original_template_root
+                orch.ensure_local_runtime = original_ensure_runtime
+
+    def test_last_receipt_reads_latest_phase_receipt(self) -> None:
+        with self.make_tempdir() as repo_root:
+            (repo_root / ".git" / "info").mkdir(parents=True)
+            target_repo = repo_root / "target"
+            initiative_root = target_repo / "dev" / "records" / "initiatives" / "2026-03-28_demo"
+            initiative_root.mkdir(parents=True)
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                ctx = orch.build_session_context(target_repo, "2026-03-28_demo")
+                orch.write_json(
+                    orch.receipt_file_for(ctx, "F5"),
+                    {"phase": "F5", "engine": "codex", "snapshot": {"next_step": "RUN_F4_F5_REMEDIATION"}},
+                )
+                orch.persist_session(ctx, {"last_phase": "F5"})
+                receipt = orch.latest_receipt(ctx)
+                self.assertEqual(receipt["phase"], "F5")
+                self.assertEqual(receipt["engine"], "codex")
+            finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 
 

@@ -215,6 +215,10 @@ def receipt_file_for(ctx: SessionContext, phase: str) -> Path:
     return ctx.receipts_dir / f"{phase.upper()}.json"
 
 
+def base_prompt_file_for_phase(phase: str) -> Path:
+    return PROMPTS_ROOT / PHASE_PROMPTS[phase]
+
+
 def load_prompt_text(name: str) -> str:
     prompt_path = PROMPTS_ROOT / name
     if not prompt_path.exists():
@@ -266,10 +270,8 @@ def read_paths_for_phase(paths: gpp.InitiativePaths, phase: str) -> list[Path]:
     return [path for path in reads if path.exists()]
 
 
-def build_prompt(ctx: SessionContext, phase: str, include_plan_probe: bool = False) -> str:
+def build_prompt(ctx: SessionContext, phase: str) -> str:
     base_prompt = load_prompt_text(PHASE_PROMPTS[phase])
-    if include_plan_probe and phase in {"F4_REMEDIATION", "F5"}:
-        base_prompt += "\n\n---\n\n" + load_prompt_text("99 prompt plan a codex.md")
     writes = "\n".join(f"- {path}" for path in allowed_writes_for_phase(ctx.paths, phase))
     reads = "\n".join(f"- {path}" for path in read_paths_for_phase(ctx.paths, phase))
     role = "motor_auditor" if PHASE_ENGINES[phase] == "codex" and phase in {"F3", "F5", "F7"} else "motor_activo"
@@ -387,8 +389,8 @@ def ensure_phase_artifact(paths: gpp.InitiativePaths, phase: str) -> None:
     raise SystemExit(f"Unsupported phase: {phase}")
 
 
-def run_phase(ctx: SessionContext, phase: str, dry_run: bool = False, include_plan_probe: bool = False) -> dict:
-    prompt = build_prompt(ctx, phase, include_plan_probe=include_plan_probe)
+def run_phase(ctx: SessionContext, phase: str, dry_run: bool = False) -> dict:
+    prompt = build_prompt(ctx, phase)
     prompt_copy = write_prompt_copy(ctx, phase, prompt)
     if phase in {"F6", "F6_REMEDIATION"}:
         gpp.ensure_f6_branch(ctx.paths, dry_run=dry_run)
@@ -424,6 +426,17 @@ def require_paths(ctx: SessionContext) -> None:
 def current_workflow_state(ctx: SessionContext) -> dict[str, str]:
     data = read_json(ctx.session_file)
     return workflow_state(ctx.paths, str(data.get("override_phase") or ""))
+
+
+def latest_receipt(ctx: SessionContext) -> dict:
+    data = read_json(ctx.session_file)
+    last_phase = str(data.get("last_phase") or "")
+    if not last_phase:
+        return {}
+    path = receipt_file_for(ctx, last_phase)
+    if not path.exists():
+        return {}
+    return read_json(path)
 
 
 def print_snapshot(payload: dict) -> None:
@@ -522,6 +535,45 @@ def resume(args: argparse.Namespace) -> int:
     return 0
 
 
+def show_prompt(args: argparse.Namespace) -> int:
+    ctx = build_session_context(parse_target_repo(args.target_repo), args.initiative_id)
+    gpp.configure_repo_root(str(ctx.target_repo))
+    gpp.ensure_repo_supports_governance()
+    require_paths(ctx)
+    state = current_workflow_state(ctx)
+    phase = state.get("phase")
+    if not phase:
+        raise SystemExit(f"No prompt available for next_step={state['next_step']}")
+    base_prompt = base_prompt_file_for_phase(phase)
+    rendered_prompt = ctx.prompts_dir / f"{phase.lower()}.txt"
+    print(f"initiative_id={ctx.initiative_id}")
+    print(f"phase={phase}")
+    print(f"engine={PHASE_ENGINES[phase]}")
+    print(f"base_prompt={base_prompt}")
+    print(f"rendered_prompt={rendered_prompt if rendered_prompt.exists() else '<not_rendered_yet>'}")
+    if args.rendered:
+        print()
+        print((rendered_prompt if rendered_prompt.exists() else base_prompt).read_text(encoding="utf-8"))
+    return 0
+
+
+def last_run(args: argparse.Namespace) -> int:
+    ctx = build_session_context(parse_target_repo(args.target_repo), args.initiative_id)
+    gpp.configure_repo_root(str(ctx.target_repo))
+    gpp.ensure_repo_supports_governance()
+    require_paths(ctx)
+    receipt = latest_receipt(ctx)
+    if not receipt:
+        print(f"initiative_id={ctx.initiative_id}")
+        print("result=NO_RUNS_YET")
+        return 0
+    print(f"initiative_id={ctx.initiative_id}")
+    for key in ("phase", "engine", "prompt_file", "output_file", "timestamp"):
+        print(f"{key}={receipt.get(key, '<empty>')}")
+    print_snapshot(receipt.get("snapshot", {}))
+    return 0
+
+
 def next_step_cmd(args: argparse.Namespace) -> int:
     ctx = build_session_context(parse_target_repo(args.target_repo), args.initiative_id)
     gpp.configure_repo_root(str(ctx.target_repo))
@@ -599,7 +651,7 @@ def run_current_step(args: argparse.Namespace) -> int:
     phase = state.get("phase")
     if not phase:
         raise SystemExit(f"Unsupported next step: {next_step}")
-    receipt = run_phase(ctx, phase, dry_run=args.dry_run, include_plan_probe=True)
+    receipt = run_phase(ctx, phase, dry_run=args.dry_run)
     print(json.dumps(receipt, indent=2, ensure_ascii=True))
     return 0
 
@@ -609,7 +661,7 @@ def run_named_phase(args: argparse.Namespace, phase: str) -> int:
     gpp.configure_repo_root(str(ctx.target_repo))
     gpp.ensure_repo_supports_governance()
     require_paths(ctx)
-    receipt = run_phase(ctx, phase, dry_run=args.dry_run, include_plan_probe=phase in {"F4_REMEDIATION", "F5"})
+    receipt = run_phase(ctx, phase, dry_run=args.dry_run)
     print(json.dumps(receipt, indent=2, ensure_ascii=True))
     return 0
 
@@ -690,6 +742,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     resume_parser = subparsers.add_parser("resume", help="Retoma una iniciativa ya empezada y muestra el siguiente paso efectivo.")
     resume_parser.set_defaults(func=resume)
+
+    show_prompt_parser = subparsers.add_parser("show-prompt", help="Muestra el prompt base o renderizado de la fase efectiva.")
+    show_prompt_parser.add_argument("--rendered", action="store_true", help="Imprime el prompt renderizado si ya existe; si no, imprime el prompt base.")
+    show_prompt_parser.set_defaults(func=show_prompt)
+
+    last_run_parser = subparsers.add_parser("last-run", help="Muestra el último intento ejecutado y su snapshot.")
+    last_run_parser.set_defaults(func=last_run)
 
     next_parser = subparsers.add_parser("next-step", help="Calcula el siguiente paso y el prompt asociado.")
     next_parser.set_defaults(func=next_step_cmd)

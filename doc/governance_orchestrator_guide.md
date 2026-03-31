@@ -64,9 +64,11 @@ Remediacion:
 - `15_f4_remediacion_plan.md`
 - `17_f6_remediacion_ejecucion.md`
 
-Auxiliar opcional:
+Fuera del pipeline orquestado:
 
 - `99 prompt plan a codex.md`
+- `99` es un prompt humano pre-`00`, previo a `handoff.md`
+- el orquestador no usa `99` en `F1-F8`
 
 ## Comandos principales
 
@@ -74,6 +76,8 @@ Auxiliar opcional:
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> init-session
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> status
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> resume
+python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> show-prompt
+python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> last-run
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> next-step
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> run-current-step
 ```
@@ -109,4 +113,6 @@ python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-
 - Los artefactos formales viven en el repo objetivo.
 - `F2` y `F8` siguen siendo checkpoints humanos.
 - `resume` reconstruye el estado desde los artefactos reales de la iniciativa.
+- `show-prompt` da visibilidad al prompt base o renderizado de la fase efectiva.
+- `last-run` muestra el último intento ejecutado y su resultado local.
 - `reopen-phase` permite repetir `F3`, `F5` o `F7` sobre una iniciativa ya empezada.
