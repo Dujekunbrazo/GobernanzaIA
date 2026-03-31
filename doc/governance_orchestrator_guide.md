@@ -29,7 +29,7 @@ El bootstrap de runtime es automatico. No hace falta crear la carpeta a mano.
 ## Flujo esperado
 
 1. `init-session`
-2. `status`
+2. `status` o `resume`
 3. `run-f1`
 4. `approve-f2`
 5. `run-f3`
@@ -73,6 +73,7 @@ Auxiliar opcional:
 ```bash
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> init-session
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> status
+python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> resume
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> next-step
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> run-current-step
 ```
@@ -92,6 +93,13 @@ python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-
 python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> prepare-f8
 ```
 
+Reapertura explícita de auditoría:
+
+```bash
+python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> reopen-phase --phase F5
+python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-id <id> run-current-step
+```
+
 ## Reglas operativas
 
 - Un comando, una fase.
@@ -100,3 +108,5 @@ python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-
 - Los outputs crudos viven en `.orchestrator_local/`.
 - Los artefactos formales viven en el repo objetivo.
 - `F2` y `F8` siguen siendo checkpoints humanos.
+- `resume` reconstruye el estado desde los artefactos reales de la iniciativa.
+- `reopen-phase` permite repetir `F3`, `F5` o `F7` sobre una iniciativa ya empezada.

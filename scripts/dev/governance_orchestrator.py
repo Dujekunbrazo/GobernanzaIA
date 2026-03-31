@@ -21,6 +21,12 @@ LOCAL_RUNTIME_DIRNAME = ".orchestrator_local"
 LOCAL_RUNTIME_ROOT = CANONICAL_REPO_ROOT / LOCAL_RUNTIME_DIRNAME
 DEFAULT_MAX_AUDITS = gpp.DEFAULT_MAX_AUDITS
 GIT_EXCLUDE_ENTRY = f"{LOCAL_RUNTIME_DIRNAME}/"
+REOPENABLE_PHASES = ("F3", "F5", "F7")
+AUDIT_ARTIFACTS: dict[str, tuple[str, str]] = {
+    "F3": ("ask_audit.md", "ask_audit"),
+    "F5": ("plan_audit.md", "plan_audit"),
+    "F7": ("post_audit.md", "post_audit"),
+}
 
 PHASE_PROMPTS: dict[str, str] = {
     "F1": "01_f1_ask.md",
@@ -171,6 +177,20 @@ def snapshot(paths: gpp.InitiativePaths) -> dict[str, str]:
     }
 
 
+def workflow_state(paths: gpp.InitiativePaths, override_phase: str = "") -> dict[str, str]:
+    state = snapshot(paths)
+    if override_phase:
+        state["recommended_next_step"] = state["next_step"]
+        state["next_step"] = f"RUN_{override_phase}"
+        state["override_phase"] = override_phase
+    phase = override_phase or NEXT_STEP_TO_PHASE.get(state["next_step"], "")
+    if phase:
+        state["phase"] = phase
+        state["engine"] = PHASE_ENGINES[phase]
+        state["prompt"] = PHASE_PROMPTS[phase]
+    return state
+
+
 def persist_session(ctx: SessionContext, payload: dict | None = None) -> dict:
     data = payload or read_json(ctx.session_file)
     data.update(
@@ -182,7 +202,7 @@ def persist_session(ctx: SessionContext, payload: dict | None = None) -> dict:
             "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         }
     )
-    data["snapshot"] = snapshot(ctx.paths)
+    data["snapshot"] = workflow_state(ctx.paths, str(data.get("override_phase") or ""))
     write_json(ctx.session_file, data)
     return data
 
@@ -388,7 +408,7 @@ def run_phase(ctx: SessionContext, phase: str, dry_run: bool = False, include_pl
         "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
     }
     write_json(receipt_file_for(ctx, phase), receipt)
-    persist_session(ctx, {"last_phase": phase, "last_engine": engine})
+    persist_session(ctx, {"last_phase": phase, "last_engine": engine, "override_phase": ""})
     return receipt
 
 
@@ -401,9 +421,70 @@ def require_paths(ctx: SessionContext) -> None:
         raise SystemExit(f"Missing initiative folder: {ctx.paths.root}")
 
 
+def current_workflow_state(ctx: SessionContext) -> dict[str, str]:
+    data = read_json(ctx.session_file)
+    return workflow_state(ctx.paths, str(data.get("override_phase") or ""))
+
+
 def print_snapshot(payload: dict) -> None:
     for key in ("initiative_id", "ask_state", "ask_audit", "plan_state", "plan_audit", "post_audit", "next_step"):
         print(f"{key}={payload.get(key, '<empty>')}")
+    if payload.get("recommended_next_step"):
+        print(f"recommended_next_step={payload['recommended_next_step']}")
+    if payload.get("override_phase"):
+        print(f"override_phase={payload['override_phase']}")
+    if payload.get("phase"):
+        print(f"phase={payload['phase']}")
+    if payload.get("engine"):
+        print(f"engine={payload['engine']}")
+    if payload.get("prompt"):
+        print(f"prompt={payload['prompt']}")
+
+
+def reset_audit_artifact(ctx: SessionContext, phase: str) -> Path:
+    template_name, attr_name = AUDIT_ARTIFACTS[phase]
+    template_path = gpp.TEMPLATE_ROOT / template_name
+    text = template_path.read_text(encoding="utf-8")
+    artifact = getattr(ctx.paths, attr_name)
+    auditor = gpp.extract_metadata(gpp.read_text(ctx.paths.ask), "motor_auditor") or "codex"
+    for key, value in (
+        ("Initiative ID", ctx.initiative_id),
+        ("Fase", phase),
+        ("Auditor", auditor),
+        ("Fecha", today_iso()),
+    ):
+        text = gpp.replace_metadata_line(text, key, value)
+    artifact.write_text(text, encoding="utf-8")
+    return artifact
+
+
+def reopen_phase(args: argparse.Namespace) -> int:
+    ctx = build_session_context(parse_target_repo(args.target_repo), args.initiative_id)
+    gpp.configure_repo_root(str(ctx.target_repo))
+    gpp.ensure_repo_supports_governance()
+    require_paths(ctx)
+    phase = args.phase.upper()
+    if phase not in REOPENABLE_PHASES:
+        raise SystemExit(f"Unsupported reopen phase: {phase}")
+    reset_audit_artifact(ctx, phase)
+    if phase == "F3":
+        gpp.set_state(ctx.paths.ask, "VALIDADO")
+    elif phase == "F5":
+        gpp.set_state(ctx.paths.plan, "PROPUESTO")
+    data = persist_session(
+        ctx,
+        {
+            "last_reopened_phase": phase,
+            "override_phase": phase,
+            "reopened_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        },
+    )
+    print(f"initiative_id={ctx.initiative_id}")
+    print("result=PHASE_REOPENED")
+    print(f"phase={phase}")
+    print(f"audit_artifact={getattr(ctx.paths, AUDIT_ARTIFACTS[phase][1])}")
+    print_snapshot(data["snapshot"])
+    return 0
 
 
 def init_session(args: argparse.Namespace) -> int:
@@ -414,7 +495,7 @@ def init_session(args: argparse.Namespace) -> int:
     persist_session(ctx, {"created_at": dt.datetime.now(dt.timezone.utc).isoformat()})
     print(f"session_id={ctx.session_id}")
     print(f"runtime_root={ctx.runtime_root}")
-    print_snapshot(snapshot(ctx.paths))
+    print_snapshot(current_workflow_state(ctx))
     return 0
 
 
@@ -425,7 +506,19 @@ def status(args: argparse.Namespace) -> int:
     require_paths(ctx)
     persist_session(ctx)
     print(f"session_id={ctx.session_id}")
-    print_snapshot(snapshot(ctx.paths))
+    print_snapshot(current_workflow_state(ctx))
+    return 0
+
+
+def resume(args: argparse.Namespace) -> int:
+    ctx = build_session_context(parse_target_repo(args.target_repo), args.initiative_id)
+    gpp.configure_repo_root(str(ctx.target_repo))
+    gpp.ensure_repo_supports_governance()
+    require_paths(ctx)
+    persist_session(ctx)
+    state = current_workflow_state(ctx)
+    print(f"session_id={ctx.session_id}")
+    print_snapshot(state)
     return 0
 
 
@@ -434,14 +527,15 @@ def next_step_cmd(args: argparse.Namespace) -> int:
     gpp.configure_repo_root(str(ctx.target_repo))
     gpp.ensure_repo_supports_governance()
     require_paths(ctx)
-    current = gpp.recommend_next_step(ctx.paths)
-    phase = NEXT_STEP_TO_PHASE.get(current, "")
+    state = current_workflow_state(ctx)
     print(f"session_id={ctx.session_id}")
-    print(f"next_step={current}")
-    if phase:
-        print(f"phase={phase}")
-        print(f"engine={PHASE_ENGINES[phase]}")
-        print(f"prompt={PHASE_PROMPTS[phase]}")
+    print(f"next_step={state['next_step']}")
+    if state.get("recommended_next_step"):
+        print(f"recommended_next_step={state['recommended_next_step']}")
+    if state.get("phase"):
+        print(f"phase={state['phase']}")
+        print(f"engine={state['engine']}")
+        print(f"prompt={state['prompt']}")
     return 0
 
 
@@ -455,11 +549,11 @@ def approve_f2(args: argparse.Namespace) -> int:
     gpp.set_state(ctx.paths.ask, "VALIDADO")
     for path in (ctx.paths.ask, ctx.paths.plan, ctx.paths.execution, ctx.paths.closeout, ctx.paths.lessons):
         gpp.set_metadata(path, "motor_auditor", args.motor_auditor)
-    persist_session(ctx, {"last_phase": "F2"})
+    persist_session(ctx, {"last_phase": "F2", "override_phase": ""})
     print(f"initiative_id={ctx.initiative_id}")
     print("result=F2_VALIDATED")
     print(f"motor_auditor={args.motor_auditor}")
-    print(f"next_step={gpp.recommend_next_step(ctx.paths)}")
+    print(f"next_step={current_workflow_state(ctx)['next_step']}")
     return 0
 
 
@@ -470,10 +564,10 @@ def freeze_ask(args: argparse.Namespace) -> int:
     if gpp.get_verdict(ctx.paths.ask_audit) != "PASS":
         raise SystemExit("ask_audit.md must be PASS before freezing ask.md")
     gpp.set_state(ctx.paths.ask, "CONGELADO")
-    persist_session(ctx, {"last_phase": "F3"})
+    persist_session(ctx, {"last_phase": "F3", "override_phase": ""})
     print(f"initiative_id={ctx.initiative_id}")
     print("result=ASK_FROZEN")
-    print(f"next_step={gpp.recommend_next_step(ctx.paths)}")
+    print(f"next_step={current_workflow_state(ctx)['next_step']}")
     return 0
 
 
@@ -484,10 +578,10 @@ def freeze_plan(args: argparse.Namespace) -> int:
     if gpp.get_verdict(ctx.paths.plan_audit) != "PASS":
         raise SystemExit("plan_audit.md must be PASS before freezing plan.md")
     gpp.set_state(ctx.paths.plan, "CONGELADO")
-    persist_session(ctx, {"last_phase": "F5"})
+    persist_session(ctx, {"last_phase": "F5", "override_phase": ""})
     print(f"initiative_id={ctx.initiative_id}")
     print("result=PLAN_FROZEN")
-    print(f"next_step={gpp.recommend_next_step(ctx.paths)}")
+    print(f"next_step={current_workflow_state(ctx)['next_step']}")
     return 0
 
 
@@ -496,12 +590,13 @@ def run_current_step(args: argparse.Namespace) -> int:
     gpp.configure_repo_root(str(ctx.target_repo))
     gpp.ensure_repo_supports_governance()
     require_paths(ctx)
-    next_step = gpp.recommend_next_step(ctx.paths)
+    state = current_workflow_state(ctx)
+    next_step = state["next_step"]
     if next_step == "WAITING_FOR_F2":
         raise SystemExit("Next step is WAITING_FOR_F2. Use approve-f2 after human validation.")
     if next_step == "WAITING_FOR_F8":
         raise SystemExit("Next step is WAITING_FOR_F8. Use prepare-f8 and execute real validation manually.")
-    phase = NEXT_STEP_TO_PHASE.get(next_step)
+    phase = state.get("phase")
     if not phase:
         raise SystemExit(f"Unsupported next step: {next_step}")
     receipt = run_phase(ctx, phase, dry_run=args.dry_run, include_plan_probe=True)
@@ -539,7 +634,7 @@ def prepare_f8(args: argparse.Namespace) -> int:
         ):
             text = gpp.replace_metadata_line(text, key, value)
         ctx.paths.real_validation.write_text(text, encoding="utf-8")
-    persist_session(ctx, {"last_phase": "F8_PREP"})
+    persist_session(ctx, {"last_phase": "F8_PREP", "override_phase": ""})
     print(f"initiative_id={ctx.initiative_id}")
     print(f"real_validation={ctx.paths.real_validation}")
     print("next_step=WAITING_FOR_F8")
@@ -557,7 +652,7 @@ def doctor(args: argparse.Namespace) -> int:
         "supports_governance": True,
         "claude_available": shutil_which("claude"),
         "codex_available": shutil_which("codex"),
-        "next_step": gpp.recommend_next_step(ctx.paths) if gpp.initiative_exists(ctx.paths) else "<missing initiative>",
+        "next_step": current_workflow_state(ctx)["next_step"] if gpp.initiative_exists(ctx.paths) else "<missing initiative>",
     }
     try:
         gpp.ensure_repo_supports_governance()
@@ -593,8 +688,15 @@ def build_parser() -> argparse.ArgumentParser:
     status_parser = subparsers.add_parser("status", help="Muestra el estado real de la iniciativa.")
     status_parser.set_defaults(func=status)
 
+    resume_parser = subparsers.add_parser("resume", help="Retoma una iniciativa ya empezada y muestra el siguiente paso efectivo.")
+    resume_parser.set_defaults(func=resume)
+
     next_parser = subparsers.add_parser("next-step", help="Calcula el siguiente paso y el prompt asociado.")
     next_parser.set_defaults(func=next_step_cmd)
+
+    reopen_parser = subparsers.add_parser("reopen-phase", help="Reabre F3, F5 o F7 para repetir auditoría sobre una iniciativa a medias.")
+    reopen_parser.add_argument("--phase", required=True, choices=REOPENABLE_PHASES)
+    reopen_parser.set_defaults(func=reopen_phase)
 
     approve_parser = subparsers.add_parser("approve-f2", help="Registra la validación humana mínima de F2.")
     approve_parser.add_argument("--motor-auditor", default="codex")

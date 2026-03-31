@@ -104,7 +104,7 @@ class GovernancePingPongTests(unittest.TestCase):
 
     def test_configure_repo_root_switches_runtime_paths(self) -> None:
         with self.make_tempdir() as tmpdir:
-            repo_root = Path(tmpdir)
+            repo_root = Path(tmpdir).resolve()
             original_repo = gpp.REPO_ROOT
             original_initiatives = gpp.INITIATIVES_ROOT
             original_templates = gpp.TEMPLATE_ROOT
