@@ -192,7 +192,9 @@ def workflow_state(paths: gpp.InitiativePaths, override_phase: str = "") -> dict
 
 
 def persist_session(ctx: SessionContext, payload: dict | None = None) -> dict:
-    data = payload or read_json(ctx.session_file)
+    data = read_json(ctx.session_file)
+    if payload:
+        data.update(payload)
     data.update(
         {
             "session_id": ctx.session_id,
@@ -213,6 +215,10 @@ def output_file_for(ctx: SessionContext, phase: str, engine: str) -> Path:
 
 def receipt_file_for(ctx: SessionContext, phase: str) -> Path:
     return ctx.receipts_dir / f"{phase.upper()}.json"
+
+
+def run_state_file_for(ctx: SessionContext) -> Path:
+    return ctx.session_dir / "run_state.json"
 
 
 def base_prompt_file_for_phase(phase: str) -> Path:
@@ -392,13 +398,10 @@ def ensure_phase_artifact(paths: gpp.InitiativePaths, phase: str) -> None:
 def run_phase(ctx: SessionContext, phase: str, dry_run: bool = False) -> dict:
     prompt = build_prompt(ctx, phase)
     prompt_copy = write_prompt_copy(ctx, phase, prompt)
-    if phase in {"F6", "F6_REMEDIATION"}:
-        gpp.ensure_f6_branch(ctx.paths, dry_run=dry_run)
-        gpp.run_preflight(ctx.initiative_id, allow_dirty_with_ask_exception=False, dry_run=dry_run)
     engine = PHASE_ENGINES[phase]
-    output_path = run_claude(ctx, phase, prompt, dry_run=dry_run) if engine == "claude" else run_codex(ctx, phase, prompt, dry_run=dry_run)
-    ensure_phase_artifact(ctx.paths, phase)
-    receipt = {
+    output_path = output_file_for(ctx, phase, engine)
+    started_at = dt.datetime.now(dt.timezone.utc).isoformat()
+    base_receipt = {
         "phase": phase,
         "engine": engine,
         "initiative_id": ctx.initiative_id,
@@ -406,12 +409,60 @@ def run_phase(ctx: SessionContext, phase: str, dry_run: bool = False) -> dict:
         "prompt_file": str(prompt_copy),
         "output_file": str(output_path),
         "allowed_writes": [str(path) for path in allowed_writes_for_phase(ctx.paths, phase)],
-        "snapshot": snapshot(ctx.paths),
-        "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "started_at": started_at,
+        "timestamp": started_at,
     }
-    write_json(receipt_file_for(ctx, phase), receipt)
-    persist_session(ctx, {"last_phase": phase, "last_engine": engine, "override_phase": ""})
-    return receipt
+    write_json(run_state_file_for(ctx), {**base_receipt, "status": "running"})
+    persist_session(ctx, {"active_phase": phase, "active_engine": engine, "last_attempt_phase": phase})
+    try:
+        if phase in {"F6", "F6_REMEDIATION"}:
+            gpp.ensure_f6_branch(ctx.paths, dry_run=dry_run)
+            gpp.run_preflight(ctx.initiative_id, allow_dirty_with_ask_exception=False, dry_run=dry_run)
+        output_path = run_claude(ctx, phase, prompt, dry_run=dry_run) if engine == "claude" else run_codex(ctx, phase, prompt, dry_run=dry_run)
+        ensure_phase_artifact(ctx.paths, phase)
+        receipt = {
+            **base_receipt,
+            "status": "completed",
+            "output_file": str(output_path),
+            "snapshot": snapshot(ctx.paths),
+            "finished_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        }
+        write_json(receipt_file_for(ctx, phase), receipt)
+        write_json(run_state_file_for(ctx), receipt)
+        persist_session(
+            ctx,
+            {
+                "last_phase": phase,
+                "last_engine": engine,
+                "last_attempt_phase": phase,
+                "last_error": "",
+                "active_phase": "",
+                "active_engine": "",
+                "override_phase": "",
+            },
+        )
+        return receipt
+    except Exception as exc:
+        failed_receipt = {
+            **base_receipt,
+            "status": "failed",
+            "error": str(exc),
+            "snapshot": snapshot(ctx.paths),
+            "finished_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        }
+        write_json(receipt_file_for(ctx, phase), failed_receipt)
+        write_json(run_state_file_for(ctx), failed_receipt)
+        persist_session(
+            ctx,
+            {
+                "last_attempt_phase": phase,
+                "last_engine": engine,
+                "last_error": str(exc),
+                "active_phase": "",
+                "active_engine": "",
+            },
+        )
+        raise
 
 
 def parse_target_repo(value: str) -> Path:
@@ -430,12 +481,12 @@ def current_workflow_state(ctx: SessionContext) -> dict[str, str]:
 
 def latest_receipt(ctx: SessionContext) -> dict:
     data = read_json(ctx.session_file)
-    last_phase = str(data.get("last_phase") or "")
+    last_phase = str(data.get("last_attempt_phase") or data.get("last_phase") or "")
     if not last_phase:
-        return {}
+        return read_json(run_state_file_for(ctx))
     path = receipt_file_for(ctx, last_phase)
     if not path.exists():
-        return {}
+        return read_json(run_state_file_for(ctx))
     return read_json(path)
 
 
@@ -568,7 +619,7 @@ def last_run(args: argparse.Namespace) -> int:
         print("result=NO_RUNS_YET")
         return 0
     print(f"initiative_id={ctx.initiative_id}")
-    for key in ("phase", "engine", "prompt_file", "output_file", "timestamp"):
+    for key in ("status", "phase", "engine", "prompt_file", "output_file", "timestamp", "started_at", "finished_at", "error"):
         print(f"{key}={receipt.get(key, '<empty>')}")
     print_snapshot(receipt.get("snapshot", {}))
     return 0

@@ -6,6 +6,7 @@ import shutil
 import unittest
 import uuid
 from pathlib import Path
+from unittest import mock
 
 from scripts.dev import governance_orchestrator as orch
 
@@ -212,6 +213,33 @@ class GovernanceOrchestratorTests(unittest.TestCase):
                 receipt = orch.latest_receipt(ctx)
                 self.assertEqual(receipt["phase"], "F5")
                 self.assertEqual(receipt["engine"], "codex")
+            finally:
+                orch.ensure_local_runtime = original_ensure_runtime
+
+    def test_run_phase_failure_writes_failed_receipt_and_run_state(self) -> None:
+        with self.make_tempdir() as repo_root:
+            (repo_root / ".git" / "info").mkdir(parents=True)
+            target_repo = repo_root / "target"
+            initiative_root = target_repo / "dev" / "records" / "initiatives" / "2026-03-28_demo"
+            initiative_root.mkdir(parents=True)
+            (initiative_root / "handoff.md").write_text("# handoff\n", encoding="utf-8")
+            (initiative_root / "ask.md").write_text("# ASK\n\n- Estado: CONGELADO\n", encoding="utf-8")
+            (initiative_root / "ask_audit.md").write_text("# ASK AUDIT\n\n- Veredicto: PASS\n", encoding="utf-8")
+            (initiative_root / "plan_audit.md").write_text("# PLAN AUDIT\n\n- Veredicto: FAIL\n", encoding="utf-8")
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                ctx = orch.build_session_context(target_repo, "2026-03-28_demo")
+                with mock.patch.object(orch, "run_claude", return_value=orch.output_file_for(ctx, "F4_REMEDIATION", "claude")):
+                    with self.assertRaisesRegex(RuntimeError, "Expected meaningful plan content"):
+                        orch.run_phase(ctx, "F4_REMEDIATION", dry_run=False)
+                receipt = orch.read_json(orch.receipt_file_for(ctx, "F4_REMEDIATION"))
+                run_state = orch.read_json(orch.run_state_file_for(ctx))
+                session = orch.read_json(ctx.session_file)
+                self.assertEqual(receipt["status"], "failed")
+                self.assertEqual(run_state["status"], "failed")
+                self.assertEqual(session["last_attempt_phase"], "F4_REMEDIATION")
+                self.assertIn("Expected meaningful plan content", receipt["error"])
             finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 

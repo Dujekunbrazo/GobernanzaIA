@@ -115,4 +115,6 @@ python scripts/dev/governance_orchestrator.py --target-repo <repo> --initiative-
 - `resume` reconstruye el estado desde los artefactos reales de la iniciativa.
 - `show-prompt` da visibilidad al prompt base o renderizado de la fase efectiva.
 - `last-run` muestra el último intento ejecutado y su resultado local.
+- cada intento deja `run_state.json` local con `running`, `completed` o `failed`
+- si una fase falla antes del artefacto formal, el orquestador guarda receipt fallido con error y snapshot
 - `reopen-phase` permite repetir `F3`, `F5` o `F7` sobre una iniciativa ya empezada.
