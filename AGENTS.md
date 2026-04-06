@@ -70,6 +70,8 @@ Reglas de activación:
 30. La continuidad operativa no puede depender de la memoria del chat; toda reentrada de motor debe arrancar con `phase_ticket` y `resume_packet` emitidos por el orquestador.
 31. En `F6` largas, multi-commit o de alto riesgo, la ejecución debe supervisarse por commit con checkpoint antes de liberar el siguiente tramo.
 32. En `F8`, la evidencia de primer nivel incluye chat del producto, `trace on`, terminal de la superficie probada y resultados visibles en runtime real.
+33. Toda consulta debe rutearse a la capa canónica mínima que la responda; queda prohibido usar dos capas primarias simultáneas para la misma responsabilidad.
+34. La memoria estructural del sistema debe resolverse mediante la capa estructural canónica cuando esté disponible; no puede coexistir como vía opcional lateral frente al camino oficial.
 
 ## 4.1) Apertura durable de M4
 
@@ -174,6 +176,26 @@ Reglas:
 
 ## 7) Corpus de contexto
 
+## 7.1) Stack canónico de contexto
+
+El sistema opera sobre cinco capas:
+
+1. `gobernanza normativa`
+   - reglas, workflow, guarantees, policies, templates y adapters
+2. `gobernanza ejecutiva del orquestador`
+   - fase vigente, tickets, reentrada, checkpoints, intentos y excepciones
+3. `código vivo local`
+   - lectura fina de símbolos y bloques concretos
+4. `memoria estructural persistente`
+   - wiring global, impacto, legacy y arquitectura estructural
+5. `evidencia runtime real`
+   - comportamiento observable, trazas, terminal y resultados visibles
+
+La memoria conversacional no forma parte del stack canónico.
+La policy operativa de referencia es:
+
+- `dev/policies/context_stack_policy.md`
+
 ### Capa estática siempre presente
 
 - reglas duras no negociables
@@ -209,7 +231,11 @@ La recuperación de gobernanza debe ser híbrida:
 - herramienta operativa: `governance_search`
 - routing obligatorio:
   - consulta de gobernanza -> `governance_search` y luego lectura canónica
+  - consulta de estado operativo -> runtime del orquestador y sus artefactos
   - consulta de código -> `semantic_search` y luego `get_symbol` (via symdex_code)
+  - consulta de wiring/legacy/impacto estructural -> `codebase-memory-mcp`
+    cuando esté disponible; si no, fallback explícito
+  - consulta de validación observable -> evidencia runtime real
 - `Glob`, `Globpattern`, `Grep`, `find`, `rg` o lecturas directas no cuentan
   como vía principal si el MCP correspondiente está disponible
 - herramientas internas solo como fallback si el MCP falla, no está expuesto o
@@ -243,6 +269,32 @@ Excluir:
   - `get_symbol`, `get_file_outline`, `get_symbols`
 - en respuestas técnicas se debe declarar herramienta usada y fuente canónica
   usada
+
+### Memoria estructural persistente
+
+La capa estructural canónica del sistema se reserva para:
+
+- call paths reales
+- blast radius
+- legacy y dead code
+- arquitectura estructural
+- contraste entre wiring esperado y wiring real
+
+Mientras no esté instalada, su uso degrada a `SymDex` más lectura canónica del
+repo.
+Cuando exista, no puede convivir como vía lateral con otra capa estructural
+primaria.
+
+### Evidencia runtime real
+
+La validación observable del producto se apoya en:
+
+- chat del producto
+- `trace on`
+- terminal de la superficie validada
+- logs y resultados visibles en runtime real
+
+Si esta evidencia falta donde aplica, el estado correcto es `BLOQUEADO`.
 
 ## 8) Motores
 

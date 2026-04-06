@@ -16,6 +16,7 @@ Si una capa difiere, se corrige en el mismo cambio.
 Guia corta de invocacion humana del orquestador:
 
 - `dev/policies/orchestrator_human_quickstart.md`
+- `dev/policies/context_stack_policy.md`
 
 ## Roles operativos
 
@@ -100,6 +101,29 @@ Contenido típico:
 - `receipts/`
 
 Ese runtime no forma parte de la iniciativa ni del baseline exportable.
+
+## Stack canónico de contexto
+
+Capas:
+
+1. `gobernanza normativa`
+   - reglas, workflow, guarantees, policies, templates y adapters
+2. `gobernanza ejecutiva del orquestador`
+   - fase vigente, reentrada, tickets, checkpoints, excepciones y límites
+3. `código vivo local`
+   - lectura fina de símbolos y bloques
+4. `memoria estructural persistente`
+   - wiring global, impacto, legacy y arquitectura estructural
+5. `evidencia runtime real`
+   - chat del producto, `trace on`, terminal, logs y resultados visibles
+
+Reglas:
+
+- cada consulta debe usar la capa mínima que la responda de forma canónica
+- la memoria del chat no es una fuente válida de continuidad operativa
+- ninguna capa puede actuar como vía primaria paralela de otra
+- si la capa estructural canónica no está disponible, se degrada de forma
+  explícita; no se simula como si existiera
 
 ## Protocolo operativo M3
 
@@ -385,6 +409,8 @@ Uso operativo:
   mínima cuando la tarea sea de gobernanza o exista ambigüedad de contexto
 - consultar `governance_search` para workflow, gates, prompts, templates,
   adapters y arquitectura
+- usar runtime del orquestador para fase vigente, reentrada, checkpoints,
+  intentos y excepciones
 - aplicar primero filtros por `phase`, `document_type` y `motor` cuando
   existan
 - si la recuperación devuelve ambigüedad, cargar el documento canónico por ruta
@@ -416,6 +442,31 @@ Uso operativo:
 - consultar `get_symbol` (via symdex_code) para leer el bloque concreto después de la
   búsqueda
 - no usar `SymDex` para workflow, policies, logs, records o bitácora
+
+### Memoria estructural persistente
+
+Uso operativo:
+
+- reservar esta capa para:
+  - wiring global
+  - impact analysis
+  - blast radius
+  - legacy y dead code
+  - arquitectura estructural
+- cuando la capacidad no exista, degradar a `SymDex` más lectura canónica
+- cuando exista, usarla como vía estructural primaria y no como ayuda lateral
+
+### Evidencia runtime real
+
+Uso operativo:
+
+- usar esta capa para `F8` y para cualquier validación observable del producto
+- las fuentes de primer nivel son:
+  - chat del producto
+  - `trace on`
+  - terminal o logs reales
+  - resultados visibles en runtime
+- si falta evidencia donde aplica, bloquear avance formal
 
 ## Gobernanza de ingeniería
 
