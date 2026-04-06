@@ -18,6 +18,7 @@ Guia corta de invocacion humana del orquestador:
 - `dev/policies/orchestrator_human_quickstart.md`
 - `dev/policies/context_stack_policy.md`
 - `dev/policies/context_routing_policy.md`
+- `dev/policies/token_budget_policy.md`
 
 ## Roles operativos
 
@@ -387,6 +388,20 @@ Reglas:
   respetarlo salvo excepción trazada
 - si una fase entra en excepción final o reapertura crítica, `max` pasa a ser
   el valor por defecto
+
+## Presupuesto de contexto y coste operativo
+
+Reglas:
+
+- optimizar coste total por iniciativa, no solo coste por llamada
+- usar `resume_packet` para reentrada en lugar de releer toda la iniciativa
+- evitar volcados completos de logs, traces o archivos si basta un extracto
+- activar checkpoints de `F6` por riesgo, no por rutina
+- usar retrieval estructural o simbólico antes de cargar contexto bruto
+
+Referencia:
+
+- `dev/policies/token_budget_policy.md`
 
 ## Reglas no negociables
 

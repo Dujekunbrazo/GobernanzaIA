@@ -80,3 +80,5 @@ La arquitectura de contexto se considera cerrada cuando:
 - la validación real usa evidencia observable
 - la memoria estructural entra como sustitución de la vía estructural previa y
   no como camino paralelo adicional
+- el coste operativo se controla con retrieval dirigido y no con expansión
+  indiscriminada de contexto

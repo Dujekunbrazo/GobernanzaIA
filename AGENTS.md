@@ -73,6 +73,7 @@ Reglas de activación:
 33. Toda consulta debe rutearse a la capa canónica mínima que la responda; queda prohibido usar dos capas primarias simultáneas para la misma responsabilidad.
 34. La memoria estructural del sistema debe resolverse mediante la capa estructural canónica cuando esté disponible; no puede coexistir como vía opcional lateral frente al camino oficial.
 35. Todo repo consumidor debe declarar un único perfil local de capacidades reales; el orquestador debe degradar según ese perfil y no asumir tooling homogéneo entre repos.
+36. La gobernanza debe optimizar coste total por iniciativa; queda prohibido releer, volcar o expandir contexto masivamente si un retrieval dirigido o un `resume_packet` resuelven la misma necesidad con trazabilidad suficiente.
 
 ## 4.1) Apertura durable de M4
 
@@ -217,6 +218,7 @@ La policy operativa de referencia es:
 - `dev/policies/context_stack_policy.md`
 - `dev/policies/repo_capabilities_policy.md`
 - `dev/policies/context_routing_policy.md`
+- `dev/policies/token_budget_policy.md`
 
 ### Capa estática siempre presente
 

@@ -139,3 +139,4 @@ El routing es aceptable cuando:
 - cada fase sabe qué capa priorizar
 - no existen solapes primarios
 - la degradación queda trazada y no inventa evidencia
+- el routing evita contexto bruto innecesario cuando existe retrieval dirigido
