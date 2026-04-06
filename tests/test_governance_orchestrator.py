@@ -122,6 +122,62 @@ class GovernanceOrchestratorTests(unittest.TestCase):
             finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 
+    def test_build_phase_ticket_includes_repo_profile_when_present(self) -> None:
+        with self.make_tempdir() as repo_root:
+            (repo_root / ".git" / "info").mkdir(parents=True)
+            target_repo = repo_root / "target"
+            initiative_root = target_repo / "dev" / "records" / "initiatives" / "2026-03-28_demo"
+            initiative_root.mkdir(parents=True)
+            (target_repo / "dev").mkdir(parents=True, exist_ok=True)
+            (target_repo / "dev" / "repo_governance_profile.md").write_text(
+                "# REPO GOVERNANCE PROFILE\n\n- governance_search: DISPONIBLE\n- symdex_code: DISPONIBLE\n",
+                encoding="utf-8",
+            )
+            (initiative_root / "ask.md").write_text("# ASK\n\n- Estado: PROPUESTO\n\n## Objetivo y contexto\n\nTexto listo.\n", encoding="utf-8")
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                ctx = orch.build_session_context(target_repo, "2026-03-28_demo")
+                ticket = orch.build_phase_ticket_content(ctx, "F1")
+                self.assertIn("dev/repo_governance_profile.md", ticket)
+            finally:
+                orch.ensure_local_runtime = original_ensure_runtime
+
+    def test_resume_packet_populates_capabilities_from_repo_profile(self) -> None:
+        with self.make_tempdir() as repo_root:
+            (repo_root / ".git" / "info").mkdir(parents=True)
+            target_repo = repo_root / "target"
+            initiative_root = target_repo / "dev" / "records" / "initiatives" / "2026-03-28_demo"
+            initiative_root.mkdir(parents=True)
+            (target_repo / "dev").mkdir(parents=True, exist_ok=True)
+            (target_repo / "dev" / "repo_governance_profile.md").write_text(
+                "\n".join(
+                    [
+                        "# REPO GOVERNANCE PROFILE",
+                        "",
+                        "- governance_search: DISPONIBLE",
+                        "- symdex_code: DISPONIBLE",
+                        "- codebase-memory-mcp: NO_DISPONIBLE",
+                        "- F8 observable: SI",
+                        "- trace on o equivalente: SI",
+                        "- terminal/logs observables: SI",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (initiative_root / "ask.md").write_text("# ASK\n\n- Estado: PROPUESTO\n\n## Objetivo y contexto\n\nTexto listo.\n", encoding="utf-8")
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                ctx = orch.build_session_context(target_repo, "2026-03-28_demo")
+                packet = orch.build_resume_packet_content(ctx, "F1")
+                self.assertIn("Governance retrieval: DISPONIBLE", packet)
+                self.assertIn("Memoria estructural (codebase-memory-mcp): NO_DISPONIBLE", packet)
+                self.assertIn("Perfil local: dev/repo_governance_profile.md", packet)
+            finally:
+                orch.ensure_local_runtime = original_ensure_runtime
+
     def test_workflow_state_uses_override_phase(self) -> None:
         with self.make_tempdir() as repo_root:
             root = repo_root / "initiative"

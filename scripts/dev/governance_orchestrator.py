@@ -72,6 +72,18 @@ NEXT_STEP_TO_PHASE: dict[str, str] = {
 
 
 @dataclass(frozen=True)
+class RepoCapabilities:
+    profile_path: Path
+    exists: bool
+    governance_search: str
+    symdex_code: str
+    structural_memory: str
+    f8_observable: str
+    trace_on: str
+    terminal_logs: str
+
+
+@dataclass(frozen=True)
 class SessionContext:
     target_repo: Path
     initiative_id: str
@@ -86,6 +98,7 @@ class SessionContext:
     resume_packets_dir: Path
     checkpoints_dir: Path
     paths: gpp.InitiativePaths
+    repo_capabilities: RepoCapabilities
 
 
 def today_iso() -> str:
@@ -166,6 +179,7 @@ def build_session_context(target_repo: Path, initiative_id: str) -> SessionConte
         lessons=initiative_root / "lessons_learned.md",
         real_validation=initiative_root / "real_validation.md",
     )
+    repo_capabilities = load_repo_capabilities(target_repo / "dev" / "repo_governance_profile.md")
     return SessionContext(
         target_repo=target_repo,
         initiative_id=initiative_id,
@@ -180,7 +194,57 @@ def build_session_context(target_repo: Path, initiative_id: str) -> SessionConte
         resume_packets_dir=resume_packets_dir,
         checkpoints_dir=checkpoints_dir,
         paths=paths,
+        repo_capabilities=repo_capabilities,
     )
+
+
+def parse_profile_value(text: str, key: str) -> str:
+    pattern = rf"(?im)^\s*-\s*{re.escape(key)}\s*:\s*(.+?)\s*$"
+    match = re.search(pattern, text)
+    if not match:
+        return "NO_DECLARADO"
+    return match.group(1).strip()
+
+
+def normalize_profile_flag(value: str) -> str:
+    raw = value.strip().upper()
+    return raw or "NO_DECLARADO"
+
+
+def load_repo_capabilities(profile_path: Path) -> RepoCapabilities:
+    if not profile_path.exists():
+        return RepoCapabilities(
+            profile_path=profile_path,
+            exists=False,
+            governance_search="NO_DECLARADO",
+            symdex_code="NO_DECLARADO",
+            structural_memory="NO_DECLARADO",
+            f8_observable="NO_DECLARADO",
+            trace_on="NO_DECLARADO",
+            terminal_logs="NO_DECLARADO",
+        )
+    text = profile_path.read_text(encoding="utf-8", errors="ignore")
+    return RepoCapabilities(
+        profile_path=profile_path,
+        exists=True,
+        governance_search=normalize_profile_flag(parse_profile_value(text, "governance_search")),
+        symdex_code=normalize_profile_flag(parse_profile_value(text, "symdex_code")),
+        structural_memory=normalize_profile_flag(parse_profile_value(text, "codebase-memory-mcp")),
+        f8_observable=normalize_profile_flag(parse_profile_value(text, "F8 observable")),
+        trace_on=normalize_profile_flag(parse_profile_value(text, "trace on o equivalente")),
+        terminal_logs=normalize_profile_flag(parse_profile_value(text, "terminal/logs observables")),
+    )
+
+
+def repo_capabilities_summary(capabilities: RepoCapabilities) -> list[str]:
+    return [
+        f"Governance retrieval: {capabilities.governance_search}",
+        f"Codigo vivo local (symdex_code): {capabilities.symdex_code}",
+        f"Memoria estructural (codebase-memory-mcp): {capabilities.structural_memory}",
+        f"F8 observable: {capabilities.f8_observable}",
+        f"trace on: {capabilities.trace_on}",
+        f"Terminal/logs observables: {capabilities.terminal_logs}",
+    ]
 
 
 def snapshot(paths: gpp.InitiativePaths) -> dict[str, str]:
@@ -402,6 +466,8 @@ def prompt_path(ctx: SessionContext, path: Path) -> str:
 def build_phase_ticket_content(ctx: SessionContext, phase: str, commit_scope: str = "") -> str:
     template = (RUNTIME_TEMPLATE_ROOT / "phase_ticket.md").read_text(encoding="utf-8")
     reads = effective_reads_for_phase(ctx.paths, phase)
+    if ctx.repo_capabilities.exists:
+        reads = [ctx.repo_capabilities.profile_path, *reads]
     expected_motor = PHASE_ENGINES.get(phase, gpp.extract_metadata(gpp.read_text(ctx.paths.ask), "motor_activo") or "claude")
     if phase == "F8":
         writes = [ctx.paths.real_validation]
@@ -462,6 +528,11 @@ def build_resume_packet_content(ctx: SessionContext, phase: str, commit_scope: s
                 "- Evidencia viva esperada: chat del producto, `trace on`, terminal y resultados visibles.",
             ]
         )
+    routing_lines = [f"- {line}" for line in repo_capabilities_summary(ctx.repo_capabilities)]
+    if ctx.repo_capabilities.exists:
+        routing_lines.insert(0, f"- Perfil local: {prompt_path(ctx, ctx.repo_capabilities.profile_path)}")
+    else:
+        routing_lines.insert(0, "- Perfil local: NO_ENCONTRADO")
     content = template
     for key, value in (
         ("Initiative ID", ctx.initiative_id),
@@ -479,6 +550,7 @@ def build_resume_packet_content(ctx: SessionContext, phase: str, commit_scope: s
         "## Ultimo punto aceptado": f"## Ultimo punto aceptado\n\n- {last_point}",
         "## Hallazgos o bloqueos abiertos": "## Hallazgos o bloqueos abiertos\n\n" + summarize_hallazgos(audit_path),
         "## Evidencia viva relevante": "## Evidencia viva relevante\n\n" + "\n".join(evidence_lines),
+        "## Capas y routing preferido": "## Capas y routing preferido\n\n" + "\n".join(routing_lines),
         "## Instrucciones de reentrada": "## Instrucciones de reentrada\n\n"
         + "\n".join(f"- {line}" for line in phase_specific_reentry_notes(phase, commit_scope)),
     }
@@ -1322,6 +1394,16 @@ def doctor(args: argparse.Namespace) -> int:
         "runtime_root": str(ctx.runtime_root),
         "initiative_exists": gpp.initiative_exists(ctx.paths),
         "supports_governance": True,
+        "repo_governance_profile": str(ctx.repo_capabilities.profile_path),
+        "repo_governance_profile_exists": ctx.repo_capabilities.exists,
+        "capabilities": {
+            "governance_search": ctx.repo_capabilities.governance_search,
+            "symdex_code": ctx.repo_capabilities.symdex_code,
+            "codebase_memory_mcp": ctx.repo_capabilities.structural_memory,
+            "f8_observable": ctx.repo_capabilities.f8_observable,
+            "trace_on": ctx.repo_capabilities.trace_on,
+            "terminal_logs": ctx.repo_capabilities.terminal_logs,
+        },
         "claude_available": shutil_which("claude"),
         "codex_available": shutil_which("codex"),
         "next_step": current_workflow_state(ctx)["next_step"] if gpp.initiative_exists(ctx.paths) else "<missing initiative>",
