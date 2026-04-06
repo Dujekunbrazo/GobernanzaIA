@@ -50,7 +50,8 @@ class GovernanceOrchestratorTests(unittest.TestCase):
                 prompt = orch.build_prompt(ctx, "F1")
                 self.assertIn("F1 Ask", prompt)
                 self.assertIn("Puedes escribir solo:", prompt)
-                self.assertIn("ask.md", prompt)
+                self.assertIn("dev/records/initiatives/2026-03-28_demo/ask.md", prompt)
+                self.assertNotIn(str(ctx.paths.ask), prompt)
             finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 
@@ -240,6 +241,95 @@ class GovernanceOrchestratorTests(unittest.TestCase):
                 self.assertEqual(run_state["status"], "failed")
                 self.assertEqual(session["last_attempt_phase"], "F4_REMEDIATION")
                 self.assertIn("Expected meaningful plan content", receipt["error"])
+            finally:
+                orch.ensure_local_runtime = original_ensure_runtime
+
+    def test_ensure_phase_artifact_requires_fresh_update(self) -> None:
+        with self.make_tempdir() as repo_root:
+            plan = repo_root / "plan.md"
+            plan.write_text("# PLAN\n\n- Estado: PROPUESTO\n\n## 1. Objetivo\n\nTexto valido.\n", encoding="utf-8")
+            paths = orch.gpp.InitiativePaths(
+                initiative_id="2026-03-28_demo",
+                root=repo_root,
+                ask=repo_root / "ask.md",
+                ask_audit=repo_root / "ask_audit.md",
+                handoff=repo_root / "handoff.md",
+                plan=plan,
+                plan_audit=repo_root / "plan_audit.md",
+                execution=repo_root / "execution.md",
+                post_audit=repo_root / "post_audit.md",
+                closeout=repo_root / "closeout.md",
+                lessons=repo_root / "lessons_learned.md",
+                real_validation=repo_root / "real_validation.md",
+            )
+            with self.assertRaisesRegex(RuntimeError, "Expected updated artifact"):
+                orch.ensure_phase_artifact(paths, "F4", previous_mtime_ns=plan.stat().st_mtime_ns)
+
+    def test_recover_audit_artifact_writes_markdown_block_from_raw_output(self) -> None:
+        with self.make_tempdir() as repo_root:
+            (repo_root / ".git" / "info").mkdir(parents=True)
+            target_repo = repo_root / "target"
+            initiative_root = target_repo / "dev" / "records" / "initiatives" / "2026-03-28_demo"
+            initiative_root.mkdir(parents=True)
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                ctx = orch.build_session_context(target_repo, "2026-03-28_demo")
+                output = orch.output_file_for(ctx, "F5", "codex")
+                output.write_text(
+                    "texto previo\n```md\n# PLAN AUDIT\n\n- Initiative ID: 2026-03-28_demo\n- Veredicto: FAIL\n```\n",
+                    encoding="utf-8",
+                )
+                recovered = orch.recover_audit_artifact(ctx, "F5", output)
+                self.assertTrue(recovered)
+                self.assertIn("# PLAN AUDIT", ctx.paths.plan_audit.read_text(encoding="utf-8"))
+            finally:
+                orch.ensure_local_runtime = original_ensure_runtime
+
+    def test_run_phase_recovers_f5_audit_when_raw_output_contains_artifact(self) -> None:
+        with self.make_tempdir() as repo_root:
+            (repo_root / ".git" / "info").mkdir(parents=True)
+            target_repo = repo_root / "target"
+            initiative_root = target_repo / "dev" / "records" / "initiatives" / "2026-03-28_demo"
+            initiative_root.mkdir(parents=True)
+            (initiative_root / "ask.md").write_text("# ASK\n\n- Estado: CONGELADO\n", encoding="utf-8")
+            (initiative_root / "ask_audit.md").write_text("# ASK AUDIT\n\n- Veredicto: PASS\n", encoding="utf-8")
+            (initiative_root / "plan.md").write_text("# PLAN\n\n- Estado: PROPUESTO\n\n## 1. Objetivo\n\nTexto valido.\n", encoding="utf-8")
+            (initiative_root / "handoff.md").write_text("# HANDOFF\n", encoding="utf-8")
+            (initiative_root / "plan_audit.md").write_text("# PLAN AUDIT\n\n- Veredicto: FAIL\n", encoding="utf-8")
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                ctx = orch.build_session_context(target_repo, "2026-03-28_demo")
+                output = orch.output_file_for(ctx, "F5", "codex")
+                output.write_text(
+                    "```md\n"
+                    "# PLAN AUDIT\n\n"
+                    "- Initiative ID: 2026-03-28_demo\n"
+                    "- Fase: F5\n"
+                    "- Auditor: codex\n"
+                    "- Fecha: 2026-03-28\n"
+                    "- Veredicto: PASS\n"
+                    "- Motor sugerido: N/A\n"
+                    "- Esfuerzo sugerido: n/a\n"
+                    "\n## Hallazgos\n\n"
+                    "- Sin hallazgos materiales ni pendientes.\n"
+                    "\n## Justificación del veredicto\n\n"
+                    "- No quedan hallazgos materiales ni pendientes.\n"
+                    "\n## Escalado de remediacion\n\n"
+                    "- Motor sugerido: N/A\n"
+                    "- Esfuerzo sugerido: n/a\n"
+                    "- Motivo: No aplica.\n"
+                    "\n## Condición para F5\n\n"
+                    "- Puede congelarse el plan.\n"
+                    "```\n",
+                    encoding="utf-8",
+                )
+                with mock.patch.object(orch, "run_codex", return_value=output):
+                    receipt = orch.run_phase(ctx, "F5", dry_run=False)
+                self.assertEqual(receipt["status"], "completed")
+                self.assertTrue(receipt["recovered_artifact"])
+                self.assertIn("- Veredicto: PASS", ctx.paths.plan_audit.read_text(encoding="utf-8"))
             finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 

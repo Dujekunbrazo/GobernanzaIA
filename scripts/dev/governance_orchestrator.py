@@ -4,6 +4,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -17,15 +18,22 @@ from scripts.dev import governance_ping_pong as gpp
 
 CANONICAL_REPO_ROOT = Path(__file__).resolve().parents[2]
 PROMPTS_ROOT = CANONICAL_REPO_ROOT / "doc" / "governance_prompts"
+RUNTIME_TEMPLATE_ROOT = CANONICAL_REPO_ROOT / "dev" / "templates" / "orchestrator"
 LOCAL_RUNTIME_DIRNAME = ".orchestrator_local"
 LOCAL_RUNTIME_ROOT = CANONICAL_REPO_ROOT / LOCAL_RUNTIME_DIRNAME
 DEFAULT_MAX_AUDITS = gpp.DEFAULT_MAX_AUDITS
 GIT_EXCLUDE_ENTRY = f"{LOCAL_RUNTIME_DIRNAME}/"
 REOPENABLE_PHASES = ("F3", "F5", "F7")
+CHECKPOINT_PROMPT = "18_f6_checkpoint_audit.md"
 AUDIT_ARTIFACTS: dict[str, tuple[str, str]] = {
     "F3": ("ask_audit.md", "ask_audit"),
     "F5": ("plan_audit.md", "plan_audit"),
     "F7": ("post_audit.md", "post_audit"),
+}
+AUDIT_TITLES: dict[str, str] = {
+    "F3": "# ASK AUDIT",
+    "F5": "# PLAN AUDIT",
+    "F7": "# POST AUDIT",
 }
 
 PHASE_PROMPTS: dict[str, str] = {
@@ -58,6 +66,7 @@ NEXT_STEP_TO_PHASE: dict[str, str] = {
     "RUN_F5": "F5",
     "RUN_F4_F5_REMEDIATION": "F4_REMEDIATION",
     "RUN_F6_F7": "F6",
+    "RUN_F7": "F7",
     "RUN_F6_F7_REMEDIATION": "F6_REMEDIATION",
 }
 
@@ -73,6 +82,9 @@ class SessionContext:
     prompts_dir: Path
     outputs_dir: Path
     receipts_dir: Path
+    phase_tickets_dir: Path
+    resume_packets_dir: Path
+    checkpoints_dir: Path
     paths: gpp.InitiativePaths
 
 
@@ -105,7 +117,7 @@ def ensure_git_exclude(repo_root: Path, entry: str) -> None:
 
 def ensure_local_runtime(base_repo: Path | None = None) -> Path:
     runtime_root = (base_repo or CANONICAL_REPO_ROOT) / LOCAL_RUNTIME_DIRNAME
-    for rel in ("config", "sessions", "tmp", "receipts", "prompts_rendered"):
+    for rel in ("config", "sessions", "tmp", "receipts", "prompts_rendered", "phase_tickets", "resume_packets", "checkpoints"):
         (runtime_root / rel).mkdir(parents=True, exist_ok=True)
     gitignore = runtime_root / ".gitignore"
     if not gitignore.exists():
@@ -134,7 +146,10 @@ def build_session_context(target_repo: Path, initiative_id: str) -> SessionConte
     prompts_dir = session_dir / "prompts"
     outputs_dir = session_dir / "outputs"
     receipts_dir = session_dir / "receipts"
-    for path in (session_dir, prompts_dir, outputs_dir, receipts_dir):
+    phase_tickets_dir = session_dir / "phase_tickets"
+    resume_packets_dir = session_dir / "resume_packets"
+    checkpoints_dir = session_dir / "checkpoints"
+    for path in (session_dir, prompts_dir, outputs_dir, receipts_dir, phase_tickets_dir, resume_packets_dir, checkpoints_dir):
         path.mkdir(parents=True, exist_ok=True)
     initiative_root = target_repo / "dev" / "records" / "initiatives" / initiative_id
     paths = gpp.InitiativePaths(
@@ -161,6 +176,9 @@ def build_session_context(target_repo: Path, initiative_id: str) -> SessionConte
         prompts_dir=prompts_dir,
         outputs_dir=outputs_dir,
         receipts_dir=receipts_dir,
+        phase_tickets_dir=phase_tickets_dir,
+        resume_packets_dir=resume_packets_dir,
+        checkpoints_dir=checkpoints_dir,
         paths=paths,
     )
 
@@ -221,6 +239,142 @@ def run_state_file_for(ctx: SessionContext) -> Path:
     return ctx.session_dir / "run_state.json"
 
 
+def safe_slug(value: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", value.strip())
+    cleaned = cleaned.strip("._-")
+    return cleaned or "default"
+
+
+def scoped_name(phase: str, commit_scope: str = "") -> str:
+    base = phase.lower()
+    if commit_scope.strip():
+        return f"{base}_{safe_slug(commit_scope)}"
+    return base
+
+
+def phase_ticket_file_for(ctx: SessionContext, phase: str, commit_scope: str = "") -> Path:
+    return ctx.phase_tickets_dir / f"{scoped_name(phase, commit_scope)}.md"
+
+
+def resume_packet_file_for(ctx: SessionContext, phase: str, commit_scope: str = "") -> Path:
+    return ctx.resume_packets_dir / f"{scoped_name(phase, commit_scope)}.md"
+
+
+def checkpoint_file_for(ctx: SessionContext, commit_scope: str) -> Path:
+    return ctx.checkpoints_dir / f"{safe_slug(commit_scope)}.md"
+
+
+def normalize_effort(value: str) -> str:
+    raw = value.strip().strip("`").lower()
+    if raw in {"na", "n/a"}:
+        return "n/a"
+    if raw in {"medium", "high", "max"}:
+        return raw
+    return ""
+
+
+def phase_role_for(phase: str) -> str:
+    return "motor_auditor" if PHASE_ENGINES.get(phase) == "codex" and phase in {"F3", "F5", "F7"} else "motor_activo"
+
+
+def effective_reads_for_phase(paths: gpp.InitiativePaths, phase: str) -> list[Path]:
+    if phase == "F8":
+        reads = [paths.plan, paths.plan_audit, paths.execution, paths.post_audit, paths.real_validation]
+        exception_record = paths.root / "exception_record.md"
+        return [path for path in [*reads, exception_record] if path.exists()]
+    return read_paths_for_phase(paths, phase)
+
+
+def audit_artifact_for_phase(paths: gpp.InitiativePaths, phase: str) -> Path | None:
+    mapping = {
+        "F1_REMEDIATION": paths.ask_audit,
+        "F4_REMEDIATION": paths.plan_audit,
+        "F6_REMEDIATION": paths.post_audit,
+    }
+    return mapping.get(phase)
+
+
+def extract_section(text: str, heading: str) -> str:
+    lines = text.splitlines()
+    capture = False
+    bucket: list[str] = []
+    for line in lines:
+        if gpp.canonical_heading_line(line) == gpp.canonical_heading_line(heading):
+            capture = True
+            continue
+        if capture and gpp.canonical_heading_line(line).startswith("## "):
+            break
+        if capture:
+            bucket.append(line)
+    return "\n".join(bucket).strip()
+
+
+def summarize_hallazgos(path: Path | None) -> str:
+    if not path or not path.exists():
+        return "- Sin hallazgos registrados para esta fase."
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    section = extract_section(text, "## Hallazgos")
+    if not section:
+        return "- Sin hallazgos registrados para esta fase."
+    if "Sin hallazgos materiales ni pendientes." in section:
+        return "- Sin hallazgos materiales ni pendientes."
+    lines = [line.rstrip() for line in section.splitlines() if line.strip()]
+    return "\n".join(lines[:6])
+
+
+def extract_suggested_effort(path: Path | None) -> str:
+    if not path or not path.exists():
+        return ""
+    return normalize_effort(gpp.extract_metadata(gpp.read_text(path), "Esfuerzo sugerido"))
+
+
+def count_receipts_for_phase(ctx: SessionContext, phase: str) -> int:
+    return sum(1 for path in ctx.receipts_dir.glob(f"{phase.upper()}*.json") if path.is_file())
+
+
+def suggested_claude_effort(ctx: SessionContext, phase: str) -> str:
+    audit_path = audit_artifact_for_phase(ctx.paths, phase)
+    suggested = extract_suggested_effort(audit_path)
+    if suggested and suggested != "n/a":
+        return suggested
+    exception_record = ctx.paths.root / "exception_record.md"
+    if exception_record.exists() and phase.endswith("REMEDIATION"):
+        return "max"
+    audit_text = gpp.read_text(audit_path) if audit_path else ""
+    lowered = gpp.normalize_section_title(audit_text).lower()
+    max_keywords = ("wiring", "canonico", "legacy", "transversal", "observable", "owner", "abstraccion")
+    if any(keyword in lowered for keyword in max_keywords):
+        return "max"
+    if phase.endswith("REMEDIATION") and count_receipts_for_phase(ctx, phase) >= 1:
+        return "max"
+    if phase in {"F4", "F4_REMEDIATION", "F6", "F6_REMEDIATION"}:
+        return "high"
+    return "medium"
+
+
+def phase_specific_reentry_notes(phase: str, commit_scope: str = "") -> list[str]:
+    if phase in {"F6", "F6_REMEDIATION"}:
+        notes = [
+            "No dependas de memoria conversacional previa; usa solo ticket, resume packet y artefactos congelados.",
+            "Actualiza `execution.md` tu mismo como motor_activo.",
+        ]
+        if commit_scope.strip():
+            notes.append(f"Trabaja solo el tramo autorizado `{commit_scope.strip()}`.")
+        return notes
+    if phase == "F8":
+        return [
+            "No replantees F1-F5; guia validacion real sobre artefactos ya congelados.",
+            "Usa chat del producto, `trace on` y terminal como evidencia viva de primer nivel.",
+            "Para en el primer fallo material salvo bloqueo critico de entorno.",
+        ]
+    if phase in {"F3", "F5", "F7"}:
+        return [
+            "No uses observaciones como categoria aparte.",
+            "Incluye Hallazgos, Justificacion, Escalado de remediacion y Condicion.",
+        ]
+    return ["No dependas de memoria conversacional previa; usa ticket y resume packet como estado operativo vigente."]
+
+
 def base_prompt_file_for_phase(phase: str) -> Path:
     return PROMPTS_ROOT / PHASE_PROMPTS[phase]
 
@@ -230,6 +384,115 @@ def load_prompt_text(name: str) -> str:
     if not prompt_path.exists():
         raise SystemExit(f"Missing prompt file: {prompt_path}")
     return prompt_path.read_text(encoding="utf-8").strip()
+
+
+def artifact_mtime_ns(path: Path) -> int | None:
+    if not path.exists():
+        return None
+    return path.stat().st_mtime_ns
+
+
+def prompt_path(ctx: SessionContext, path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ctx.target_repo.resolve())).replace("\\", "/")
+    except ValueError:
+        return str(path)
+
+
+def build_phase_ticket_content(ctx: SessionContext, phase: str, commit_scope: str = "") -> str:
+    template = (RUNTIME_TEMPLATE_ROOT / "phase_ticket.md").read_text(encoding="utf-8")
+    reads = effective_reads_for_phase(ctx.paths, phase)
+    expected_motor = PHASE_ENGINES.get(phase, gpp.extract_metadata(gpp.read_text(ctx.paths.ask), "motor_activo") or "claude")
+    if phase == "F8":
+        writes = [ctx.paths.real_validation]
+        criterion = "Completar real_validation.md con barrido real, evidencia viva y decision final."
+        next_step = "WAITING_FOR_F8"
+    else:
+        writes = allowed_writes_for_phase(ctx.paths, phase)
+        criterion = f"Completar {writes[0].name} con el contrato canonico de {phase}."
+        next_step = workflow_state(ctx.paths, str(read_json(ctx.session_file).get("override_phase") or "")).get("next_step", "")
+    restrictions = [
+        f"Rol autorizado: {phase_role_for(phase)}.",
+        "El orquestador no redacta el contenido sustantivo de esta fase.",
+    ]
+    if commit_scope.strip():
+        restrictions.append(f"Scope autorizado para esta corrida: {commit_scope.strip()}.")
+    if phase in {"F6", "F6_REMEDIATION"}:
+        restrictions.append("El motor_activo debe actualizar execution.md con evidencia real de lo implementado.")
+    if phase == "F8":
+        restrictions.append("No tocar codigo tras el primer fallo material salvo bloqueo critico de entorno.")
+    content = template
+    for key, value in (
+        ("Initiative ID", ctx.initiative_id),
+        ("Fase autorizada", phase),
+        ("Rol autorizado", phase_role_for(phase)),
+        ("Motor esperado", expected_motor),
+        ("Fecha", today_iso()),
+    ):
+        content = gpp.replace_metadata_line(content, key, value)
+    replacements = {
+        "## Lecturas obligatorias": "## Lecturas obligatorias\n\n" + "\n".join(f"- {prompt_path(ctx, path)}" for path in reads),
+        "## Escrituras autorizadas": "## Escrituras autorizadas\n\n" + "\n".join(f"- {prompt_path(ctx, path)}" for path in writes),
+        "## Restricciones operativas": "## Restricciones operativas\n\n" + "\n".join(f"- {line}" for line in restrictions),
+        "## Criterio de salida": "## Criterio de salida\n\n- " + criterion,
+        "## Siguiente paso permitido": "## Siguiente paso permitido\n\n- " + (next_step or "<pendiente de calcular>"),
+    }
+    for old, new in replacements.items():
+        content = content.replace(old, new)
+    return content.rstrip() + "\n"
+
+
+def build_resume_packet_content(ctx: SessionContext, phase: str, commit_scope: str = "") -> str:
+    template = (RUNTIME_TEMPLATE_ROOT / "resume_packet.md").read_text(encoding="utf-8")
+    session_data = read_json(ctx.session_file)
+    state = workflow_state(ctx.paths, str(session_data.get("override_phase") or ""))
+    audit_path = audit_artifact_for_phase(ctx.paths, phase)
+    latest = latest_receipt(ctx)
+    last_point = latest.get("phase") or session_data.get("last_phase") or "<sin historial>"
+    if commit_scope.strip():
+        last_point = f"{last_point} | scope actual: {commit_scope.strip()}"
+    evidence_lines = [
+        f"- Rama declarada: {gpp.declared_branch(ctx.paths) or '<sin rama>'}",
+        f"- Ultimo intento registrado: {session_data.get('last_attempt_phase') or '<ninguno>'}",
+    ]
+    if phase == "F8":
+        evidence_lines.extend(
+            [
+                f"- Artefacto de validacion real: {prompt_path(ctx, ctx.paths.real_validation)}",
+                "- Evidencia viva esperada: chat del producto, `trace on`, terminal y resultados visibles.",
+            ]
+        )
+    content = template
+    for key, value in (
+        ("Initiative ID", ctx.initiative_id),
+        ("Fase operativa", phase),
+        ("Fecha", today_iso()),
+        ("Orquestador", "governance_orchestrator"),
+    ):
+        content = gpp.replace_metadata_line(content, key, value)
+    replacements = {
+        "## Estado congelado y gates": "## Estado congelado y gates\n\n"
+        + "\n".join(
+            f"- {key}: {state.get(key, '<empty>')}"
+            for key in ("ask_state", "ask_audit", "plan_state", "plan_audit", "post_audit", "next_step")
+        ),
+        "## Ultimo punto aceptado": f"## Ultimo punto aceptado\n\n- {last_point}",
+        "## Hallazgos o bloqueos abiertos": "## Hallazgos o bloqueos abiertos\n\n" + summarize_hallazgos(audit_path),
+        "## Evidencia viva relevante": "## Evidencia viva relevante\n\n" + "\n".join(evidence_lines),
+        "## Instrucciones de reentrada": "## Instrucciones de reentrada\n\n"
+        + "\n".join(f"- {line}" for line in phase_specific_reentry_notes(phase, commit_scope)),
+    }
+    for old, new in replacements.items():
+        content = content.replace(old, new)
+    return content.rstrip() + "\n"
+
+
+def write_support_artifacts(ctx: SessionContext, phase: str, commit_scope: str = "") -> tuple[Path, Path]:
+    phase_ticket_path = phase_ticket_file_for(ctx, phase, commit_scope)
+    resume_packet_path = resume_packet_file_for(ctx, phase, commit_scope)
+    phase_ticket_path.write_text(build_phase_ticket_content(ctx, phase, commit_scope), encoding="utf-8")
+    resume_packet_path.write_text(build_resume_packet_content(ctx, phase, commit_scope), encoding="utf-8")
+    return phase_ticket_path, resume_packet_path
 
 
 def allowed_writes_for_phase(paths: gpp.InitiativePaths, phase: str) -> list[Path]:
@@ -255,6 +518,7 @@ def allowed_writes_for_phase(paths: gpp.InitiativePaths, phase: str) -> list[Pat
 
 
 def read_paths_for_phase(paths: gpp.InitiativePaths, phase: str) -> list[Path]:
+    exception_record = paths.root / "exception_record.md"
     capability = paths.root / "capability_closure.md"
     reads: list[Path]
     if phase in {"F1", "F1_REMEDIATION"}:
@@ -273,22 +537,68 @@ def read_paths_for_phase(paths: gpp.InitiativePaths, phase: str) -> list[Path]:
         reads = [paths.handoff, paths.plan, paths.execution]
     else:
         raise SystemExit(f"Unsupported phase: {phase}")
+    if exception_record.exists():
+        reads.append(exception_record)
     return [path for path in reads if path.exists()]
 
 
-def build_prompt(ctx: SessionContext, phase: str) -> str:
+def build_prompt(ctx: SessionContext, phase: str, escalation_note: str = "", commit_scope: str = "") -> str:
+    phase_ticket_path, resume_packet_path = write_support_artifacts(ctx, phase, commit_scope)
     base_prompt = load_prompt_text(PHASE_PROMPTS[phase])
-    writes = "\n".join(f"- {path}" for path in allowed_writes_for_phase(ctx.paths, phase))
-    reads = "\n".join(f"- {path}" for path in read_paths_for_phase(ctx.paths, phase))
-    role = "motor_auditor" if PHASE_ENGINES[phase] == "codex" and phase in {"F3", "F5", "F7"} else "motor_activo"
+    writes = "\n".join(f"- {prompt_path(ctx, path)}" for path in allowed_writes_for_phase(ctx.paths, phase))
+    reads = "\n".join(
+        f"- {prompt_path(ctx, path)}"
+        for path in [phase_ticket_path, resume_packet_path, *effective_reads_for_phase(ctx.paths, phase)]
+    )
+    role = phase_role_for(phase)
     artifact = allowed_writes_for_phase(ctx.paths, phase)[0]
+    exception_record = ctx.paths.root / "exception_record.md"
+    exception_clause = ""
+    if exception_record.exists():
+        exception_clause = (
+            "Hay una excepcion formal activa en esta iniciativa.\n"
+            f"- Lee tambien {prompt_path(ctx, exception_record)} y respetala estrictamente.\n"
+        )
+    escalation_block = ""
+    if escalation_note.strip():
+        escalation_block = (
+            "\n[ESCALADO EXCEPCIONAL]\n"
+            f"{escalation_note.strip()}\n"
+        )
+    commit_scope_block = ""
+    if commit_scope.strip():
+        commit_scope_block = (
+            "\n[SCOPE AUTORIZADO]\n"
+            f"- Esta corrida queda limitada al tramo o commit: {commit_scope.strip()}\n"
+            "- No avances otros tramos ni cierres fases adicionales.\n"
+        )
+    writes_block = (
+        "Puedes escribir solo:\n"
+        f"{writes}\n\n"
+    )
+    repo_write_rule = ""
+    if phase in {"F6", "F6_REMEDIATION"}:
+        writes_block = (
+            "Puedes modificar el codigo del repo objetivo segun el plan congelado y debes actualizar obligatoriamente:\n"
+            f"{writes}\n\n"
+        )
+        repo_write_rule = (
+            "No toques archivos fuera del alcance del plan congelado ni artefactos ajenos a la fase.\n"
+        )
     footer = (
         "\n\n[RESULTADO OBLIGATORIO]\n"
-        f"- crear o actualizar {artifact}\n"
+        f"- crear o actualizar {prompt_path(ctx, artifact)}\n"
         "- incluir metadata obligatoria\n"
-        "- no tocar otros archivos\n"
-        "- si no puedes completar la fase, deja bloqueo con evidencia en el artefacto permitido\n"
+        + (
+            "- puedes modificar codigo del repo solo dentro del alcance del plan congelado\n"
+            if phase in {"F6", "F6_REMEDIATION"}
+            else "- no tocar otros archivos\n"
+        )
+        + "- si no puedes completar la fase, deja bloqueo con evidencia en el artefacto permitido\n"
     )
+    general_write_rule = "No modifiques otros archivos.\n"
+    if phase in {"F6", "F6_REMEDIATION"}:
+        general_write_rule = "No modifiques archivos fuera del alcance del plan congelado.\n"
     return (
         "[ORCHESTRATOR]\n"
         f"Repo objetivo: {ctx.target_repo}\n"
@@ -298,11 +608,14 @@ def build_prompt(ctx: SessionContext, phase: str) -> str:
         f"Motor esperado: {PHASE_ENGINES[phase]}\n\n"
         "Lee solo:\n"
         f"{reads or '- [sin lecturas adicionales]'}\n\n"
-        "Puedes escribir solo:\n"
-        f"{writes}\n\n"
-        "No modifiques otros archivos.\n"
+        f"{writes_block}"
+        f"{general_write_rule}"
+        f"{repo_write_rule}"
+        f"{commit_scope_block}"
         "Confirma qué iniciativa estás usando antes de trabajar.\n\n"
+        f"{exception_clause}"
         f"{base_prompt}"
+        f"{escalation_block}"
         f"{footer}"
     )
 
@@ -313,13 +626,24 @@ def write_prompt_copy(ctx: SessionContext, phase: str, prompt: str) -> Path:
     return prompt_path
 
 
-def run_claude(ctx: SessionContext, phase: str, prompt: str, dry_run: bool) -> Path:
+def run_claude(
+    ctx: SessionContext,
+    phase: str,
+    prompt: str,
+    dry_run: bool,
+    model: str = "",
+    effort: str = "",
+) -> Path:
     output_path = output_file_for(ctx, phase, "claude")
     if dry_run:
         output_path.write_text(prompt, encoding="utf-8")
         return output_path
     settings_path = ctx.target_repo / ".claude" / "settings.local.json"
     command = ["claude", "-p", "--output-format", "text", "--permission-mode", "bypassPermissions"]
+    if model:
+        command.extend(["--model", model])
+    if effort:
+        command.extend(["--effort", effort])
     if settings_path.exists():
         command.extend(["--settings", str(settings_path)])
     command.append(prompt)
@@ -338,7 +662,7 @@ def run_claude(ctx: SessionContext, phase: str, prompt: str, dry_run: bool) -> P
     return output_path
 
 
-def run_codex(ctx: SessionContext, phase: str, prompt: str, dry_run: bool) -> Path:
+def run_codex(ctx: SessionContext, phase: str, prompt: str, dry_run: bool, model: str = "") -> Path:
     output_path = output_file_for(ctx, phase, "codex")
     if dry_run:
         output_path.write_text(prompt, encoding="utf-8")
@@ -352,10 +676,10 @@ def run_codex(ctx: SessionContext, phase: str, prompt: str, dry_run: bool) -> Pa
         "exec",
         "-C",
         str(ctx.target_repo),
-        "-o",
-        str(output_path),
-        prompt,
     ]
+    if model:
+        command.extend(["-m", model])
+    command.append(prompt)
     result = subprocess.run(
         command,
         cwd=ctx.target_repo,
@@ -365,41 +689,129 @@ def run_codex(ctx: SessionContext, phase: str, prompt: str, dry_run: bool) -> Pa
         errors="ignore",
         check=False,
     )
+    output_path.write_text((result.stdout or "") + (("\n" + result.stderr) if result.stderr else ""), encoding="utf-8")
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "Codex command failed")
     return output_path
 
 
-def ensure_phase_artifact(paths: gpp.InitiativePaths, phase: str) -> None:
+def ensure_phase_artifact(paths: gpp.InitiativePaths, phase: str, previous_mtime_ns: int | None = None) -> None:
+    primary_artifact = allowed_writes_for_phase(paths, phase)[0]
+    current_mtime_ns = artifact_mtime_ns(primary_artifact)
+    if previous_mtime_ns is not None and current_mtime_ns == previous_mtime_ns:
+        raise RuntimeError(f"Expected updated artifact in {primary_artifact}")
     if phase in {"F1", "F1_REMEDIATION"}:
         if not gpp.document_has_meaningful_content(paths.ask, gpp.ASK_HEADINGS):
             raise RuntimeError(f"Expected meaningful ask content in {paths.ask}")
         return
     if phase == "F3":
-        gpp.ensure_file_updated(paths.ask_audit, "Veredicto")
+        gpp.ensure_strict_audit_artifact(paths.ask_audit)
         return
     if phase in {"F4", "F4_REMEDIATION"}:
         if not gpp.document_has_meaningful_content(paths.plan, gpp.PLAN_HEADINGS):
             raise RuntimeError(f"Expected meaningful plan content in {paths.plan}")
         return
     if phase == "F5":
-        gpp.ensure_file_updated(paths.plan_audit, "Veredicto")
+        gpp.ensure_strict_audit_artifact(paths.plan_audit)
         return
     if phase in {"F6", "F6_REMEDIATION"}:
         if not gpp.document_has_meaningful_content(paths.execution, gpp.EXECUTION_HEADINGS):
             raise RuntimeError(f"Expected meaningful execution content in {paths.execution}")
         return
     if phase == "F7":
-        gpp.ensure_file_updated(paths.post_audit, "Veredicto")
+        gpp.ensure_strict_audit_artifact(paths.post_audit)
         return
     raise SystemExit(f"Unsupported phase: {phase}")
 
 
-def run_phase(ctx: SessionContext, phase: str, dry_run: bool = False) -> dict:
-    prompt = build_prompt(ctx, phase)
+def ensure_checkpoint_artifact(path: Path, previous_mtime_ns: int | None = None) -> None:
+    current_mtime_ns = artifact_mtime_ns(path)
+    if previous_mtime_ns is not None and current_mtime_ns == previous_mtime_ns:
+        raise RuntimeError(f"Expected updated checkpoint artifact in {path}")
+    text = path.read_text(encoding="utf-8", errors="ignore") if path.exists() else ""
+    verdict = gpp.extract_metadata(text, "Veredicto").strip().strip("`").upper()
+    if verdict not in {"CHECKPOINT_OK", "CHECKPOINT_CON_HALLAZGOS", "BLOQUEO_DE_EJECUCION"}:
+        raise RuntimeError(f"Expected checkpoint verdict in {path}")
+    normalized = gpp.normalize_section_title(text)
+    for required in ("## Hallazgos", "## Contraste contra plan y execution", "## Condicion para liberar el siguiente tramo"):
+        if required not in normalized:
+            raise RuntimeError(f"Expected section '{required}' in {path}")
+
+
+def build_checkpoint_prompt(ctx: SessionContext, commit_scope: str) -> tuple[str, Path]:
+    phase_ticket_path, resume_packet_path = write_support_artifacts(ctx, "F6", commit_scope)
+    checkpoint_path = checkpoint_file_for(ctx, commit_scope)
+    if not checkpoint_path.exists():
+        template = (RUNTIME_TEMPLATE_ROOT / "execution_checkpoint.md").read_text(encoding="utf-8")
+        text = template
+        for key, value in (
+            ("Initiative ID", ctx.initiative_id),
+            ("Commit scope", commit_scope),
+            ("Auditor", gpp.extract_metadata(gpp.read_text(ctx.paths.ask), "motor_auditor") or "codex"),
+            ("Fecha", today_iso()),
+        ):
+            text = gpp.replace_metadata_line(text, key, value)
+        checkpoint_path.write_text(text, encoding="utf-8")
+    reads = "\n".join(
+        f"- {prompt_path(ctx, path)}"
+        for path in [phase_ticket_path, resume_packet_path, ctx.paths.plan, ctx.paths.plan_audit, ctx.paths.execution]
+        if path.exists()
+    )
+    prompt = (
+        "[ORCHESTRATOR]\n"
+        f"Repo objetivo: {ctx.target_repo}\n"
+        f"Initiative ID: {ctx.initiative_id}\n"
+        "Fase operativa: F6_CHECKPOINT\n"
+        "Rol esperado: motor_auditor\n"
+        "Motor esperado: codex\n\n"
+        "Lee solo:\n"
+        f"{reads}\n\n"
+        "Puedes escribir solo:\n"
+        f"- {prompt_path(ctx, checkpoint_path)}\n\n"
+        "No modifiques artefactos de iniciativa ni codigo.\n"
+        f"- Scope autorizado: {commit_scope}\n\n"
+        f"{load_prompt_text(CHECKPOINT_PROMPT)}\n\n"
+        "[RESULTADO OBLIGATORIO]\n"
+        f"- crear o actualizar {prompt_path(ctx, checkpoint_path)}\n"
+        "- no emitir PASS o FAIL formales\n"
+        "- si no puedes completar el checkpoint, deja BLOQUEO_DE_EJECUCION con evidencia\n"
+    )
+    return prompt, checkpoint_path
+
+
+def recover_audit_artifact(ctx: SessionContext, phase: str, output_path: Path) -> bool:
+    if phase not in AUDIT_ARTIFACTS or not output_path.exists():
+        return False
+    text = output_path.read_text(encoding="utf-8", errors="ignore")
+    matches = re.findall(r"```(?:md)?\s*\n(.*?)```", text, flags=re.DOTALL | re.IGNORECASE)
+    expected_title = AUDIT_TITLES[phase]
+    for candidate in reversed(matches):
+        content = candidate.strip()
+        if expected_title in content:
+            artifact = getattr(ctx.paths, AUDIT_ARTIFACTS[phase][1])
+            artifact.write_text(content + "\n", encoding="utf-8")
+            return True
+    return False
+
+
+def run_phase(
+    ctx: SessionContext,
+    phase: str,
+    dry_run: bool = False,
+    allow_dirty_with_ask_exception: bool = False,
+    claude_model: str = "",
+    claude_effort: str = "",
+    codex_model: str = "",
+    escalation_note: str = "",
+    commit_scope: str = "",
+) -> dict:
+    effective_claude_effort = claude_effort or (suggested_claude_effort(ctx, phase) if PHASE_ENGINES[phase] == "claude" else "")
+    prompt = build_prompt(ctx, phase, escalation_note=escalation_note, commit_scope=commit_scope)
     prompt_copy = write_prompt_copy(ctx, phase, prompt)
     engine = PHASE_ENGINES[phase]
     output_path = output_file_for(ctx, phase, engine)
+    primary_artifact = allowed_writes_for_phase(ctx.paths, phase)[0]
+    previous_mtime_ns = artifact_mtime_ns(primary_artifact)
     started_at = dt.datetime.now(dt.timezone.utc).isoformat()
     base_receipt = {
         "phase": phase,
@@ -409,23 +821,56 @@ def run_phase(ctx: SessionContext, phase: str, dry_run: bool = False) -> dict:
         "prompt_file": str(prompt_copy),
         "output_file": str(output_path),
         "allowed_writes": [str(path) for path in allowed_writes_for_phase(ctx.paths, phase)],
+        "commit_scope": commit_scope,
+        "claude_effort": effective_claude_effort,
         "started_at": started_at,
         "timestamp": started_at,
     }
     write_json(run_state_file_for(ctx), {**base_receipt, "status": "running"})
     persist_session(ctx, {"active_phase": phase, "active_engine": engine, "last_attempt_phase": phase})
+    recovered_artifact = False
     try:
         if phase in {"F6", "F6_REMEDIATION"}:
+            ensure_phase_seed_artifacts(ctx, phase)
             gpp.ensure_f6_branch(ctx.paths, dry_run=dry_run)
-            gpp.run_preflight(ctx.initiative_id, allow_dirty_with_ask_exception=False, dry_run=dry_run)
-        output_path = run_claude(ctx, phase, prompt, dry_run=dry_run) if engine == "claude" else run_codex(ctx, phase, prompt, dry_run=dry_run)
-        ensure_phase_artifact(ctx.paths, phase)
+            gpp.run_preflight(
+                ctx.initiative_id,
+                allow_dirty_with_ask_exception=allow_dirty_with_ask_exception,
+                dry_run=dry_run,
+            )
+        output_path = (
+            run_claude(
+                ctx,
+                phase,
+                prompt,
+                dry_run=dry_run,
+                model=claude_model,
+                effort=effective_claude_effort,
+            )
+            if engine == "claude"
+            else run_codex(
+                ctx,
+                phase,
+                prompt,
+                dry_run=dry_run,
+                model=codex_model,
+            )
+        )
+        try:
+            ensure_phase_artifact(ctx.paths, phase, previous_mtime_ns=previous_mtime_ns)
+        except RuntimeError as exc:
+            if phase in AUDIT_ARTIFACTS and recover_audit_artifact(ctx, phase, output_path):
+                recovered_artifact = True
+                ensure_phase_artifact(ctx.paths, phase, previous_mtime_ns=previous_mtime_ns)
+            else:
+                raise
         receipt = {
             **base_receipt,
             "status": "completed",
             "output_file": str(output_path),
             "snapshot": snapshot(ctx.paths),
             "finished_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "recovered_artifact": recovered_artifact,
         }
         write_json(receipt_file_for(ctx, phase), receipt)
         write_json(run_state_file_for(ctx), receipt)
@@ -520,6 +965,26 @@ def reset_audit_artifact(ctx: SessionContext, phase: str) -> Path:
         text = gpp.replace_metadata_line(text, key, value)
     artifact.write_text(text, encoding="utf-8")
     return artifact
+
+
+def ensure_phase_seed_artifacts(ctx: SessionContext, phase: str) -> None:
+    if phase not in {"F6", "F6_REMEDIATION", "F7"}:
+        return
+    if ctx.paths.post_audit.exists():
+        return
+    template = (gpp.TEMPLATE_ROOT / "post_audit.md").read_text(encoding="utf-8")
+    text = template
+    for key, value in (
+        ("Initiative ID", ctx.initiative_id),
+        ("Modo", "M4"),
+        ("Estado", "PROPUESTO"),
+        ("Fecha", today_iso()),
+        ("motor_auditor", gpp.extract_metadata(gpp.read_text(ctx.paths.ask), "motor_auditor") or "codex"),
+        ("Rama", gpp.declared_branch(ctx.paths)),
+        ("baseline_mit", gpp.extract_metadata(gpp.read_text(ctx.paths.ask), "baseline_mit") or gpp.DEFAULT_BASELINE_MIT),
+    ):
+        text = gpp.replace_metadata_line(text, key, value)
+    ctx.paths.post_audit.write_text(text, encoding="utf-8")
 
 
 def reopen_phase(args: argparse.Namespace) -> int:
@@ -698,11 +1163,21 @@ def run_current_step(args: argparse.Namespace) -> int:
     if next_step == "WAITING_FOR_F2":
         raise SystemExit("Next step is WAITING_FOR_F2. Use approve-f2 after human validation.")
     if next_step == "WAITING_FOR_F8":
-        raise SystemExit("Next step is WAITING_FOR_F8. Use prepare-f8 and execute real validation manually.")
+        raise SystemExit("Next step is WAITING_FOR_F8. Use prepare-f8 and show-bootstrap --phase F8 before ejecutar la validacion real manual.")
     phase = state.get("phase")
     if not phase:
         raise SystemExit(f"Unsupported next step: {next_step}")
-    receipt = run_phase(ctx, phase, dry_run=args.dry_run)
+    receipt = run_phase(
+        ctx,
+        phase,
+        dry_run=args.dry_run,
+        allow_dirty_with_ask_exception=args.allow_dirty_with_ask_exception,
+        claude_model=args.claude_model,
+        claude_effort=args.claude_effort,
+        codex_model=args.codex_model,
+        escalation_note=args.escalation_note,
+        commit_scope=getattr(args, "commit_scope", ""),
+    )
     print(json.dumps(receipt, indent=2, ensure_ascii=True))
     return 0
 
@@ -712,7 +1187,17 @@ def run_named_phase(args: argparse.Namespace, phase: str) -> int:
     gpp.configure_repo_root(str(ctx.target_repo))
     gpp.ensure_repo_supports_governance()
     require_paths(ctx)
-    receipt = run_phase(ctx, phase, dry_run=args.dry_run)
+    receipt = run_phase(
+        ctx,
+        phase,
+        dry_run=args.dry_run,
+        allow_dirty_with_ask_exception=getattr(args, "allow_dirty_with_ask_exception", False),
+        claude_model=getattr(args, "claude_model", ""),
+        claude_effort=getattr(args, "claude_effort", ""),
+        codex_model=getattr(args, "codex_model", ""),
+        escalation_note=getattr(args, "escalation_note", ""),
+        commit_scope=getattr(args, "commit_scope", ""),
+    )
     print(json.dumps(receipt, indent=2, ensure_ascii=True))
     return 0
 
@@ -730,17 +1215,101 @@ def prepare_f8(args: argparse.Namespace) -> int:
             ("Modo", "M4"),
             ("Estado", "PROPUESTO"),
             ("Fecha", today_iso()),
-            ("motor_activo", "claude"),
+            ("motor_activo", gpp.extract_metadata(gpp.read_text(ctx.paths.ask), "motor_activo") or "claude"),
             ("motor_auditor", gpp.extract_metadata(gpp.read_text(ctx.paths.ask), "motor_auditor") or "codex"),
             ("Rama", gpp.declared_branch(ctx.paths)),
             ("baseline_mit", gpp.extract_metadata(gpp.read_text(ctx.paths.ask), "baseline_mit") or gpp.DEFAULT_BASELINE_MIT),
         ):
             text = gpp.replace_metadata_line(text, key, value)
         ctx.paths.real_validation.write_text(text, encoding="utf-8")
+    phase_ticket_path, resume_packet_path = write_support_artifacts(ctx, "F8")
     persist_session(ctx, {"last_phase": "F8_PREP", "override_phase": ""})
     print(f"initiative_id={ctx.initiative_id}")
     print(f"real_validation={ctx.paths.real_validation}")
+    print(f"phase_ticket={phase_ticket_path}")
+    print(f"resume_packet={resume_packet_path}")
     print("next_step=WAITING_FOR_F8")
+    return 0
+
+
+def show_bootstrap(args: argparse.Namespace) -> int:
+    ctx = build_session_context(parse_target_repo(args.target_repo), args.initiative_id)
+    gpp.configure_repo_root(str(ctx.target_repo))
+    gpp.ensure_repo_supports_governance()
+    require_paths(ctx)
+    requested_phase = getattr(args, "phase", "").strip().upper()
+    if not requested_phase:
+        state = current_workflow_state(ctx)
+        if state["next_step"] == "WAITING_FOR_F8":
+            requested_phase = "F8"
+        else:
+            requested_phase = state.get("phase", "")
+    if not requested_phase:
+        raise SystemExit("Could not infer phase for bootstrap. Use --phase.")
+    phase_ticket_path, resume_packet_path = write_support_artifacts(ctx, requested_phase, getattr(args, "commit_scope", ""))
+    print(f"initiative_id={ctx.initiative_id}")
+    print(f"phase={requested_phase}")
+    print(f"phase_ticket={phase_ticket_path}")
+    print(f"resume_packet={resume_packet_path}")
+    print("\n[PHASE TICKET]\n")
+    print(phase_ticket_path.read_text(encoding="utf-8"))
+    print("\n[RESUME PACKET]\n")
+    print(resume_packet_path.read_text(encoding="utf-8"))
+    return 0
+
+
+def run_f6_checkpoint(args: argparse.Namespace) -> int:
+    ctx = build_session_context(parse_target_repo(args.target_repo), args.initiative_id)
+    gpp.configure_repo_root(str(ctx.target_repo))
+    gpp.ensure_repo_supports_governance()
+    require_paths(ctx)
+    commit_scope = getattr(args, "commit_scope", "").strip()
+    if not commit_scope:
+        raise SystemExit("run-f6-checkpoint requires --commit-scope")
+    prompt, checkpoint_path = build_checkpoint_prompt(ctx, commit_scope)
+    prompt_copy = ctx.prompts_dir / f"f6_checkpoint_{safe_slug(commit_scope)}.txt"
+    prompt_copy.write_text(prompt, encoding="utf-8")
+    previous_mtime_ns = artifact_mtime_ns(checkpoint_path)
+    output_path = output_file_for(ctx, f"f6_checkpoint_{safe_slug(commit_scope)}", "codex")
+    started_at = dt.datetime.now(dt.timezone.utc).isoformat()
+    base_receipt = {
+        "phase": "F6_CHECKPOINT",
+        "engine": "codex",
+        "initiative_id": ctx.initiative_id,
+        "target_repo": str(ctx.target_repo),
+        "prompt_file": str(prompt_copy),
+        "output_file": str(output_path),
+        "checkpoint_file": str(checkpoint_path),
+        "commit_scope": commit_scope,
+        "started_at": started_at,
+        "timestamp": started_at,
+    }
+    write_json(run_state_file_for(ctx), {**base_receipt, "status": "running"})
+    persist_session(ctx, {"active_phase": "F6_CHECKPOINT", "active_engine": "codex", "last_attempt_phase": "F6_CHECKPOINT"})
+    if args.dry_run:
+        output_path.write_text(prompt, encoding="utf-8")
+    else:
+        output_path = run_codex(ctx, "f6_checkpoint_" + safe_slug(commit_scope), prompt, dry_run=False, model=args.codex_model)
+        ensure_checkpoint_artifact(checkpoint_path, previous_mtime_ns=previous_mtime_ns)
+    receipt = {
+        **base_receipt,
+        "status": "completed",
+        "finished_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+    }
+    write_json(receipt_file_for(ctx, f"F6_CHECKPOINT_{safe_slug(commit_scope)}"), receipt)
+    write_json(run_state_file_for(ctx), receipt)
+    persist_session(
+        ctx,
+        {
+            "last_phase": "F6_CHECKPOINT",
+            "last_engine": "codex",
+            "last_error": "",
+            "active_phase": "",
+            "active_engine": "",
+            "last_checkpoint_scope": commit_scope,
+        },
+    )
+    print(json.dumps(receipt, indent=2, ensure_ascii=True))
     return 0
 
 
@@ -821,11 +1390,28 @@ def build_parser() -> argparse.ArgumentParser:
     prepare_f8_parser = subparsers.add_parser("prepare-f8", help="Prepara real_validation.md para F8.")
     prepare_f8_parser.set_defaults(func=prepare_f8)
 
+    bootstrap_parser = subparsers.add_parser("show-bootstrap", help="Renderiza phase_ticket y resume_packet para pegar contexto en un chat nuevo.")
+    bootstrap_parser.add_argument("--phase", default="")
+    bootstrap_parser.add_argument("--commit-scope", default="")
+    bootstrap_parser.set_defaults(func=show_bootstrap)
+
+    checkpoint_parser = subparsers.add_parser("run-f6-checkpoint", help="Ejecuta un checkpoint lateral de F6 sobre un tramo o commit concreto.")
+    checkpoint_parser.add_argument("--commit-scope", required=True)
+    checkpoint_parser.add_argument("--dry-run", action="store_true")
+    checkpoint_parser.add_argument("--codex-model", default="")
+    checkpoint_parser.set_defaults(func=run_f6_checkpoint)
+
     doctor_parser = subparsers.add_parser("doctor", help="Diagnostica disponibilidad del orquestador y del repo objetivo.")
     doctor_parser.set_defaults(func=doctor)
 
     current_parser = subparsers.add_parser("run-current-step", help="Ejecuta el paso actual sugerido por la máquina de estados.")
     current_parser.add_argument("--dry-run", action="store_true")
+    current_parser.add_argument("--allow-dirty-with-ask-exception", action="store_true")
+    current_parser.add_argument("--claude-model", default="")
+    current_parser.add_argument("--claude-effort", default="")
+    current_parser.add_argument("--codex-model", default="")
+    current_parser.add_argument("--escalation-note", default="")
+    current_parser.add_argument("--commit-scope", default="")
     current_parser.set_defaults(func=run_current_step)
 
     for command, phase in (
@@ -841,6 +1427,13 @@ def build_parser() -> argparse.ArgumentParser:
     ):
         phase_parser = subparsers.add_parser(command, help=f"Ejecuta {phase} con prompt envelope y receipt local.")
         phase_parser.add_argument("--dry-run", action="store_true")
+        phase_parser.add_argument("--claude-model", default="")
+        phase_parser.add_argument("--claude-effort", default="")
+        phase_parser.add_argument("--codex-model", default="")
+        phase_parser.add_argument("--escalation-note", default="")
+        phase_parser.add_argument("--commit-scope", default="")
+        if phase in {"F6", "F6_REMEDIATION", "F7"}:
+            phase_parser.add_argument("--allow-dirty-with-ask-exception", action="store_true")
         phase_parser.set_defaults(func=lambda args, phase=phase: run_named_phase(args, phase))
 
     return parser

@@ -118,6 +118,40 @@ class GovernancePingPongTests(unittest.TestCase):
                 gpp.INITIATIVES_ROOT = original_initiatives
                 gpp.TEMPLATE_ROOT = original_templates
 
+    def test_document_has_meaningful_content_accepts_numbered_headings(self) -> None:
+        with self.make_tempdir() as tmpdir:
+            plan = Path(tmpdir) / "plan.md"
+            plan.write_text(
+                "# PLAN\n\n## 1. Objetivo\n\nTexto valido.\n\n## 2. Alcance\n\nMas texto.\n",
+                encoding="utf-8",
+            )
+            self.assertTrue(gpp.document_has_meaningful_content(plan, gpp.PLAN_HEADINGS))
+
+    def test_recommend_next_step_prefers_plan_remediation_when_plan_audit_is_fail(self) -> None:
+        with self.make_tempdir() as tmpdir:
+            root = Path(tmpdir)
+            ask = root / "ask.md"
+            ask.write_text("# ASK\n\n- Estado: CONGELADO\n\n## Objetivo y contexto\n\nTexto listo.\n", encoding="utf-8")
+            plan = root / "plan.md"
+            plan.write_text("# PLAN\n\n- Estado: PROPUESTO\n\n## 1. Objetivo\n\nTexto valido.\n", encoding="utf-8")
+            plan_audit = root / "plan_audit.md"
+            plan_audit.write_text("# PLAN AUDIT\n\n- Veredicto: FAIL\n", encoding="utf-8")
+            paths = gpp.InitiativePaths(
+                initiative_id="2026-03-27_demo",
+                root=root,
+                ask=ask,
+                ask_audit=root / "ask_audit.md",
+                handoff=root / "handoff.md",
+                plan=plan,
+                plan_audit=plan_audit,
+                execution=root / "execution.md",
+                post_audit=root / "post_audit.md",
+                closeout=root / "closeout.md",
+                lessons=root / "lessons_learned.md",
+                real_validation=root / "real_validation.md",
+            )
+            self.assertEqual(gpp.recommend_next_step(paths), "RUN_F4_F5_REMEDIATION")
+
 
 if __name__ == "__main__":
     unittest.main()

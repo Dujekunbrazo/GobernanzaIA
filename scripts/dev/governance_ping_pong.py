@@ -48,9 +48,11 @@ PLAN_HEADINGS = (
 )
 EXECUTION_HEADINGS = (
     "## Referencia al plan congelado",
+    "## Estado operativo de F6",
     "## Commits ejecutados",
     "## Validaciones",
     "## Riesgos detectados",
+    "## Desvios respecto al plan",
 )
 
 
@@ -152,18 +154,22 @@ def normalize_section_title(heading: str) -> str:
     return heading.translate(translation)
 
 
+def canonical_heading_line(line: str) -> str:
+    normalized = normalize_section_title(line).strip()
+    return re.sub(r"^(#+\s+)(\d+(?:\.\d+)*)[.)]?\s+", r"\1", normalized)
+
+
 def section_has_content(text: str, heading: str) -> bool:
-    heading = normalize_section_title(heading)
-    normalized_text = normalize_section_title(text)
-    lines = normalized_text.splitlines()
+    heading = canonical_heading_line(heading)
+    lines = normalize_section_title(text).splitlines()
     capture = False
     bucket: list[str] = []
     for line in lines:
-        if line.strip() == heading.strip():
+        if canonical_heading_line(line) == heading.strip():
             capture = True
             bucket = []
             continue
-        if capture and line.startswith("## "):
+        if capture and canonical_heading_line(line).startswith("## "):
             break
         if capture:
             bucket.append(line)
@@ -181,12 +187,12 @@ def document_has_meaningful_content(path: Path, headings: tuple[str, ...]) -> bo
 
 def get_verdict(path: Path) -> str:
     verdict = extract_metadata(read_text(path), "Veredicto")
-    return verdict.upper()
+    return verdict.strip().strip("`").upper()
 
 
 def get_state(path: Path) -> str:
     state = extract_metadata(read_text(path), "Estado")
-    return state.upper()
+    return state.strip().strip("`").upper()
 
 
 def set_state(path: Path, state: str) -> None:
@@ -364,13 +370,19 @@ def recommend_next_step(paths: InitiativePaths) -> str:
     ask_state = get_state(paths.ask)
     plan_state = get_state(paths.plan)
     post_verdict = get_verdict(paths.post_audit)
+    plan_has_content = document_has_meaningful_content(paths.plan, PLAN_HEADINGS)
+    execution_has_content = document_has_meaningful_content(paths.execution, EXECUTION_HEADINGS)
     if post_verdict == "PASS":
         return "WAITING_FOR_F8"
+    if post_verdict == "FAIL":
+        return "RUN_F6_F7_REMEDIATION"
+    if plan_state == "CONGELADO" and execution_has_content:
+        return "RUN_F7"
     if plan_state == "CONGELADO":
         return "RUN_F6_F7"
     if get_verdict(paths.plan_audit) == "FAIL":
         return "RUN_F4_F5_REMEDIATION"
-    if document_has_meaningful_content(paths.plan, PLAN_HEADINGS):
+    if plan_has_content:
         return "RUN_F5"
     if ask_state == "CONGELADO":
         return "RUN_F4"
@@ -498,6 +510,31 @@ def ensure_file_updated(path: Path, key: str) -> None:
         raise RuntimeError(f"Expected {key} in {path}, found <empty>")
 
 
+def ensure_strict_audit_artifact(path: Path) -> None:
+    text = read_text(path)
+    normalized_text = normalize_section_title(text)
+    verdict = extract_metadata(text, "Veredicto").strip().strip("`").upper()
+    if verdict not in {"PASS", "FAIL"}:
+        raise RuntimeError(f"Expected Veredicto PASS|FAIL in {path}, found <empty>")
+    if "## Hallazgos" not in normalized_text:
+        raise RuntimeError(f"Expected section '## Hallazgos' in {path}")
+    if "## Justificacion del veredicto" not in normalized_text:
+        raise RuntimeError(f"Expected section '## Justificación del veredicto' in {path}")
+    if "## Escalado de remediacion" not in normalized_text:
+        raise RuntimeError(f"Expected section '## Escalado de remediacion' in {path}")
+    if "## Observaciones" in normalized_text:
+        raise RuntimeError(f"Section '## Observaciones' is not allowed in {path}")
+    effort = extract_metadata(text, "Esfuerzo sugerido").strip().strip("`").lower()
+    if not effort:
+        raise RuntimeError(f"Expected Esfuerzo sugerido in {path}")
+    if effort not in {"medium", "high", "max", "n/a", "na"}:
+        raise RuntimeError(f"Unexpected Esfuerzo sugerido in {path}: {effort}")
+    if verdict == "PASS" and "Sin hallazgos materiales ni pendientes." not in text:
+        raise RuntimeError(
+            f"PASS audit must state 'Sin hallazgos materiales ni pendientes.' in {path}"
+        )
+
+
 def build_f1_prompt(paths: InitiativePaths) -> str:
     handoff_clause = (
         f"- Lee {paths.handoff} como fuente primaria de apertura si existe.\n"
@@ -526,7 +563,12 @@ def build_f3_prompt(paths: InitiativePaths) -> str:
         f"Audita {paths.ask} y escribe el resultado en {paths.ask_audit}.\n"
         "- El veredicto debe ser PASS o FAIL.\n"
         "- No edites ask.md ni otros archivos.\n"
-        "- Clasifica solo problemas materiales como hallazgos.\n"
+        "- No uses la categoria observaciones.\n"
+        "- Toda debilidad, riesgo, ambiguedad material o recomendacion correctiva debe ir a Hallazgos.\n"
+        "- Si emites PASS, explica por que no queda ningun hallazgo material ni pendiente.\n"
+        "- El artefacto debe incluir ## Hallazgos, ## Justificación del veredicto, ## Escalado de remediacion y ## Condición para F3.\n"
+        "- Debe fijar Motor sugerido, Esfuerzo sugerido y Motivo.\n"
+        "- Replica el artefacto final completo al final de tu respuesta en un bloque ```md```.\n"
     )
 
 
@@ -576,6 +618,12 @@ def build_f5_prompt(paths: InitiativePaths) -> str:
         f"Audita {paths.plan} y escribe el resultado en {paths.plan_audit}.\n"
         "- El veredicto debe ser PASS o FAIL.\n"
         "- No edites plan.md ni implementes nada.\n"
+        "- No uses la categoria observaciones.\n"
+        "- Toda debilidad, riesgo, ambiguedad material o recomendacion correctiva debe ir a Hallazgos.\n"
+        "- Si emites PASS, explica por que no queda ningun hallazgo material ni pendiente.\n"
+        "- El artefacto debe incluir ## Hallazgos, ## Justificación del veredicto, ## Escalado de remediacion y ## Condición para F5.\n"
+        "- Debe fijar Motor sugerido, Esfuerzo sugerido y Motivo.\n"
+        "- Replica el artefacto final completo al final de tu respuesta en un bloque ```md```.\n"
     )
 
 
@@ -611,6 +659,12 @@ def build_f7_prompt(paths: InitiativePaths) -> str:
         f"Escribe el resultado en {paths.post_audit}.\n"
         "- El veredicto debe ser PASS o FAIL.\n"
         "- No edites codigo ni execution.md.\n"
+        "- No uses la categoria observaciones.\n"
+        "- Toda debilidad, riesgo, ambiguedad material o recomendacion correctiva debe ir a Hallazgos.\n"
+        "- Si emites PASS, explica por que no queda ningun hallazgo material ni pendiente.\n"
+        "- El artefacto debe incluir ## Hallazgos, ## Justificación del veredicto, ## Escalado de remediacion y ## Condición para F7.\n"
+        "- Debe fijar Motor sugerido, Esfuerzo sugerido y Motivo.\n"
+        "- Replica el artefacto final completo al final de tu respuesta en un bloque ```md```.\n"
     )
 
 
