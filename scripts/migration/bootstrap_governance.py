@@ -161,6 +161,14 @@ PACKS: dict[str, PackSpec] = {
         ),
         post_copy_actions=("install_governance_mcp",),
     ),
+    "codebase_memory": PackSpec(
+        description=(
+            "Prepara codebase-memory-mcp como capacidad estructural opcional y "
+            "wiring MCP local controlado."
+        ),
+        files=(Path("scripts/ops/install_codebase_memory_mcp.py"),),
+        post_copy_actions=("install_codebase_memory_mcp",),
+    ),
 }
 
 
@@ -331,6 +339,17 @@ def parse_args() -> argparse.Namespace:
         choices=("auto", "npm", "none"),
         default="auto",
         help="Installer strategy used by the optional governance_search pack.",
+    )
+    parser.add_argument(
+        "--codebase-memory-installer",
+        choices=("auto", "setup", "none"),
+        default="auto",
+        help="Installer strategy used by the optional codebase_memory pack.",
+    )
+    parser.add_argument(
+        "--codebase-memory-command",
+        default="codebase-memory-mcp",
+        help="Command or path used by the optional codebase_memory pack for MCP wiring.",
     )
     args = parser.parse_args()
 
@@ -523,6 +542,8 @@ def run_post_copy_actions(
     symdex_source: str,
     symdex_installer: str,
     governance_mcp_installer: str,
+    codebase_memory_installer: str,
+    codebase_memory_command: str,
 ) -> None:
     action_names = {
         action_name
@@ -553,15 +574,39 @@ def run_post_copy_actions(
             subprocess.run(command, check=True)
 
     if "install_governance_mcp" not in action_names:
+        pass
+    else:
+        command = [
+            sys.executable,
+            str(target_root / "scripts" / "ops" / "install_governance_mcp.py"),
+            "--repo-root",
+            str(target_root),
+            "--installer",
+            governance_mcp_installer,
+            "--write-root-mcp",
+        ]
+        if "roo" in selected_packs:
+            command.append("--write-roo-mcp")
+        if force:
+            command.append("--force")
+        if dry_run:
+            command.append("--dry-run")
+            print(f"POST-COPY ACTION: {' '.join(command)}")
+        else:
+            subprocess.run(command, check=True)
+
+    if "install_codebase_memory_mcp" not in action_names:
         return
 
     command = [
         sys.executable,
-        str(target_root / "scripts" / "ops" / "install_governance_mcp.py"),
+        str(target_root / "scripts" / "ops" / "install_codebase_memory_mcp.py"),
         "--repo-root",
         str(target_root),
         "--installer",
-        governance_mcp_installer,
+        codebase_memory_installer,
+        "--binary-command",
+        codebase_memory_command,
         "--write-root-mcp",
     ]
     if "roo" in selected_packs:
@@ -586,6 +631,7 @@ def write_manifest(
     copied: int,
     dry_run: bool,
     symdex_source: str,
+    codebase_memory_command: str,
 ) -> None:
     payload = {
         "baseline": "GobernanzaIA",
@@ -606,6 +652,7 @@ def write_manifest(
         },
         "file_count": copied,
         "symdex_source": symdex_source if "symdex" in selected_packs else None,
+        "codebase_memory_command": codebase_memory_command if "codebase_memory" in selected_packs else None,
     }
     manifest_path = target_root / MANIFEST_PATH
     if dry_run:
@@ -649,6 +696,8 @@ def main() -> int:
         symdex_source=args.symdex_source,
         symdex_installer=args.symdex_installer,
         governance_mcp_installer=args.governance_mcp_installer,
+        codebase_memory_installer=args.codebase_memory_installer,
+        codebase_memory_command=args.codebase_memory_command,
     )
     write_manifest(
         target_root=target_root,
@@ -659,6 +708,7 @@ def main() -> int:
         copied=copied,
         dry_run=args.dry_run,
         symdex_source=args.symdex_source,
+        codebase_memory_command=args.codebase_memory_command,
     )
 
     print("\nGovernance bootstrap summary")
