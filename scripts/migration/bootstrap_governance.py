@@ -101,6 +101,8 @@ PACKS: dict[str, PackSpec] = {
             (Path("dev/prompts"), "*.md", False),
             (Path("dev/ai/adapters"), "*.md", False),
             (Path("dev/templates/initiative"), "*.md", False),
+            (Path("dev/templates/orchestrator"), "*.md", False),
+            (Path("dev/templates/governance"), "*.md", False),
             (Path("doc/governance_prompts"), "*.md", False),
         ),
     ),

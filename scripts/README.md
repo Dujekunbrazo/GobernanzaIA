@@ -185,6 +185,8 @@ python scripts/migration/bootstrap_governance.py --list-packs
 Reglas:
 
 - `core` instala la gobernanza canónica reusable y el scaffolding vacío de `dev/records/`.
+- `core` incluye también plantillas de `initiative`, `orchestrator` y
+  `governance`.
 - en reimportaciones, `core` preserva overlays locales como `.gitignore` y
   `dev/logs/decisions.md` si ya existen en el consumidor.
 - en reimportaciones con `--force`, el bootstrap elimina aliases legacy
@@ -199,6 +201,8 @@ Reglas:
 - El instalador exige un perfil de al menos dos IAs y una preferencia separada para trabajo y auditoría.
 - Ese perfil se guarda en `dev/governance_baseline.json` como metadata de instalación; no asigna `motor_activo` ni `motor_auditor` por defecto.
 - Toda instalación escribe metadata en `dev/governance_baseline.json`.
+- La overlay local mínima del consumidor se declara en
+  `dev/repo_governance_profile.md`.
 
 ### Instalador canónico de governance_search
 

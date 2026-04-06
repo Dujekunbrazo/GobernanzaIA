@@ -8,6 +8,8 @@ entre el repositorio canónico de baseline y los repositorios consumidores.
 - `GobernanzaIA` es la fuente canónica del baseline reusable.
 - Los repositorios de producto consumen ese baseline.
 - `dev/records/` nunca se exporta como histórico entre repositorios.
+- el inventario canónico del baseline vive en:
+  - `dev/policies/governance_baseline_manifest.md`
 
 ## 2) Separación de responsabilidades
 
@@ -38,6 +40,7 @@ entre el repositorio canónico de baseline y los repositorios consumidores.
 - la overlay local incluye, como mínimo:
   - `dev/repo_governance_profile.md`
 - el perfil local no redefine el canon; declara capacidades reales del repo
+- el runtime local del orquestador queda fuera del baseline exportable
 
 ## 4) Capabilities operativas opcionales
 
