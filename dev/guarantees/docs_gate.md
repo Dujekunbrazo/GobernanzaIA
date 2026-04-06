@@ -41,6 +41,7 @@ lecciones finales (`F10`).
 - [ ] State0 compliance ejecutado (`scripts/dev/check_state0.py`) sin errores
 - [ ] `closeout.md` declara si quedó o no convivencia legacy/canónico y si hubo excepciones abiertas
 - [ ] `closeout.md` usa flags binarios para `legacy_retired`, `parallel_paths_remaining`, `wiring_complete`, `exception_open` y `capability_closure_verified`
+- [ ] `closeout.md` y la evidencia asociada no presentan un cierre cosmético con archivos brillantes si persisten cableado mediocre, wiring incompleto o legacy vivo
 
 ## Checklist de lecciones (`F10`)
 

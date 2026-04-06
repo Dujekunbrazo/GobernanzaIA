@@ -26,7 +26,7 @@ Validar que el plan es ejecutable, coherente y seguro antes del congelado.
 2. Calidad de ejecución (atomicidad, orden, validaciones, rollback)
 3. Riesgo técnico (regresiones y complejidad)
 4. Gobernanza (sin alcance extra, sin rutas inventadas)
-5. Clasificación correcta de `hallazgos` materiales vs `observaciones` no bloqueantes
+5. Clasificación correcta de todos los puntos auditados como `hallazgos`
 
 ## Formato de salida obligatorio
 
@@ -41,13 +41,12 @@ Estructura:
 - Hallazgos materiales numerados por severidad (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`)
 - Evidencia por hallazgo
 - Recomendación por hallazgo
-- Observaciones no bloqueantes separadas
+- Justificación del veredicto
 - Condición para avanzar
 
 ## Reglas de decisión
 
-- `PASS`: sin hallazgos abiertos.
-- Las observaciones no bloquean.
+- `PASS`: sin hallazgos abiertos ni pendientes.
 - `FAIL`: existe al menos un bloqueante pendiente.
 
 ## Restricciones
@@ -55,3 +54,4 @@ Estructura:
 - No reescribir el plan durante auditoría.
 - No implementar fixes.
 - No introducir alcance nuevo.
+- No usar la categoría `observaciones`.

@@ -18,6 +18,12 @@ Reglas:
 - no abras alcance nuevo
 - no cierres la iniciativa
 - registra validaciones y riesgos nuevos en `execution.md`
+- `execution.md` lo actualizas tú como `motor_activo`; el orquestador no reconstruye la implementación
+- si el `phase_ticket` limita la remediación a un hallazgo o tramo concreto, trabaja solo eso
+- mantén exactamente la estructura canónica de `execution.md`:
+  `## Referencia al plan congelado`, `## Estado operativo de F6`,
+  `## Commits ejecutados`, `## Validaciones`, `## Riesgos detectados`,
+  `## Desvios respecto al plan`
 - deja todo listo para nueva auditoría `F7`
 
 Antes de seguir, confirma qué iniciativa estás corrigiendo y luego continúa con la remediación.

@@ -358,6 +358,13 @@ Script:
 - `scripts/dev/governance_ping_pong.py`
 - `scripts/dev/governance_ping_pong_launcher.bat`
 
+Nota operativa:
+
+- `GobernanzaIA` es el repo canónico del baseline
+- el uso normal del launcher y del script debe apuntar a repos consumidores
+- este repo no debería acumular iniciativas reales de trabajo en
+  `dev/records/initiatives/` salvo pruebas muy controladas y efímeras
+
 Artefactos reales de una iniciativa:
 
 - `dev/records/initiatives/<initiative_id>/ask.md`
@@ -434,6 +441,9 @@ C:\Users\Jorge Ferrer\Documents\McpBoletines
 ```
 
 Con eso, el launcher entiende automaticamente contra que repo debe trabajar.
+
+No se recomienda crear un acceso directo cuyo `Iniciar en` sea este mismo repo
+canónico, porque terminarías generando iniciativas sobre la gobernanza base.
 
 ## Concepto de rama prevista vs rama real
 

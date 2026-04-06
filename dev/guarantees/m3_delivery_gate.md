@@ -32,6 +32,8 @@ estructuralmente completo antes del cierre.
 - [ ] No existe coverage vertical aislada, wiring parcial ni integraciones
       huérfanas
 - [ ] No conviven camino legacy y camino canónico para la misma capability
+- [ ] No se maquilla el cierre con archivos brillantes si persisten cableado
+      mediocre, wiring incompleto o legacy vivo
 - [ ] Si hubo excepción formal, existe `exception_record.md` y cumple
       `dev/policies/exception_rules.md`
 - [ ] Si hubo excepción formal, `scripts/dev/check_exception_record.py` fue
@@ -44,6 +46,8 @@ estructuralmente completo antes del cierre.
 - [ ] Existe `closeout.md`
 - [ ] Existe `lessons_learned.md`
 - [ ] `closeout.md` usa flags binarios de cierre estructural
+- [ ] `closeout.md` no declara cierre cosmético ni oculta wiring deficiente o
+      legacy vivo
 - [ ] Naming compliance ejecutado (`scripts/dev/check_naming_compliance.py`)
       sin errores
 - [ ] State0 compliance ejecutado (`scripts/dev/check_state0.py`) sin errores

@@ -18,12 +18,14 @@
 
 ## Impacto técnico
 
+## Owners y wiring canónico
+
 ## Riesgos (Top 3)
 
 ## Plan por commits
 
 1.
 
-## Rollback
+## Rollback global
 
 ## Definition of Done

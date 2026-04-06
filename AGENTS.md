@@ -49,8 +49,8 @@ Reglas de activación:
 9. Si cambia el alcance, se reabre la fase previa correspondiente.
 10. Las auditorías formales solo admiten `PASS` o `FAIL`.
 11. No se permite `PASS` mientras exista cualquier hallazgo pendiente.
-12. Solo cuentan como hallazgos los problemas materiales para mandato, consistencia canónica, validación, seguridad o cierre real de fase.
-13. Las observaciones no bloquean si no tienen impacto material.
+12. En auditorías formales no existe categoría operativa de observaciones; todo punto señalado por el auditor debe registrarse como hallazgo o no incluirse.
+13. No se permite `PASS` mientras exista cualquier punto señalado pendiente, ambigüedad material, debilidad operativa o riesgo descrito por el auditor.
 14. Máximo 1 auditoría inicial y 2 re-auditorías por fase.
 15. Un cambio lógico por commit.
 16. Prohibido refactor encubierto.
@@ -62,8 +62,14 @@ Reglas de activación:
 22. Queda prohibido resolver capabilities transversales mediante branching por `tool`/`path`/`channel`/`filter`, coverage vertical aislada, paths paralelos, fallback legacy conviviendo con el camino canónico o lógica específica por herramienta en `planner`/`generator`/`router`/`execute` cuando corresponda `descriptor`/`policy`/`registry` común.
 23. Ninguna capability se considera completada mientras no esté conectada en su wiring canónico sobre todas las superficies incluidas en alcance.
 24. Queda prohibido cerrar una iniciativa con wiring parcial, integraciones huérfanas, convivencia legacy/canónico o paths paralelos para la misma capability.
-25. Si una iniciativa `M4` modifica comportamiento observable del producto, no puede cerrar `F8` ni avanzar a `F9` sin `real_validation.md` completado.
-26. Durante la validación real guiada no se toca código tras el primer fallo material, salvo bloqueo crítico que impida continuar el barrido.
+25. En cada nueva iniciativa está prohibido terminar con archivos brillantes, cableado mediocre o legacy vivo. Se considera incumplimiento material cualquier cierre cosmético o documentalmente pulido que oculte wiring deficiente, paths paralelos, integraciones huérfanas o convivencia legacy/canónico.
+26. Si una iniciativa `M4` modifica comportamiento observable del producto, no puede cerrar `F8` ni avanzar a `F9` sin `real_validation.md` completado.
+27. Durante la validación real guiada no se toca código tras el primer fallo material, salvo bloqueo crítico que impida continuar el barrido.
+28. Los artefactos sustantivos de fase pertenecen al motor responsable de esa fase; el orquestador no redacta `ask.md`, `plan.md`, `execution.md`, `ask_audit.md`, `plan_audit.md`, `post_audit.md` ni `real_validation.md`.
+29. El orquestador solo puede reparar formato o metadata de un artefacto sustantivo cuando exista autorización explícita del usuario o fallo mecánico de la máquina de estados.
+30. La continuidad operativa no puede depender de la memoria del chat; toda reentrada de motor debe arrancar con `phase_ticket` y `resume_packet` emitidos por el orquestador.
+31. En `F6` largas, multi-commit o de alto riesgo, la ejecución debe supervisarse por commit con checkpoint antes de liberar el siguiente tramo.
+32. En `F8`, la evidencia de primer nivel incluye chat del producto, `trace on`, terminal de la superficie probada y resultados visibles en runtime real.
 
 ## 4.1) Apertura durable de M4
 
@@ -104,6 +110,39 @@ Reglas:
 - `F8` es obligatoria cuando la iniciativa toca comportamiento observable del
   producto; si no aplica, debe trazarse como `NO_APLICA`.
 
+## 5.2) Propiedad de artefactos y continuidad operativa
+
+- `F1`: `ask.md` lo escribe solo el `motor_activo`.
+- `F3`: `ask_audit.md` lo escribe solo el `motor_auditor`.
+- `F4`: `plan.md` lo escribe solo el `motor_activo`.
+- `F5`: `plan_audit.md` lo escribe solo el `motor_auditor`.
+- `F6`: `execution.md` lo escribe y mantiene solo el `motor_activo`.
+- `F7`: `post_audit.md` lo escribe solo el `motor_auditor`.
+- `F8`: `real_validation.md` lo escribe quien guía o ejecuta la validación real.
+- el orquestador no sustituye la autoría de los motores; coordina fases,
+  gates, intentos, excepciones, tickets y contexto operativo
+- toda entrada o reentrada de un motor debe llevar:
+  - `phase_ticket`: autorización y límites vigentes de la fase
+  - `resume_packet`: estado operativo resumido, hallazgos abiertos, último
+    punto aceptado y siguiente paso permitido
+
+## 5.3) F6 — Ejecución supervisada
+
+- `F6` puede ejecutarse en modo estándar para cambios cortos y acotados
+- `F6` debe pasar a modo supervisado por commit cuando:
+  - el plan sea multi-commit no trivial
+  - exista capability transversal
+  - exista riesgo de legacy/canónico
+  - el usuario o el orquestador lo exijan por riesgo operativo
+- en `F6` supervisada:
+  - el orquestador libera solo el siguiente commit o tramo autorizado
+  - el `motor_activo` implementa ese tramo y actualiza `execution.md`
+  - el orquestador verifica disciplina mecánica y coherencia mínima
+  - el `motor_auditor` puede emitir `execution_checkpoint.md` lateral
+  - solo después puede liberarse el siguiente tramo
+- `execution.md` no se reconstruye desde fuera; debe reflejar lo que hizo el
+  `motor_activo` con evidencia real de validación y desvíos
+
 ## 5.1) F8 — Validación real guiada
 
 `F8` formaliza el barrido real en Kiminion o superficie equivalente antes del
@@ -118,6 +157,12 @@ Reglas:
 - si se reabre `F6`, deben repetirse `F7` y `F8` antes de `F9`
 - solo puede avanzar a `F9` cuando `real_validation.md` declare
   `Decisión final: APTA_PARA_F9`
+- `F8` se ejecuta en modo guiado en vivo:
+  - el motor no replantea `F1-F5`
+  - guía al usuario caso por caso
+  - registra expected, observed y evidencia viva
+  - usa `trace on`, terminal y chat del producto como evidencia de primer nivel
+  - se detiene en el primer fallo material salvo bloqueo crítico de entorno
 
 ## 6) Precedencia técnica
 
@@ -209,16 +254,35 @@ Excluir:
 ## 9) Rutas canónicas
 
 - Gobernanza activa: `dev/`
+- Guía breve de invocación humana del orquestador:
+  `dev/policies/orchestrator_human_quickstart.md`
 - Iniciativas: `dev/records/initiatives/<initiative_id>/`
 - Handoff de apertura M4 pre-F1:
   `dev/records/initiatives/<initiative_id>/handoff.md`
 - Validación real guiada F8:
   `dev/records/initiatives/<initiative_id>/real_validation.md`
+- Runtime local del orquestador:
+  `.orchestrator_local/`
 - Bitácora diaria: `dev/records/bitacora/`
 - Script oficial de bitácora: `scripts/ops/bitacora_append.py`
 - Validadores de cierre:
   - `scripts/dev/check_naming_compliance.py`
   - `scripts/dev/check_state0.py`
+
+## 9.1) Runtime operativo del orquestador
+
+El runtime del orquestador no forma parte de la iniciativa ni del baseline
+exportable. Vive fuera de los artefactos sustantivos y puede incluir:
+
+- `sessions/`
+- `prompts_rendered/`
+- `phase_tickets/`
+- `resume_packets/`
+- `checkpoints/`
+- `receipts/`
+
+Su propósito es mantener continuidad, trazabilidad operativa y telemetría sin
+invadir la autoría de los motores.
 
 ## 10) Contrato de bloqueo
 

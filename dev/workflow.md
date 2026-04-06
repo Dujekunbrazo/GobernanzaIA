@@ -13,10 +13,16 @@ No define el runtime de la app; define la gobernanza de desarrollo.
 
 Si una capa difiere, se corrige en el mismo cambio.
 
+Guia corta de invocacion humana del orquestador:
+
+- `dev/policies/orchestrator_human_quickstart.md`
+
 ## Roles operativos
 
 - `motor_activo`: propone, planifica e implementa.
 - `motor_auditor`: audita y decide `PASS` o `FAIL`.
+- `orquestador`: coordina estado, gates, continuidad, esfuerzo, checkpoints y
+  excepciones; no sustituye la autoría sustantiva de los motores.
 
 No hay motores por defecto.
 El usuario designa el motor según disponibilidad y contexto.
@@ -66,6 +72,34 @@ Artefactos opcionales:
 - `capability_closure.md`
 - `exception_record.md`
 - `real_validation.md`
+
+## Propiedad de artefactos y runtime del orquestador
+
+Reglas:
+
+- el `motor_activo` escribe `ask.md`, `plan.md`, `execution.md` y, cuando
+  corresponda, `real_validation.md`
+- el `motor_auditor` escribe `ask_audit.md`, `plan_audit.md` y `post_audit.md`
+- el orquestador no redacta el contenido sustantivo de esos artefactos
+- el orquestador puede reparar formato o metadata solo ante fallo mecánico y
+  con trazabilidad explícita
+- la continuidad de trabajo no depende del chat; toda reentrada debe usar:
+  - `phase_ticket`
+  - `resume_packet`
+
+Runtime local del orquestador:
+
+- `.orchestrator_local/`
+
+Contenido típico:
+
+- `sessions/`
+- `phase_tickets/`
+- `resume_packets/`
+- `checkpoints/`
+- `receipts/`
+
+Ese runtime no forma parte de la iniciativa ni del baseline exportable.
 
 ## Protocolo operativo M3
 
@@ -181,6 +215,12 @@ Restricciones:
 - un cambio lógico por commit
 - prohibido refactor encubierto
 - prohibido alcance fuera del plan congelado
+- `execution.md` lo actualiza el `motor_activo`
+- si la ejecución es larga, multi-commit o de alto riesgo, `F6` pasa a modo
+  supervisado por commit
+- en `F6` supervisada, el orquestador libera un solo tramo cada vez
+- el `motor_auditor` puede emitir `execution_checkpoint.md` lateral antes de
+  liberar el siguiente tramo
 
 ### F7 — Post-auditoría / Debug
 
@@ -214,6 +254,8 @@ Reglas:
 - si no aplica, debe trazarse explícitamente como `NO_APLICA`
 - el `motor_activo` prepara el script de pruebas real usando
   `dev/prompts/real_validation.md`
+- el motor entra en `F8` con `phase_ticket` y `resume_packet`; no depende de
+  memoria conversacional previa
 - cada caso probado debe registrar:
   - frase o acción
   - criterio o CA cubierto
@@ -221,6 +263,11 @@ Reglas:
   - observado
   - resultado `PASS` / `FAIL` / `BLOQUEADO`
   - evidencia de logs, traces o resultados visibles
+- las fuentes de evidencia de primer nivel son:
+  - chat del producto
+  - `trace on`
+  - terminal y logs de la superficie validada
+  - resultados visibles en runtime real
 - durante el barrido no se modifica código tras el primer fallo material,
   salvo bloqueo crítico que impida seguir
 - si hay fallos materiales, se consolida el artefacto y se reabre `F6`
@@ -257,12 +304,37 @@ Reglas:
   - validación
   - seguridad
   - cierre real de fase
-- los problemas editoriales o cosméticos sin impacto material deben ir a
-  `observaciones`
-- las `observaciones` no bloquean el `PASS`
+- en auditorías formales no se usa la categoría `observaciones`
+- toda debilidad, riesgo, ambigüedad material o recomendación correctiva debe
+  registrarse como `hallazgo`
+- si un punto no merece convertirse en hallazgo, no debe aparecer en la
+  auditoría formal
+- un `PASS` debe justificar explícitamente por qué no existe ningún hallazgo
+  material ni pendiente
+- la auditoría formal debe dejar `## Escalado de remediacion` con motor,
+  esfuerzo sugerido y motivo
 - máximo 1 auditoría inicial y 2 re-auditorías por fase
 - en re-auditoría no se permite goteo de hallazgos nuevos salvo por cambios
   nuevos o evidencia antes no visible
+
+## Esfuerzo adaptativo
+
+El orquestador traduce la salida del auditor a profundidad operativa del
+`motor_activo`.
+
+Escala recomendada para `Claude Opus`:
+
+- `medium`: corrección local, claridad, pequeño hueco de evidencia
+- `high`: remediación multiarchivo o integración acotada
+- `max`: wiring canónico, capability transversal, comportamiento observable,
+  legacy/canónico, excepción final o última re-auditoría
+
+Reglas:
+
+- si la auditoría formal fija `Esfuerzo sugerido`, el orquestador debe
+  respetarlo salvo excepción trazada
+- si una fase entra en excepción final o reapertura crítica, `max` pasa a ser
+  el valor por defecto
 
 ## Reglas no negociables
 
@@ -274,9 +346,10 @@ Reglas:
 6. Si falta precondición, bloquear avance con evidencia.
 7. En `M0/M1/M2`, no se modifica código.
 8. No se permite cerrar una fase con hallazgos pendientes.
-9. Las observaciones no sustituyen a los hallazgos.
+9. En auditorías formales no se permiten observaciones como categoría aparte; todo punto operativo debe quedar absorbido en hallazgos o eliminarse.
 10. `Roo` no define workflow propio por encima del contrato canónico.
 11. En `M3` y `M4`, toda capability transversal debe cerrar con wiring canónico completo, sin convivencia legacy/canónico y sin branching oportunista.
+12. En toda nueva iniciativa está prohibido cerrar con archivos brillantes, cableado mediocre o legacy vivo; el cierre visible debe coincidir con el wiring real y con el retiro efectivo de caminos paralelos e integraciones huérfanas.
 
 ## Contexto y recuperación
 

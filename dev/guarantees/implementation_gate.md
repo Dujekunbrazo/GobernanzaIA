@@ -28,6 +28,7 @@ Propósito: validar ejecución real antes del cierre documental.
 - [ ] No introduce branching por `tool`/`path`/`channel`/`filter` para resolver la capability
 - [ ] No deja coverage vertical aislada, wiring parcial ni integraciones huérfanas para la misma capability
 - [ ] No mantiene paths paralelos ni fallback legacy conviviendo con el camino canónico
+- [ ] No maquilla el cierre con archivos brillantes ni documentación pulida si persisten cableado mediocre, wiring incompleto o legacy vivo
 - [ ] `planner`, `generator`, `router` y `execute` consumen el mecanismo común; no absorbieron lógica específica por herramienta fuera del owner arquitectónico
 - [ ] Existe evidencia end-to-end de activación real y evidencia estructural de no-branching y no-convivencia cuando aplique
 
@@ -38,6 +39,7 @@ Propósito: validar ejecución real antes del cierre documental.
 - [ ] No hay hallazgos abiertos
 - [ ] Riesgos remanentes documentados
 - [ ] La post-auditoría verificó ausencia de branching oportunista, wiring parcial, paths paralelos y fallback legacy en las capabilities transversales tocadas
+- [ ] La post-auditoría verificó ausencia de cierre cosmético con archivos brillantes que oculten cableado mediocre o legacy vivo
 
 ## Checklist F8 (Validación real guiada)
 

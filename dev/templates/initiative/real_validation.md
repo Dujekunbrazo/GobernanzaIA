@@ -13,6 +13,12 @@
 
 ## Entorno y alcance probado
 
+## Fuentes de evidencia viva
+
+- Chat del producto:
+- `trace on`:
+- Terminal / logs:
+
 ## Script de pruebas
 
 ## Matriz de resultados

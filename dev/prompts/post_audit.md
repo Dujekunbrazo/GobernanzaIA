@@ -27,7 +27,7 @@ Verificar que lo implementado coincide con el plan congelado y no introduce regr
 2. Calidad técnica (bugs y deuda introducida)
 3. Validación (pruebas y comandos realmente ejecutables)
 4. Seguridad de cierre (riesgos remanentes claros)
-5. Clasificación correcta de `hallazgos` materiales vs `observaciones`
+5. Clasificación correcta de todos los puntos auditados como `hallazgos`
 
 ## Formato de salida obligatorio
 
@@ -42,13 +42,12 @@ Estructura:
 - Hallazgos materiales por severidad (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`)
 - Evidencia concreta por hallazgo
 - Recomendación de fix atómico por hallazgo (sin implementarlo)
-- Observaciones no bloqueantes separadas
+- Justificación del veredicto
 - Condición para avanzar
 
 ## Reglas de decisión
 
-- `PASS`: sin hallazgos abiertos.
-- Las observaciones no bloquean.
+- `PASS`: sin hallazgos abiertos ni pendientes.
 - `FAIL`: existe al menos un bloqueante pendiente.
 
 ## Restricciones
@@ -56,3 +55,4 @@ Estructura:
 - No reescribir la implementación.
 - No mezclar fixes y mejoras en el mismo hallazgo.
 - No cerrar tarea con `FAIL`.
+- No usar la categoría `observaciones`.
