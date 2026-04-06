@@ -13,6 +13,18 @@ Reglas:
 
 ## Scripts operativos actuales
 
+## Perfil de capacidades por repo
+
+Los repos consumidores deben mantener un perfil local único en:
+
+- `dev/repo_governance_profile.md`
+
+Ese perfil:
+
+- declara capacidades reales del repo
+- no redefine el workflow
+- será consumido por el orquestador para decidir routing y fallback
+
 ### Bitacora diaria por IA
 
 Ruta canónica:

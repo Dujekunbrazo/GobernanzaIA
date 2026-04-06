@@ -25,15 +25,27 @@ entre el repositorio canónico de baseline y los repositorios consumidores.
   hacia el repo destino.
 - Toda instalación o reimportación debe dejar metadata de baseline en
   `dev/governance_baseline.json`.
+- La instalación baseline debe dejar también la plantilla canónica de perfil en
+  `dev/templates/governance/repo_governance_profile.md`.
 - El repo consumidor no debe actualizar manualmente a mano los archivos del
   baseline si el mismo cambio puede entrar por bootstrap desde la fuente
   canónica.
+
+## 3.1) Baseline y overlay local
+
+- el baseline reusable vive en `GobernanzaIA`
+- el repo consumidor recibe ese baseline y mantiene una overlay local mínima
+- la overlay local incluye, como mínimo:
+  - `dev/repo_governance_profile.md`
+- el perfil local no redefine el canon; declara capacidades reales del repo
 
 ## 4) Capabilities operativas opcionales
 
 - `symdex` se instala como dependencia externa desde su fuente oficial; no se
   exporta como snapshot desde el repo consumidor.
 - `governance_search` se distribuye como tooling local reusable del baseline.
+- `codebase-memory-mcp` se integrará como capacidad estructural canónica; su
+  disponibilidad real debe declararse en `dev/repo_governance_profile.md`.
 - El wiring MCP de `Roo` debe resolverse mediante merge canónico de
   `.roo/mcp.json`; queda prohibido sobrescribir servidores hermanos por pack.
 

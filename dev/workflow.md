@@ -148,6 +148,7 @@ Reglas:
 - ninguna capa puede actuar como vía primaria paralela de otra
 - si la capa estructural canónica no está disponible, se degrada de forma
   explícita; no se simula como si existiera
+- todo repo consumidor declara sus capacidades reales en un perfil local único
 
 ## Protocolo operativo M3
 
@@ -438,6 +439,8 @@ Uso operativo:
 - aplicar primero filtros por `phase`, `document_type` y `motor` cuando
   existan
 - si la recuperación devuelve ambigüedad, cargar el documento canónico por ruta
+- el repo consumidor debe declarar sus capacidades reales en:
+  - `dev/repo_governance_profile.md`
 
 ### SymDex
 
@@ -493,6 +496,23 @@ Uso operativo:
 - si falta evidencia donde aplica, bloquear avance formal
 
 ## Gobernanza de ingeniería
+
+## Perfil local de capacidades
+
+Cada repo consumidor debe mantener:
+
+- `dev/repo_governance_profile.md`
+
+Reglas:
+
+- describe tooling y señales runtime realmente disponibles
+- no redefine el canon
+- guía el routing y fallback del orquestador
+
+Referencia:
+
+- `dev/policies/repo_capabilities_policy.md`
+- `dev/templates/governance/repo_governance_profile.md`
 
 Referencia corta:
 - `dev/policies/ai_engineering_governance.md`

@@ -72,6 +72,7 @@ Reglas de activación:
 32. En `F8`, la evidencia de primer nivel incluye chat del producto, `trace on`, terminal de la superficie probada y resultados visibles en runtime real.
 33. Toda consulta debe rutearse a la capa canónica mínima que la responda; queda prohibido usar dos capas primarias simultáneas para la misma responsabilidad.
 34. La memoria estructural del sistema debe resolverse mediante la capa estructural canónica cuando esté disponible; no puede coexistir como vía opcional lateral frente al camino oficial.
+35. Todo repo consumidor debe declarar un único perfil local de capacidades reales; el orquestador debe degradar según ese perfil y no asumir tooling homogéneo entre repos.
 
 ## 4.1) Apertura durable de M4
 
@@ -214,6 +215,7 @@ La memoria conversacional no forma parte del stack canónico.
 La policy operativa de referencia es:
 
 - `dev/policies/context_stack_policy.md`
+- `dev/policies/repo_capabilities_policy.md`
 
 ### Capa estática siempre presente
 
@@ -327,6 +329,12 @@ Si esta evidencia falta donde aplica, el estado correcto es `BLOQUEADO`.
 - Gobernanza activa: `dev/`
 - Guía breve de invocación humana del orquestador:
   `dev/policies/orchestrator_human_quickstart.md`
+- Policy de capacidades por repo:
+  `dev/policies/repo_capabilities_policy.md`
+- Plantilla de perfil local de capacidades:
+  `dev/templates/governance/repo_governance_profile.md`
+- Perfil local instalado en cada repo consumidor:
+  `dev/repo_governance_profile.md`
 - Iniciativas: `dev/records/initiatives/<initiative_id>/`
 - Handoff de apertura M4 pre-F1:
   `dev/records/initiatives/<initiative_id>/handoff.md`
