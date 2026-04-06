@@ -210,6 +210,8 @@ Reglas:
 - Toda instalación escribe metadata en `dev/governance_baseline.json`.
 - La overlay local mínima del consumidor se declara en
   `dev/repo_governance_profile.md`.
+- En actualizaciones del baseline, `dev/repo_governance_profile.md` se
+  preserva como overlay local.
 
 ### Instalador canónico de governance_search
 
@@ -322,4 +324,9 @@ python scripts/migration/bootstrap_governance.py --target <ruta_repo_consumidor>
 ```
 
 3. Revisar el diff en el repo consumidor y validar sus gates locales.
+
+Regla:
+
+- no sobrescribir la overlay local del consumidor; el baseline actualiza canon,
+  no inventa la realidad del repo destino
 

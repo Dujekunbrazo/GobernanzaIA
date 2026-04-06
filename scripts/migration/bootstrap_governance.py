@@ -31,9 +31,12 @@ IA_PACKS = {
     "roo": "roo",
 }
 MANIFEST_PATH = Path("dev/governance_baseline.json")
+REPO_PROFILE_TEMPLATE_PATH = Path("dev/templates/governance/repo_governance_profile.md")
+REPO_PROFILE_DESTINATION = Path("dev/repo_governance_profile.md")
 PRESERVE_IF_EXISTS = {
     Path(".gitignore"),
     Path("dev/logs/decisions.md"),
+    Path("dev/repo_governance_profile.md"),
 }
 REMOVE_ON_FORCE_IF_EXISTS = {
     Path("doc/governance_prompts/01_m4_f1_ask.md"),
@@ -254,6 +257,23 @@ def prune_obsolete_files(target_root: Path, force: bool, dry_run: bool) -> int:
         print(f"REMOVED: {rel}")
 
     return removed
+
+
+def ensure_repo_governance_profile(target_root: Path, dry_run: bool) -> str:
+    destination = target_root / REPO_PROFILE_DESTINATION
+    if destination.exists():
+        print(f"SKIP (preserve local): {REPO_PROFILE_DESTINATION}")
+        return "preserved"
+
+    source = REPO_ROOT / REPO_PROFILE_TEMPLATE_PATH
+    if dry_run:
+        print(f"WRITE: {REPO_PROFILE_DESTINATION} (from {REPO_PROFILE_TEMPLATE_PATH})")
+        return "planned"
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+    print(f"COPIED: {REPO_PROFILE_DESTINATION}")
+    return "written"
 
 
 def parse_args() -> argparse.Namespace:
@@ -686,6 +706,10 @@ def main() -> int:
     removed = prune_obsolete_files(
         target_root=target_root,
         force=args.force,
+        dry_run=args.dry_run,
+    )
+    ensure_repo_governance_profile(
+        target_root=target_root,
         dry_run=args.dry_run,
     )
     run_post_copy_actions(

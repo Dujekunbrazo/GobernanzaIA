@@ -3,7 +3,8 @@ Sync the canonical governance baseline from GobernanzaIA into known consumers.
 
 This script is intentionally run from the source repository. It reuses
 bootstrap_governance.py and preserves an existing consumer installation profile
-when a governance manifest is already present.
+when a governance manifest is already present. The local repo capabilities
+profile remains consumer-owned overlay.
 """
 
 from __future__ import annotations

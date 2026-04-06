@@ -10,6 +10,8 @@ entre el repositorio canónico de baseline y los repositorios consumidores.
 - `dev/records/` nunca se exporta como histórico entre repositorios.
 - el inventario canónico del baseline vive en:
   - `dev/policies/governance_baseline_manifest.md`
+- la expansión segura a consumidores se rige por:
+  - `dev/policies/consumer_rollout_policy.md`
 
 ## 2) Separación de responsabilidades
 
@@ -41,6 +43,7 @@ entre el repositorio canónico de baseline y los repositorios consumidores.
   - `dev/repo_governance_profile.md`
 - el perfil local no redefine el canon; declara capacidades reales del repo
 - el runtime local del orquestador queda fuera del baseline exportable
+- la overlay local debe preservarse en actualizaciones del baseline
 
 ## 4) Capabilities operativas opcionales
 
