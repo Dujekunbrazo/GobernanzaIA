@@ -26,5 +26,12 @@ Reglas operativas:
 - si el `phase_ticket` limita esta ejecución a un commit o tramo concreto, trabaja solo ese tramo
 - deja explícito cuál fue el último tramo completado y cuál sería el siguiente
 - no dependas de memoria conversacional previa; usa `phase_ticket` y `resume_packet` como contexto operativo vigente
+- si necesitas contexto adicional, prioriza:
+  - `phase_ticket` y `resume_packet`
+  - `plan.md`
+  - código vivo puntual
+- no releas toda la iniciativa si basta el tramo autorizado
+- registra solo validación y evidencia realmente relevantes; evita volcar logs completos
+- si existe capacidad estructural canónica disponible, úsala para dudas de wiring o impacto en lugar de expandir contexto manualmente
 
 Antes de empezar, confirma qué iniciativa vas a ejecutar y luego continua

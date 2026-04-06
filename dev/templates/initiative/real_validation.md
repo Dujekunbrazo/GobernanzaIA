@@ -26,6 +26,8 @@
 | Caso | Frase / acción | Criterio | Esperado | Observado | Resultado | Evidencia |
 | ---- | -------------- | -------- | -------- | --------- | --------- | --------- |
 
+## Extractos de evidencia relevante
+
 ## Hallazgos consolidados
 
 ## Riesgos remanentes

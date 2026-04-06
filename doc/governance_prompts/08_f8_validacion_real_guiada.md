@@ -31,6 +31,17 @@ Haz exactamente esto:
    - `REABRIR_F6`
    - `NO_APLICA`
 
+Reglas de contexto y coste:
+
+- entra en `F8` usando `phase_ticket` y `resume_packet`; no dependas del chat
+  previo como memoria principal
+- guía el barrido caso por caso; no vuelques trazas o terminal completos si
+  basta un extracto relevante
+- si falta evidencia observable suficiente, declara `BLOQUEADO`
+- no uses `F8` para replanificar ni para reabrir debates arquitectónicos
+- si necesitas confirmar wiring o impacto, apóyate en la capa estructural o en
+  código vivo puntual, no en recapitulaciones largas
+
 Antes de seguir, confirma qué iniciativa vas a validar y si `post_audit.md`
 ya quedó en `PASS`.
 ```

@@ -20,6 +20,13 @@ Contrasta:
 - `execution.md`
 - diff o commit reciente del tramo
 - disciplina de alcance y write set
+- `phase_ticket` y `resume_packet` como contexto ejecutivo vigente
 
 Si detectas desvio, legacy vivo, evidencia insuficiente o mezcla de cambios,
 bloquea la liberacion del siguiente tramo.
+
+Reglas:
+
+- no releas historia completa de la iniciativa si el tramo ya está acotado
+- usa retrieval puntual y evidencia mínima suficiente
+- si falta evidencia para juzgar el tramo, emite `BLOQUEO_DE_EJECUCION`

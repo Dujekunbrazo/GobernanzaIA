@@ -17,3 +17,5 @@
 ## Contraste contra plan y execution
 
 ## Condicion para liberar el siguiente tramo
+
+## Evidencia minima usada

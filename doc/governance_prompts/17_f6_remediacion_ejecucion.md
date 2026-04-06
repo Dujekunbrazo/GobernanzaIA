@@ -20,6 +20,10 @@ Reglas:
 - registra validaciones y riesgos nuevos en `execution.md`
 - `execution.md` lo actualizas tú como `motor_activo`; el orquestador no reconstruye la implementación
 - si el `phase_ticket` limita la remediación a un hallazgo o tramo concreto, trabaja solo eso
+- usa `phase_ticket` y `resume_packet` como continuidad operativa vigente
+- no releas toda la iniciativa si el hallazgo queda acotado por tramo
+- para dudas de wiring o impacto, prioriza retrieval estructural o simbólico frente a contexto bruto
+- evita pegar logs o trazas completos en `execution.md`; registra solo evidencia relevante
 - mantén exactamente la estructura canónica de `execution.md`:
   `## Referencia al plan congelado`, `## Estado operativo de F6`,
   `## Commits ejecutados`, `## Validaciones`, `## Riesgos detectados`,
