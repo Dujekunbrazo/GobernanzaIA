@@ -48,8 +48,16 @@ El baseline actual prioriza:
 - Perfil multi-IA de instalacion con minimo dos IAs y preferencia separada de
   trabajo y auditoria.
 - Packs operativos opcionales para `governance_search` y `SymDex`.
+- Capa estructural prevista para `codebase-memory-mcp` con fallback explícito.
 - Frontera explicita entre gobernanza reusable y runtime del producto
   consumidor.
+
+Orden canónico de evolución:
+
+1. gobernanza normativa
+2. gobernanza ejecutiva del orquestador
+3. integración de memoria estructural
+4. expansión segura a repos consumidores
 
 ---
 
@@ -73,6 +81,7 @@ que no deben pisarse ciegamente, como:
 
 - `.gitignore`
 - `dev/logs/decisions.md`
+- `dev/repo_governance_profile.md`
 
 El baseline no instala:
 
