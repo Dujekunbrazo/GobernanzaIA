@@ -17,6 +17,7 @@ Guia corta de invocacion humana del orquestador:
 
 - `dev/policies/orchestrator_human_quickstart.md`
 - `dev/policies/context_stack_policy.md`
+- `dev/policies/context_routing_policy.md`
 
 ## Roles operativos
 
@@ -149,6 +150,8 @@ Reglas:
 - si la capa estructural canónica no está disponible, se degrada de forma
   explícita; no se simula como si existiera
 - todo repo consumidor declara sus capacidades reales en un perfil local único
+- el detalle de routing y degradación vive en:
+  - `dev/policies/context_routing_policy.md`
 
 ## Protocolo operativo M3
 
@@ -441,6 +444,8 @@ Uso operativo:
 - si la recuperación devuelve ambigüedad, cargar el documento canónico por ruta
 - el repo consumidor debe declarar sus capacidades reales en:
   - `dev/repo_governance_profile.md`
+- el routing detallado por tipo de consulta se define en:
+  - `dev/policies/context_routing_policy.md`
 
 ### SymDex
 

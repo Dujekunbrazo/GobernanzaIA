@@ -2,6 +2,8 @@
 
 Propósito:
 - minimizar carga de contexto sin perder enforcement.
+- la policy de routing detallado es:
+  - `dev/policies/context_routing_policy.md`
 
 ## 1) Regla de carga mínima
 
@@ -18,6 +20,8 @@ Propósito:
 - Gobernanza general:
   - `AGENTS.md`
   - `dev/workflow.md`
+  - `dev/policies/context_routing_policy.md` si existe ambigüedad de capa
+    primaria
 - Estado operativo y continuidad:
   - runtime del orquestador
   - `phase_ticket`
@@ -83,3 +87,5 @@ Propósito:
 - `symdex_code` no sustituye memoria estructural global
 - la evidencia runtime no sustituye análisis estructural
 - la memoria del chat no sustituye ninguna capa canónica
+- si existe duda sobre el routing correcto, prevalece
+  `dev/policies/context_routing_policy.md`

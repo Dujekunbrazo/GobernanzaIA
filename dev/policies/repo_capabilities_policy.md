@@ -43,6 +43,8 @@ La plantilla fuente vive en:
 - el perfil describe disponibilidad real, no deseos ni roadmap
 - si una capacidad no está instalada o validada, debe declararse como ausente
 - el orquestador debe degradar según el perfil, no asumir capacidades
+- el routing de cada consulta se rige por
+  `dev/policies/context_routing_policy.md`
 
 ## 5) Capacidades mínimas a declarar
 

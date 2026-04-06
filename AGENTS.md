@@ -216,6 +216,7 @@ La policy operativa de referencia es:
 
 - `dev/policies/context_stack_policy.md`
 - `dev/policies/repo_capabilities_policy.md`
+- `dev/policies/context_routing_policy.md`
 
 ### Capa estática siempre presente
 
@@ -257,6 +258,8 @@ La recuperación de gobernanza debe ser híbrida:
   - consulta de wiring/legacy/impacto estructural -> `codebase-memory-mcp`
     cuando esté disponible; si no, fallback explícito
   - consulta de validación observable -> evidencia runtime real
+  - policy de detalle:
+    `dev/policies/context_routing_policy.md`
 - `Glob`, `Globpattern`, `Grep`, `find`, `rg` o lecturas directas no cuentan
   como vía principal si el MCP correspondiente está disponible
 - herramientas internas solo como fallback si el MCP falla, no está expuesto o
@@ -331,6 +334,8 @@ Si esta evidencia falta donde aplica, el estado correcto es `BLOQUEADO`.
   `dev/policies/orchestrator_human_quickstart.md`
 - Policy de capacidades por repo:
   `dev/policies/repo_capabilities_policy.md`
+- Policy de routing de contexto:
+  `dev/policies/context_routing_policy.md`
 - Plantilla de perfil local de capacidades:
   `dev/templates/governance/repo_governance_profile.md`
 - Perfil local instalado en cada repo consumidor:
