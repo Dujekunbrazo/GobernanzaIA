@@ -1348,7 +1348,7 @@ def shutil_which(name: str) -> bool:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Orquestador canónico de gobernanza M4: Codex orquesta, Claude actúa y Codex audita dentro del repo objetivo."
+        description="Orquestador canónico de gobernanza M4: coordina fase, continuidad, tickets, checkpoints y receipts dentro del repo objetivo sin sustituir la autoría de los motores."
     )
     parser.add_argument("--target-repo", required=True, help="Repo objetivo sobre el que se orquesta la iniciativa.")
     parser.add_argument("--initiative-id", required=True, help="Initiative ID canónico.")

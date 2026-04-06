@@ -3,6 +3,13 @@
 Esta guia corta define las frases canonicas para arrancar y operar una
 iniciativa `M4` con el orquestador desde chat.
 
+Contrato corto:
+
+- el orquestador coordina estado, fase, continuidad y checkpoints
+- los motores escriben los artefactos sustantivos de la iniciativa
+- si se abre un chat nuevo, el orquestador rehidrata; el chat no actúa como
+  memoria fiable por sí solo
+
 ## Abrir una iniciativa nueva desde handoff
 
 Usa esta frase:
@@ -90,3 +97,10 @@ Le basta con declarar:
 - la iniciativa
 - el motor activo o auditor cuando aplique
 - la fase que quiere abrir o continuar
+
+El orquestador traduce esa orden a:
+
+- fase efectiva
+- `phase_ticket`
+- `resume_packet`
+- siguiente paso permitido

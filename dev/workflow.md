@@ -102,6 +102,30 @@ Contenido típico:
 
 Ese runtime no forma parte de la iniciativa ni del baseline exportable.
 
+## Gobernanza ejecutiva del orquestador
+
+El orquestador es la capa ejecutiva del sistema.
+
+Responsabilidades:
+
+- abrir y retomar sesiones
+- determinar fase efectiva y siguiente paso permitido
+- verificar precondiciones mecánicas
+- emitir `phase_ticket` y `resume_packet`
+- registrar intents, receipts, errores y checkpoints
+- preparar `F8` y la continuidad operativa entre chats
+
+Límites:
+
+- no redacta artefactos sustantivos de fase
+- no sustituye auditoría formal
+- no reinterpreta alcance por su cuenta
+- no convierte ausencia de evidencia en validación implícita
+
+Referencia:
+
+- `dev/policies/orchestrator_execution_policy.md`
+
 ## Stack canónico de contexto
 
 Capas:

@@ -126,8 +126,19 @@ Uso recomendado:
 
 ## governance_orchestrator.py
 
-Orquestador canónico por fases: `Codex` coordina desde el repo fuente y lanza
-`Claude` o `Codex` dentro del repo objetivo.
+Orquestador canónico por fases y capa ejecutiva de la gobernanza.
+
+No redacta artefactos sustantivos de iniciativa.
+Coordina:
+
+- sesión y fase vigente
+- continuidad operativa
+- `phase_ticket` y `resume_packet`
+- checkpoints de `F6`
+- preparación de `F8`
+- receipts e intentos
+
+Los motores siguen siendo responsables de escribir los artefactos de fase.
 
 Uso base:
 
@@ -142,5 +153,6 @@ Puntos clave:
 - crea `.orchestrator_local/` en primer uso
 - guarda runtime local fuera del baseline exportable
 - trabaja una fase por comando
+- no depende de memoria conversacional para reentrada
 - usa prompts `01-07` y prompts de remediación `13/15/17`
 - mantiene `F2` y `F8` como checkpoints humanos

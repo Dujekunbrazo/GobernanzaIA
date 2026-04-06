@@ -128,6 +128,25 @@ Reglas:
   - `resume_packet`: estado operativo resumido, hallazgos abiertos, último
     punto aceptado y siguiente paso permitido
 
+## 5.2.1) Gobernanza ejecutiva del orquestador
+
+- el orquestador es la capa ejecutiva del sistema de gobernanza
+- coordina:
+  - sesiones
+  - fase efectiva
+  - precondiciones
+  - tickets de fase
+  - rehidratación
+  - intentos
+  - excepciones
+  - receipts
+  - checkpoints
+- no redacta artefactos sustantivos de motor
+- no sustituye el juicio técnico del `motor_auditor`
+- no inventa validación observable
+- su contrato operativo de referencia es:
+  - `dev/policies/orchestrator_execution_policy.md`
+
 ## 5.3) F6 — Ejecución supervisada
 
 - `F6` puede ejecutarse en modo estándar para cambios cortos y acotados
