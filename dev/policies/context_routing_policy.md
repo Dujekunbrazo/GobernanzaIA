@@ -91,6 +91,10 @@ Fallback:
 
 - `symdex_code` más lectura canónica del repo
 
+Referencia:
+
+- `dev/policies/structural_memory_policy.md`
+
 ### Evidencia runtime real
 
 Preguntas típicas:

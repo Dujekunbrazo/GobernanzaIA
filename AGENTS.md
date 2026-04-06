@@ -219,6 +219,7 @@ La policy operativa de referencia es:
 - `dev/policies/repo_capabilities_policy.md`
 - `dev/policies/context_routing_policy.md`
 - `dev/policies/token_budget_policy.md`
+- `dev/policies/structural_memory_policy.md`
 
 ### Capa estática siempre presente
 
@@ -310,6 +311,9 @@ Mientras no esté instalada, su uso degrada a `SymDex` más lectura canónica de
 repo.
 Cuando exista, no puede convivir como vía lateral con otra capa estructural
 primaria.
+La policy operativa de referencia es:
+
+- `dev/policies/structural_memory_policy.md`
 
 ### Evidencia runtime real
 

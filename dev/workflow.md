@@ -19,6 +19,7 @@ Guia corta de invocacion humana del orquestador:
 - `dev/policies/context_stack_policy.md`
 - `dev/policies/context_routing_policy.md`
 - `dev/policies/token_budget_policy.md`
+- `dev/policies/structural_memory_policy.md`
 
 ## Roles operativos
 
@@ -502,6 +503,10 @@ Uso operativo:
   - arquitectura estructural
 - cuando la capacidad no exista, degradar a `SymDex` más lectura canónica
 - cuando exista, usarla como vía estructural primaria y no como ayuda lateral
+
+Referencia:
+
+- `dev/policies/structural_memory_policy.md`
 
 ### Evidencia runtime real
 

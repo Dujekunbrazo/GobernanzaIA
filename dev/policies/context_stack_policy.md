@@ -69,6 +69,8 @@ La gobernanza opera sobre cinco capas distintas:
   sustantivos de la iniciativa
 - prohibido dejar dos capas respondiendo la misma responsabilidad como vías
   primarias simultáneas
+- referencia operativa:
+  - `dev/policies/structural_memory_policy.md`
 
 ## 6) Criterio de cierre canónico
 

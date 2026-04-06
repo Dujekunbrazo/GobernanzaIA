@@ -54,6 +54,8 @@ La plantilla fuente vive en:
 - validación real observable
 - `trace on`
 - terminal o logs legibles
+- el detalle de uso de la capacidad estructural se rige por
+  `dev/policies/structural_memory_policy.md`
 
 ## 6) Prohibiciones
 
