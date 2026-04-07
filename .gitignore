@@ -4,3 +4,4 @@ __pycache__/
 .env
 .orchestrator_local/
 .tmp_governance_orchestrator_tests/
+.roo/mcp.json

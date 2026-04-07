@@ -162,28 +162,45 @@ Si una review genera una remediacion aprobable:
 APRUEBA REMEDIACION | repo=<repo> | fecha=<yyyy-mm-dd> | candidate_id=<id> | initiative_id=<initiative_id> | modo=M4 | motor_activo=<motor>
 ```
 
-## Autochequeo real de SymDex
+## Autochequeo dual de capas
 
-Cuando un repo declare `symdex_code: DISPONIBLE`, el autochequeo correcto debe
-separar:
+Cuando un repo declare `symdex_code` o `codebase-memory-mcp` como
+`DISPONIBLE`, el autochequeo correcto debe separar:
 
-- tool MCP expuesta
-- lookup puntual funcional
-- búsqueda semántica real con embeddings
+- tool expuesta
+- capacidad funcional real
+- límites metodológicos visibles en la sesión
 
 Regla:
 
-- no basta con ver `semantic_search` en la lista de tools
-- hay que ejecutar una búsqueda semántica real y confirmar que no falla por
-  ausencia de embeddings
+- no basta con ver tools expuestas en la lista del cliente
+- hay que ejecutar pruebas mínimas reales sobre cada capa antes de iniciar un
+  análisis serio
+- el autocheck debe terminar con una decisión operativa:
+  - `ESTADO: OK`
+  - `ESTADO: FALTA ...`
 
 Frase recomendada:
 
 ```text
-Haz un autochequeo de SymDex en esta sesión y confirma:
+Haz un autochequeo de MCP local y estructural en esta sesión y confirma:
 1. tools expuestas
-2. si search_symbols y get_symbol funcionan
-3. si semantic_search está realmente validada o solo expuesta
-4. backend semántico declarado: none, local o voyage
+2. si SymDex tiene semantic_search real, un símbolo ambiguo como classify y un símbolo único como _build_rules
+3. si codebase-memory-mcp responde list_projects, index_status y trace_path sobre un nodo real
+4. qué limitación metodológica visible existe en cada capa
 5. termina con ESTADO: OK o ESTADO: FALTA ...
 ```
+
+Variante recomendada para comparación explícita:
+
+```text
+ANALISIS COMPARATIVO MCP LOCAL + ESTRUCTURAL
+Usa symdex_code y codebase-memory-mcp de forma conjunta.
+Primero haz autocheck dual de ambas capas.
+Después compara qué responde mejor cada una, qué no responde bien ninguna,
+y termina con una recomendación de routing canónico basada en evidencia.
+```
+
+Referencia de ejecución:
+
+- `dev/policies/structural_analysis_execution_policy.md`

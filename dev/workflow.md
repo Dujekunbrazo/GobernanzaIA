@@ -509,6 +509,8 @@ Uso operativo:
 - no usar `SymDex` para workflow, policies, logs, records o bitácora
 - si el backend semántico no está validado, `semantic_search` no cuenta como
   vía principal de búsqueda conceptual y debe degradarse a lookup puntual
+- no hacer análisis profundo con `SymDex` como única capa si la pregunta exige
+  callers, impacto o topología global
 
 ### Memoria estructural persistente
 
@@ -522,10 +524,16 @@ Uso operativo:
   - arquitectura estructural
 - cuando la capacidad no exista, degradar a `SymDex` más lectura canónica
 - cuando exista, usarla como vía estructural primaria y no como ayuda lateral
+- no hacer análisis estructural profundo con una sola capa si la otra aporta
+  evidencia complementaria relevante
+- especialmente, combinar:
+  - impacto + código exacto
+  - tracing + lectura fina
 
 Referencia:
 
 - `dev/policies/structural_memory_policy.md`
+- `dev/policies/structural_analysis_execution_policy.md`
 
 ### Evidencia runtime real
 

@@ -15,8 +15,11 @@
 
 - symdex_code: DISPONIBLE | NO_DISPONIBLE
 - symdex_semantic_search: DISPONIBLE | NO_DISPONIBLE
+- symdex_default_backend: none | local | voyage
 - symdex_embedding_backend: none | local | voyage
 - Estado de validación semántica: VALIDADO | PENDIENTE | NO_APLICA
+- symdex_observed_quality: BAJA | MEDIA | ALTA
+- symdex_observed_best_backend: none | local | voyage | NO_EVALUADO
 - Rutas indexables principales:
   - <ruta_1>
   - <ruta_2>
@@ -25,6 +28,8 @@
 
 - codebase-memory-mcp: DISPONIBLE | NO_DISPONIBLE
 - Estado de validación local: VALIDADO | PENDIENTE | NO_APLICA
+- codebase_memory_known_limits:
+  - <limite_1>
 - Cobertura esperada:
   - wiring global: SI | NO
   - blast radius: SI | NO
@@ -64,4 +69,8 @@
 ## Notas
 
 - Este perfil describe capacidades reales del repo.
+- Los campos observacionales no redefinen el canon; solo capturan calidad y
+  límites reales del repo.
+- `symdex_default_backend` expresa el backend recomendado por el baseline.
+- `symdex_embedding_backend` expresa el backend realmente validado en el repo.
 - No redefine el workflow canónico ni la gobernanza normativa.
