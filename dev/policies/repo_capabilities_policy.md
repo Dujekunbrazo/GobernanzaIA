@@ -21,6 +21,7 @@ El perfil declara, como mínimo:
 
 - capacidades de retrieval de gobernanza
 - capacidades de lectura de código vivo
+- estado real de búsqueda semántica de `SymDex`
 - capacidades de memoria estructural
 - superficies disponibles para validación real
 - señales runtime observables
@@ -50,6 +51,8 @@ La plantilla fuente vive en:
 
 - `governance_search`
 - `symdex_code`
+- `symdex_semantic_search`
+- `symdex_embedding_backend`
 - `codebase-memory-mcp`
 - validación real observable
 - `trace on`
@@ -60,6 +63,8 @@ La plantilla fuente vive en:
 ## 6) Prohibiciones
 
 - prohibido declarar una capacidad como disponible si no está operativa
+- prohibido declarar `symdex_semantic_search: DISPONIBLE` si solo existe la
+  tool expuesta pero no embeddings válidos
 - prohibido usar el perfil para introducir workflow alternativo
 - prohibido duplicar el perfil en varias rutas locales
 - prohibido esconder diferencias materiales entre repos bajo metadata informal

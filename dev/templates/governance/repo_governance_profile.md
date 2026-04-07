@@ -14,6 +14,9 @@
 ## Capacidades de código vivo
 
 - symdex_code: DISPONIBLE | NO_DISPONIBLE
+- symdex_semantic_search: DISPONIBLE | NO_DISPONIBLE
+- symdex_embedding_backend: none | local | voyage
+- Estado de validación semántica: VALIDADO | PENDIENTE | NO_APLICA
 - Rutas indexables principales:
   - <ruta_1>
   - <ruta_2>
@@ -50,6 +53,9 @@
   - <fallback>
 - Si falta symdex_code:
   - <fallback>
+- Si symdex_code existe pero falta backend semántico validado:
+  - usar lookup puntual (`search_symbols`, `search_text`, `get_symbol`,
+    `get_file_outline`) sin simular búsqueda conceptual
 - Si falta codebase-memory-mcp:
   - <fallback>
 - Si falta validación real:
