@@ -359,6 +359,12 @@ def parse_args() -> argparse.Namespace:
         help="Installer strategy used by the optional symdex pack.",
     )
     parser.add_argument(
+        "--symdex-semantic-backend",
+        choices=("none", "local", "voyage"),
+        default="local",
+        help="Semantic backend strategy used by the optional symdex pack.",
+    )
+    parser.add_argument(
         "--governance-mcp-installer",
         choices=("auto", "npm", "none"),
         default="auto",
@@ -565,6 +571,7 @@ def run_post_copy_actions(
     dry_run: bool,
     symdex_source: str,
     symdex_installer: str,
+    symdex_semantic_backend: str,
     governance_mcp_installer: str,
     codebase_memory_installer: str,
     codebase_memory_command: str,
@@ -585,6 +592,8 @@ def run_post_copy_actions(
             symdex_source,
             "--installer",
             symdex_installer,
+            "--semantic-backend",
+            symdex_semantic_backend,
             "--write-root-mcp",
         ]
         if "roo" in selected_packs:
@@ -655,6 +664,7 @@ def write_manifest(
     copied: int,
     dry_run: bool,
     symdex_source: str,
+    symdex_semantic_backend: str,
     codebase_memory_command: str,
 ) -> None:
     payload = {
@@ -676,6 +686,9 @@ def write_manifest(
         },
         "file_count": copied,
         "symdex_source": symdex_source if "symdex" in selected_packs else None,
+        "symdex_semantic_backend": (
+            symdex_semantic_backend if "symdex" in selected_packs else None
+        ),
         "codebase_memory_command": codebase_memory_command if "codebase_memory" in selected_packs else None,
     }
     manifest_path = target_root / MANIFEST_PATH
@@ -723,6 +736,7 @@ def main() -> int:
         dry_run=args.dry_run,
         symdex_source=args.symdex_source,
         symdex_installer=args.symdex_installer,
+        symdex_semantic_backend=args.symdex_semantic_backend,
         governance_mcp_installer=args.governance_mcp_installer,
         codebase_memory_installer=args.codebase_memory_installer,
         codebase_memory_command=args.codebase_memory_command,
@@ -736,6 +750,7 @@ def main() -> int:
         copied=copied,
         dry_run=args.dry_run,
         symdex_source=args.symdex_source,
+        symdex_semantic_backend=args.symdex_semantic_backend,
         codebase_memory_command=args.codebase_memory_command,
     )
 
