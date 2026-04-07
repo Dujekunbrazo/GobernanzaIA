@@ -279,6 +279,97 @@ def warmup_symdex(source: str, dry_run: bool) -> None:
         print(f"WARN: SymDex warmup failed ({rendered}): {exc}")
 
 
+def run_symdex_cli(
+    *,
+    source: str,
+    semantic_backend: str,
+    args: list[str],
+) -> subprocess.CompletedProcess[str]:
+    symdex_path = shutil.which("symdex")
+    if symdex_path:
+        command = [symdex_path, *args]
+    else:
+        uvx_path = shutil.which("uvx")
+        if uvx_path is None:
+            raise RuntimeError(
+                "SymDex validation requires either `symdex` or `uvx` available in PATH."
+            )
+        command = [uvx_path, "--from", resolve_install_target(source, semantic_backend), "symdex", *args]
+    return subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="ignore",
+    )
+
+
+def validate_semantic_backend(
+    *,
+    repo_root: Path,
+    source: str,
+    semantic_backend: str,
+    dry_run: bool,
+) -> str:
+    if semantic_backend == "none":
+        return "SKIPPED_NONE"
+
+    state_dir = repo_root / ".symdex"
+    probe_args = ["semantic", "routing logic", "--limit", "1", "--json", "--state-dir", str(state_dir)]
+
+    if dry_run:
+        print(f"DRY-RUN VALIDATE: semantic backend={semantic_backend} probe={' '.join(probe_args)}")
+        return "DRY_RUN"
+
+    initial = run_symdex_cli(
+        source=source,
+        semantic_backend=semantic_backend,
+        args=probe_args,
+    )
+    stderr_text = f"{initial.stdout}\n{initial.stderr}".lower()
+    if initial.returncode == 0:
+        print("VALIDATED: SymDex semantic backend probe passed")
+        return "VALIDATED"
+
+    needs_index = (
+        "no semantic embeddings" in stderr_text
+        or "repo not indexed" in stderr_text
+        or "no indexed repos" in stderr_text
+    )
+    if needs_index:
+        index_result = run_symdex_cli(
+            source=source,
+            semantic_backend=semantic_backend,
+            args=["index", str(repo_root), "--state-dir", str(state_dir)],
+        )
+        if index_result.returncode != 0:
+            print(
+                "WARN: SymDex semantic validation failed during index: "
+                f"{index_result.stderr.strip() or index_result.stdout.strip()}"
+            )
+            return "FAILED"
+        retried = run_symdex_cli(
+            source=source,
+            semantic_backend=semantic_backend,
+            args=probe_args,
+        )
+        if retried.returncode == 0:
+            print("VALIDATED: SymDex semantic backend probe passed after local index")
+            return "VALIDATED"
+        print(
+            "WARN: SymDex semantic validation probe still failed after index: "
+            f"{retried.stderr.strip() or retried.stdout.strip()}"
+        )
+        return "FAILED"
+
+    print(
+        "WARN: SymDex semantic validation failed: "
+        f"{initial.stderr.strip() or initial.stdout.strip()}"
+    )
+    return "FAILED"
+
+
 def ensure_root_mcp(
     repo_root: Path, source: str, semantic_backend: str, force: bool, dry_run: bool
 ) -> None:
@@ -333,6 +424,12 @@ def main() -> int:
         dry_run=args.dry_run,
         force=args.force,
     )
+    semantic_validation = validate_semantic_backend(
+        repo_root=repo_root,
+        source=args.source,
+        semantic_backend=args.semantic_backend,
+        dry_run=args.dry_run,
+    )
 
     if args.write_root_mcp:
         ensure_root_mcp(
@@ -358,6 +455,7 @@ def main() -> int:
     print(f"Source: {args.source}")
     print(f"Installer: {chosen_installer}")
     print(f"Semantic backend: {args.semantic_backend}")
+    print(f"Semantic validation: {semantic_validation}")
     print(f"Context MCP installer: {chosen_context_installer}")
     print(f"Root MCP wiring: {'yes' if args.write_root_mcp else 'no'}")
     print(f"Roo MCP wiring: {'yes' if args.write_roo_mcp else 'no'}")
