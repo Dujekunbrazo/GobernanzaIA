@@ -1,17 +1,16 @@
 # Governance Context MCP
 
-Tooling reusable para exponer `governance_search` y `governance_scope` sobre la
-gobernanza canónica del repositorio actual.
+Tooling reusable para exponer `governance_search`, `governance_scope` y el
+adaptador canónico `symdex_code` sobre el repositorio actual.
 
 ## Componentes
 
 - `governance_retrieval_server.mjs`: MCP server para retrieval semántico de
   gobernanza.
+- `symdex_code_server.mjs`: adaptador MCP ligero para `SymDex` con tools
+  canónicas (`semantic_search`, `get_symbol`, etc.).
 - `shared.mjs`: utilidades compartidas de indexado, scoring y embeddings.
 - `smoke_governance_mcp.mjs`: smoke mínimo del servidor de gobernanza.
-
-`SymDex` no se distribuye desde esta carpeta en el baseline reusable. Se
-instala como dependencia externa mediante el pack `symdex`.
 
 ## Uso
 
@@ -31,6 +30,12 @@ Servidor de gobernanza:
 
 ```bash
 node governance_retrieval_server.mjs
+```
+
+Servidor de SymDex:
+
+```bash
+node symdex_code_server.mjs
 ```
 
 ## Output esperado

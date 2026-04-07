@@ -209,7 +209,7 @@ Reglas:
 - `codex` y `gemini` existen como packs explícitos de perfil multi-IA, aunque hoy no añaden superficie raíz adicional porque su capa normativa ya viaja en `core` dentro de `dev/ai/adapters/`.
 - `roo` instala solo reglas Markdown reusables; no instala `.roo/mcp.json`.
 - `governance_search` instala el MCP local de retrieval de gobernanza, ejecuta instalación `npm` en `scripts/ops/context_mcp` y escribe `governance_retrieval` en `.mcp.json`. Si también se instala `roo`, añade además el mismo servidor a `.roo/mcp.json`.
-- `symdex` no copia código desde un repo consumidor: instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera `.symdexignore`, prepara `.symdex/`, hace warm-up best effort y escribe `symdex_code` en `.mcp.json` usando `scripts/ops/run_symdex_mcp.py`. Si también se instala `roo`, añade además el mismo servidor a `.roo/mcp.json`.
+- `symdex` no copia código desde un repo consumidor: instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera `.symdexignore`, prepara `.symdex/`, asegura dependencias de `scripts/ops/context_mcp/` y escribe `symdex_code` en `.mcp.json` usando `scripts/ops/context_mcp/symdex_code_server.mjs`. Si también se instala `roo`, añade además el mismo servidor a `.roo/mcp.json`.
 - `codebase_memory` instala o reutiliza `codebase-memory-mcp` con el setup oficial del proyecto upstream y escribe `codebase-memory-mcp` en `.mcp.json`. Si también se instala `roo`, añade además el mismo servidor a `.roo/mcp.json`.
 - el wrapper de `symdex` prioriza un binario local `symdex` y solo cae a `uvx --from <source> ...` si hace falta.
 - El instalador exige un perfil de al menos dos IAs y una preferencia separada para trabajo y auditoría.

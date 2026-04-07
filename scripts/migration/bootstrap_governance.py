@@ -142,11 +142,13 @@ PACKS: dict[str, PackSpec] = {
     "symdex": PackSpec(
         description=(
             "Instala SymDex desde su GitHub oficial y prepara .symdexignore "
-            "mas wiring MCP opcional para Roo."
+            "mas wiring MCP opcional sobre el adaptador canónico local."
         ),
         files=(
             Path("scripts/ops/install_symdex.py"),
-            Path("scripts/ops/run_symdex_mcp.py"),
+            Path("scripts/ops/context_mcp/symdex_code_server.mjs"),
+            Path("scripts/ops/context_mcp/package.json"),
+            Path("scripts/ops/context_mcp/package-lock.json"),
         ),
         post_copy_actions=("install_symdex",),
     ),
