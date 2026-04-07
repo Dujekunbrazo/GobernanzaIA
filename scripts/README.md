@@ -25,6 +25,13 @@ Ese perfil:
 - no redefine el workflow
 - será consumido por el orquestador para decidir routing y fallback
 
+## Review semanal canónica
+
+La review semanal MIT es un control recurrente separado de `M4`.
+Su contrato ejecutivo vive en:
+
+- `dev/policies/orchestrator_weekly_review_policy.md`
+
 ### Bitacora diaria por IA
 
 Ruta canónica:

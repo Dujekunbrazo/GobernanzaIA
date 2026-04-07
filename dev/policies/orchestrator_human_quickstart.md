@@ -104,3 +104,39 @@ El orquestador traduce esa orden a:
 - `phase_ticket`
 - `resume_packet`
 - siguiente paso permitido
+
+## Review semanal MIT
+
+La review semanal es un control recurrente del repo, separado de `M4`.
+No autoriza cambios de codigo por si misma.
+
+Frases canonicas:
+
+```text
+REVIEW SEMANAL INICIAL | repo=<repo> | fecha=<yyyy-mm-dd> | motor_activo=claude
+```
+
+```text
+REVIEW SEMANAL | repo=<repo> | fecha=<yyyy-mm-dd> | motor_activo=claude
+```
+
+```text
+REHIDRATA REVIEW SEMANAL | repo=<repo> | fecha=<yyyy-mm-dd>
+```
+
+La primera corrida valida debe crear una `BASELINE_INICIAL_MIT`.
+Las corridas posteriores deben operar como `DELTA_SEMANAL_MIT`.
+
+Outputs esperados:
+
+- `weekly_briefing.md`
+- `weekly_review.md`
+- `weekly_review_delta.md`
+- `architecture_findings_register.md`
+- `candidate_initiatives.md`
+
+Si una review genera una remediacion aprobable:
+
+```text
+APRUEBA REMEDIACION | repo=<repo> | fecha=<yyyy-mm-dd> | candidate_id=<id> | initiative_id=<initiative_id> | modo=M4 | motor_activo=<motor>
+```
