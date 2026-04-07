@@ -187,11 +187,25 @@ def ensure_symdexignore(repo_root: Path, force: bool, dry_run: bool) -> None:
     write_text_file(repo_root / ".symdexignore", content, force=force, dry_run=dry_run)
 
 
-def symdex_server_config(source: str) -> dict:
+def resolve_python_command() -> str:
+    return str(Path(sys.executable).resolve())
+
+
+def resolve_wrapper_path(repo_root: Path) -> str:
+    return str((repo_root / "scripts" / "ops" / "run_symdex_mcp.py").resolve())
+
+
+def symdex_server_config(repo_root: Path, source: str) -> dict:
     return {
         "type": "stdio",
-        "command": "python",
-        "args": ["scripts/ops/run_symdex_mcp.py", "--source", source],
+        "command": resolve_python_command(),
+        "args": [
+            resolve_wrapper_path(repo_root),
+            "--repo-root",
+            str(repo_root),
+            "--source",
+            source,
+        ],
         "env": {"SYMDEX_STATE_DIR": ".symdex"},
         "alwaysAllow": list(SYMDEX_TOOLS),
     }
@@ -221,30 +235,30 @@ def warmup_symdex(source: str, dry_run: bool) -> None:
 
 
 def ensure_root_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) -> None:
-    if not dry_run and shutil.which("python") is None:
+    if not dry_run and not Path(sys.executable).exists():
         raise RuntimeError(
-            "Root MCP wiring for SymDex requires python in PATH. Install Python or omit --write-root-mcp."
+            "Root MCP wiring for SymDex requires a valid Python runtime for this installer session."
         )
 
     upsert_root_server(
         repo_root=repo_root,
         server_name="symdex_code",
-        server_config=symdex_server_config(source),
+        server_config=symdex_server_config(repo_root, source),
         force=force,
         dry_run=dry_run,
     )
 
 
 def ensure_roo_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) -> None:
-    if not dry_run and shutil.which("python") is None:
+    if not dry_run and not Path(sys.executable).exists():
         raise RuntimeError(
-            "Roo wiring for SymDex requires python in PATH. Install Python or omit --write-roo-mcp."
+            "Roo wiring for SymDex requires a valid Python runtime for this installer session."
         )
 
     upsert_roo_server(
         repo_root=repo_root,
         server_name="symdex_code",
-        server_config=symdex_server_config(source),
+        server_config=symdex_server_config(repo_root, source),
         force=force,
         dry_run=dry_run,
     )
