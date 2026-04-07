@@ -71,6 +71,13 @@ Fallback:
 
 - búsqueda textual controlada y lectura puntual del archivo
 
+Regla adicional:
+
+- `semantic_search` solo puede actuar como búsqueda conceptual primaria si el
+  backend semántico de `SymDex` está validado localmente
+- si no lo está, `symdex_code` queda limitado a lookup puntual y el análisis
+  conceptual local debe declararse como degradado
+
 ### Memoria estructural persistente
 
 Preguntas típicas:
@@ -94,6 +101,7 @@ Fallback:
 Referencia:
 
 - `dev/policies/structural_memory_policy.md`
+- `dev/policies/symdex_semantic_policy.md`
 
 ### Evidencia runtime real
 

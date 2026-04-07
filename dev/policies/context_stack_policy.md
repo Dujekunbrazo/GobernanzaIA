@@ -20,6 +20,7 @@ La gobernanza opera sobre cinco capas distintas:
 3. `código vivo local`
    - fuente: `symdex_code`
    - resuelve lectura fina de símbolos, archivos, bloques y wiring local
+   - su búsqueda semántica requiere backend de embeddings validado
 4. `memoria estructural persistente`
    - fuente prevista: `codebase-memory-mcp`
    - resuelve call paths, blast radius, legacy, dead code, arquitectura
@@ -45,6 +46,8 @@ La gobernanza opera sobre cinco capas distintas:
   - runtime del orquestador
 - símbolos, archivos y detalle de implementación en código vivo:
   - `symdex_code`
+  - `semantic_search` solo cuenta como búsqueda conceptual real si el backend
+    semántico está validado
 - wiring global, impact analysis, blast radius, legacy y dead code:
   - `codebase-memory-mcp` cuando esté disponible
 - validación observable de producto:
@@ -55,6 +58,8 @@ La gobernanza opera sobre cinco capas distintas:
 - si `governance_search` falla, puede leerse el documento canónico por ruta
 - si `symdex_code` no está expuesto, puede usarse búsqueda textual controlada
   solo como fallback
+- si `symdex_code` está expuesto pero sin backend semántico validado, la
+  degradación correcta es lookup puntual; no búsqueda conceptual simulada
 - si `codebase-memory-mcp` no está disponible, el análisis estructural degrada
   temporalmente a `symdex_code` más lectura canónica del repo
 - si falta evidencia runtime real, el estado correcto es `BLOQUEADO`; no se
@@ -71,6 +76,7 @@ La gobernanza opera sobre cinco capas distintas:
   primarias simultáneas
 - referencia operativa:
   - `dev/policies/structural_memory_policy.md`
+  - `dev/policies/symdex_semantic_policy.md`
 
 ## 6) Criterio de cierre canónico
 

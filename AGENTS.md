@@ -240,6 +240,7 @@ La policy operativa de referencia es:
 - `dev/policies/findings_routing_policy.md`
 - `dev/policies/remediation_clustering_policy.md`
 - `dev/policies/remediation_handoff_policy.md`
+- `dev/policies/symdex_semantic_policy.md`
 
 ### Capa estática siempre presente
 
@@ -314,6 +315,8 @@ Excluir:
 - herramientas operativas (via symdex_code):
   - `semantic_search`, `search_symbols`, `search_text`
   - `get_symbol`, `get_file_outline`, `get_symbols`
+- `semantic_search` solo cuenta como capacidad real de búsqueda conceptual si
+  el backend semántico está validado en el perfil del repo
 - en respuestas técnicas se debe declarar herramienta usada y fuente canónica
   usada
 
