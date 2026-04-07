@@ -31,6 +31,7 @@ Archivos opcionales permitidos:
 - `baseline_freeze.md`
 - `capability_closure.md`
 - `exception_record.md`
+- `real_validation.md`
 
 ## 2) Bitácora diaria por IA
 
@@ -60,6 +61,7 @@ Archivos requeridos:
 Archivos opcionales recomendados:
 - `capability_closure.md`
 - `exception_record.md`
+- `real_validation.md`
 
 ## 4) Adaptadores IA
 

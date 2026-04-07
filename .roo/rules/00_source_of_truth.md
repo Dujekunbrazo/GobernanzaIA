@@ -35,7 +35,7 @@ Si hay diferencias entre `.roo` y esas fuentes, prevalecen `AGENTS.md` +
 - Solo los problemas materiales cuentan como `hallazgos`.
 - Las `observaciones` no bloquean.
 - Consulta de gobernanza -> `governance_search` y luego lectura canónica.
-- Consulta de código -> `symdex_search_code` y luego `symdex_read_code`.
+- Consulta de código -> `semantic_search` y luego `get_symbol` (via symdex_code).
 - Si faltan MCPs activos, declarar limitación operativa antes de continuar.
 - En respuestas técnicas, declarar herramienta usada y fuente canónica usada.
 - `dev/records/initiatives/` no es fuente principal de proceso si existe fuente
@@ -53,7 +53,7 @@ Si hay diferencias entre `.roo` y esas fuentes, prevalecen `AGENTS.md` +
 Al inicio de sesión o tras recarga:
 
 1. Comprobar si están disponibles `governance_search`,
-   `symdex_search_code` y `symdex_read_code`.
+   `semantic_search` y `get_symbol` (via symdex_code).
 2. Si faltan, declararse limitado y no fingir gobernanza dinámica ni navegación
    de código por MCP.
 3. Si están presentes, usarlos según el routing obligatorio.

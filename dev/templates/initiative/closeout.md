@@ -16,8 +16,9 @@
 - wiring_complete: yes | no | n/a
 - exception_open: yes | no
 - capability_closure_verified: yes | no | n/a
+- anti_cosmetic_closure_verified: yes | no
 
-## Fases completadas (F1-F9)
+## Fases completadas (F1-F10)
 
 ## Gates
 

@@ -31,6 +31,24 @@ IA_PACKS = {
     "roo": "roo",
 }
 MANIFEST_PATH = Path("dev/governance_baseline.json")
+REPO_PROFILE_TEMPLATE_PATH = Path("dev/templates/governance/repo_governance_profile.md")
+REPO_PROFILE_DESTINATION = Path("dev/repo_governance_profile.md")
+PRESERVE_IF_EXISTS = {
+    Path(".gitignore"),
+    Path("dev/logs/decisions.md"),
+    Path("dev/repo_governance_profile.md"),
+}
+REMOVE_ON_FORCE_IF_EXISTS = {
+    Path("doc/governance_prompts/01_m4_f1_ask.md"),
+    Path("doc/governance_prompts/07b_validacion_real_guiada.md"),
+    Path("doc/governance_prompts/08_f8_cierre.md"),
+    Path("doc/governance_prompts/08_f8_f9_cierre y lecciones.md"),
+    Path("doc/governance_prompts/09_f9_cierre.md"),
+    Path("doc/governance_prompts/09_f9_f10_cierre y lecciones.md"),
+    Path("doc/governance_prompts/09_f9_lecciones.md"),
+    Path("doc/governance_prompts/10_f10_lecciones.md"),
+    Path("doc/governance_prompts/97 handoff codex audit.md"),
+}
 
 
 @dataclass(frozen=True)
@@ -58,8 +76,13 @@ PACKS: dict[str, PackSpec] = {
             Path("dev/records/bitacora/README.md"),
             Path("dev/records/bitacora/.gitkeep"),
             Path("dev/records/initiatives/.gitkeep"),
+            Path("dev/records/reviews/README.md"),
+            Path("dev/records/reviews/weekly/.gitkeep"),
             Path("doc/architecture/ai_engineering_dossier.md"),
             Path("doc/architecture/context_retrieval_architecture.md"),
+            Path("doc/governance_ping_pong_guide.md"),
+            Path("doc/governance_orchestrator_guide.md"),
+            Path("doc/governance_prompts/README.md"),
             Path("scripts/README.md"),
             Path("scripts/ops/bitacora_append.py"),
             Path("scripts/ops/roo_mcp_config.py"),
@@ -69,9 +92,13 @@ PACKS: dict[str, PackSpec] = {
             Path("scripts/dev/check_exception_record.py"),
             Path("scripts/dev/check_naming_compliance.py"),
             Path("scripts/dev/check_state0.py"),
+            Path("scripts/dev/governance_ping_pong.py"),
+            Path("scripts/dev/governance_ping_pong_launcher.bat"),
+            Path("scripts/dev/governance_orchestrator.py"),
             Path("scripts/dev/initiative_preflight.py"),
             Path("scripts/bitacora_append.py"),
             Path("scripts/migration/bootstrap_governance.py"),
+            Path("scripts/migration/sync_governance_consumers.py"),
         ),
         globs=(
             (Path("dev/guarantees"), "*.md", False),
@@ -79,6 +106,9 @@ PACKS: dict[str, PackSpec] = {
             (Path("dev/prompts"), "*.md", False),
             (Path("dev/ai/adapters"), "*.md", False),
             (Path("dev/templates/initiative"), "*.md", False),
+            (Path("dev/templates/orchestrator"), "*.md", False),
+            (Path("dev/templates/governance"), "*.md", False),
+            (Path("doc/governance_prompts"), "*.md", False),
         ),
     ),
     "claude": PackSpec(
@@ -114,7 +144,10 @@ PACKS: dict[str, PackSpec] = {
             "Instala SymDex desde su GitHub oficial y prepara .symdexignore "
             "mas wiring MCP opcional para Roo."
         ),
-        files=(Path("scripts/ops/install_symdex.py"),),
+        files=(
+            Path("scripts/ops/install_symdex.py"),
+            Path("scripts/ops/run_symdex_mcp.py"),
+        ),
         post_copy_actions=("install_symdex",),
     ),
     "governance_search": PackSpec(
@@ -132,6 +165,14 @@ PACKS: dict[str, PackSpec] = {
             Path("scripts/ops/context_mcp/smoke_governance_mcp.mjs"),
         ),
         post_copy_actions=("install_governance_mcp",),
+    ),
+    "codebase_memory": PackSpec(
+        description=(
+            "Prepara codebase-memory-mcp como capacidad estructural opcional y "
+            "wiring MCP local controlado."
+        ),
+        files=(Path("scripts/ops/install_codebase_memory_mcp.py"),),
+        post_copy_actions=("install_codebase_memory_mcp",),
     ),
 }
 
@@ -176,6 +217,11 @@ def copy_sources(sources: list[Path], target_root: Path, force: bool, dry_run: b
         rel = src.relative_to(REPO_ROOT)
         dst = target_root / rel
 
+        if rel in PRESERVE_IF_EXISTS and dst.exists():
+            skipped += 1
+            print(f"SKIP (preserve local): {rel}")
+            continue
+
         if dst.exists() and not force:
             skipped += 1
             print(f"SKIP (exists): {rel}")
@@ -193,6 +239,43 @@ def copy_sources(sources: list[Path], target_root: Path, force: bool, dry_run: b
         print(f"COPIED: {rel}")
 
     return copied, skipped
+
+
+def prune_obsolete_files(target_root: Path, force: bool, dry_run: bool) -> int:
+    if not force:
+        return 0
+
+    removed = 0
+    for rel in sorted(REMOVE_ON_FORCE_IF_EXISTS):
+        dst = target_root / rel
+        if not dst.exists():
+            continue
+        if dry_run:
+            print(f"REMOVE: {rel}")
+            removed += 1
+            continue
+        dst.unlink()
+        removed += 1
+        print(f"REMOVED: {rel}")
+
+    return removed
+
+
+def ensure_repo_governance_profile(target_root: Path, dry_run: bool) -> str:
+    destination = target_root / REPO_PROFILE_DESTINATION
+    if destination.exists():
+        print(f"SKIP (preserve local): {REPO_PROFILE_DESTINATION}")
+        return "preserved"
+
+    source = REPO_ROOT / REPO_PROFILE_TEMPLATE_PATH
+    if dry_run:
+        print(f"WRITE: {REPO_PROFILE_DESTINATION} (from {REPO_PROFILE_TEMPLATE_PATH})")
+        return "planned"
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+    print(f"COPIED: {REPO_PROFILE_DESTINATION}")
+    return "written"
 
 
 def parse_args() -> argparse.Namespace:
@@ -278,6 +361,17 @@ def parse_args() -> argparse.Namespace:
         choices=("auto", "npm", "none"),
         default="auto",
         help="Installer strategy used by the optional governance_search pack.",
+    )
+    parser.add_argument(
+        "--codebase-memory-installer",
+        choices=("auto", "setup", "none"),
+        default="auto",
+        help="Installer strategy used by the optional codebase_memory pack.",
+    )
+    parser.add_argument(
+        "--codebase-memory-command",
+        default="codebase-memory-mcp",
+        help="Command or path used by the optional codebase_memory pack for MCP wiring.",
     )
     args = parser.parse_args()
 
@@ -470,6 +564,8 @@ def run_post_copy_actions(
     symdex_source: str,
     symdex_installer: str,
     governance_mcp_installer: str,
+    codebase_memory_installer: str,
+    codebase_memory_command: str,
 ) -> None:
     action_names = {
         action_name
@@ -500,15 +596,39 @@ def run_post_copy_actions(
             subprocess.run(command, check=True)
 
     if "install_governance_mcp" not in action_names:
+        pass
+    else:
+        command = [
+            sys.executable,
+            str(target_root / "scripts" / "ops" / "install_governance_mcp.py"),
+            "--repo-root",
+            str(target_root),
+            "--installer",
+            governance_mcp_installer,
+            "--write-root-mcp",
+        ]
+        if "roo" in selected_packs:
+            command.append("--write-roo-mcp")
+        if force:
+            command.append("--force")
+        if dry_run:
+            command.append("--dry-run")
+            print(f"POST-COPY ACTION: {' '.join(command)}")
+        else:
+            subprocess.run(command, check=True)
+
+    if "install_codebase_memory_mcp" not in action_names:
         return
 
     command = [
         sys.executable,
-        str(target_root / "scripts" / "ops" / "install_governance_mcp.py"),
+        str(target_root / "scripts" / "ops" / "install_codebase_memory_mcp.py"),
         "--repo-root",
         str(target_root),
         "--installer",
-        governance_mcp_installer,
+        codebase_memory_installer,
+        "--binary-command",
+        codebase_memory_command,
         "--write-root-mcp",
     ]
     if "roo" in selected_packs:
@@ -533,6 +653,7 @@ def write_manifest(
     copied: int,
     dry_run: bool,
     symdex_source: str,
+    codebase_memory_command: str,
 ) -> None:
     payload = {
         "baseline": "GobernanzaIA",
@@ -553,6 +674,7 @@ def write_manifest(
         },
         "file_count": copied,
         "symdex_source": symdex_source if "symdex" in selected_packs else None,
+        "codebase_memory_command": codebase_memory_command if "codebase_memory" in selected_packs else None,
     }
     manifest_path = target_root / MANIFEST_PATH
     if dry_run:
@@ -583,6 +705,15 @@ def main() -> int:
         force=args.force,
         dry_run=args.dry_run,
     )
+    removed = prune_obsolete_files(
+        target_root=target_root,
+        force=args.force,
+        dry_run=args.dry_run,
+    )
+    ensure_repo_governance_profile(
+        target_root=target_root,
+        dry_run=args.dry_run,
+    )
     run_post_copy_actions(
         selected_packs=selected_packs,
         target_root=target_root,
@@ -591,6 +722,8 @@ def main() -> int:
         symdex_source=args.symdex_source,
         symdex_installer=args.symdex_installer,
         governance_mcp_installer=args.governance_mcp_installer,
+        codebase_memory_installer=args.codebase_memory_installer,
+        codebase_memory_command=args.codebase_memory_command,
     )
     write_manifest(
         target_root=target_root,
@@ -601,6 +734,7 @@ def main() -> int:
         copied=copied,
         dry_run=args.dry_run,
         symdex_source=args.symdex_source,
+        codebase_memory_command=args.codebase_memory_command,
     )
 
     print("\nGovernance bootstrap summary")
@@ -612,6 +746,7 @@ def main() -> int:
     print(f"Packs: {', '.join(selected_packs)}")
     print(f"Copied: {copied}")
     print(f"Skipped: {skipped}")
+    print(f"Removed obsolete: {removed}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")
 
     return 0

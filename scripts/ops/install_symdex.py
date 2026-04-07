@@ -93,7 +93,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Overwrite generated files and force runtime reinstall when possible.",
+        help="Overwrite generated files and MCP wiring if they already exist.",
+    )
+    parser.add_argument(
+        "--force-runtime-install",
+        action="store_true",
+        help="Force runtime reinstall of SymDex when using the installer backend.",
     )
     parser.add_argument(
         "--dry-run",
@@ -111,13 +116,23 @@ def run_command(command: list[str], dry_run: bool) -> None:
     subprocess.run(command, check=True)
 
 
-def install_symdex(source: str, installer: str, dry_run: bool, force: bool) -> str:
+def install_symdex(
+    source: str,
+    installer: str,
+    dry_run: bool,
+    force_runtime_install: bool,
+) -> str:
     uv_path = shutil.which("uv")
     can_use_pip = sys.version_info >= (3, 11)
+    existing_symdex = shutil.which("symdex")
+
+    if existing_symdex and not force_runtime_install:
+        print(f"SKIP INSTALL: symdex already available at {existing_symdex}")
+        return "existing"
 
     if installer in ("auto", "uv") and uv_path:
         command = [uv_path, "tool", "install"]
-        if force:
+        if force_runtime_install:
             command.append("--force")
         command.append(source)
         run_command(command, dry_run=dry_run)
@@ -157,6 +172,15 @@ def write_text_file(path: Path, content: str, force: bool, dry_run: bool) -> Non
     print(f"WROTE: {path}")
 
 
+def ensure_state_dir(repo_root: Path, dry_run: bool) -> None:
+    state_dir = repo_root / ".symdex"
+    if dry_run:
+        print(f"DRY-RUN MKDIR: {state_dir}")
+        return
+    state_dir.mkdir(parents=True, exist_ok=True)
+    print(f"READY: {state_dir}")
+
+
 def ensure_symdexignore(repo_root: Path, force: bool, dry_run: bool) -> None:
     lines = ["# Paths ignored by SymDex during indexing.", *DEFAULT_IGNORE_LINES, ""]
     content = "\n".join(lines)
@@ -166,17 +190,40 @@ def ensure_symdexignore(repo_root: Path, force: bool, dry_run: bool) -> None:
 def symdex_server_config(source: str) -> dict:
     return {
         "type": "stdio",
-        "command": "uvx",
-        "args": ["--from", source, "symdex", "serve"],
+        "command": "python",
+        "args": ["scripts/ops/run_symdex_mcp.py", "--source", source],
         "env": {"SYMDEX_STATE_DIR": ".symdex"},
         "alwaysAllow": list(SYMDEX_TOOLS),
     }
 
 
+def warmup_symdex(source: str, dry_run: bool) -> None:
+    symdex_path = shutil.which("symdex")
+    if symdex_path:
+        command = [symdex_path, "--version"]
+    else:
+        uvx_path = shutil.which("uvx")
+        if uvx_path is None:
+            print("WARN: SymDex warmup skipped because neither symdex nor uvx is available.")
+            return
+        command = [uvx_path, "--from", source, "symdex", "--version"]
+
+    rendered = " ".join(command)
+    if dry_run:
+        print(f"DRY-RUN WARMUP: {rendered}")
+        return
+
+    try:
+        subprocess.run(command, check=True, timeout=30)
+        print(f"WARMED UP: {rendered}")
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        print(f"WARN: SymDex warmup failed ({rendered}): {exc}")
+
+
 def ensure_root_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) -> None:
-    if not dry_run and shutil.which("uvx") is None:
+    if not dry_run and shutil.which("python") is None:
         raise RuntimeError(
-            "Root MCP wiring for SymDex requires uvx in PATH. Install uv or omit --write-root-mcp."
+            "Root MCP wiring for SymDex requires python in PATH. Install Python or omit --write-root-mcp."
         )
 
     upsert_root_server(
@@ -189,9 +236,9 @@ def ensure_root_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) ->
 
 
 def ensure_roo_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) -> None:
-    if not dry_run and shutil.which("uvx") is None:
+    if not dry_run and shutil.which("python") is None:
         raise RuntimeError(
-            "Roo wiring for SymDex requires uvx in PATH. Install uv or omit --write-roo-mcp."
+            "Roo wiring for SymDex requires python in PATH. Install Python or omit --write-roo-mcp."
         )
 
     upsert_roo_server(
@@ -214,11 +261,13 @@ def main() -> int:
         source=args.source,
         installer=args.installer,
         dry_run=args.dry_run,
-        force=args.force,
+        force_runtime_install=args.force_runtime_install,
     )
     print(f"Installer used: {chosen_installer}")
 
+    ensure_state_dir(repo_root=repo_root, dry_run=args.dry_run)
     ensure_symdexignore(repo_root=repo_root, force=args.force, dry_run=args.dry_run)
+    warmup_symdex(source=args.source, dry_run=args.dry_run)
 
     if args.write_root_mcp:
         ensure_root_mcp(

@@ -1,7 +1,7 @@
 # AI Engineering Governance (Hard)
 
 Esta policy define reglas técnicas de ingeniería para cambios de código y
-producto. No define fases del workflow (`F1-F9`), gates ni convergencia de
+producto. No define fases del workflow (`F1-F10`), gates ni convergencia de
 auditorías; eso vive en `AGENTS.md` y `dev/workflow.md`.
 
 ## 1) Alcance y precedencia técnica
@@ -32,37 +32,21 @@ Regla de desempate:
 
 ## 3) Capacidades transversales y extensión canónica
 
-- Si una capability afecta varias herramientas, canales, paths o superficies
-  con la misma responsabilidad semántica, se considera transversal y debe
-  resolverse horizontalmente.
+- Si una capability afecta varias herramientas, canales, paths o superficiescon la misma responsabilidad semántica, se considera transversal y debe resolverse horizontalmente.
 - Toda capability transversal debe declarar owner arquitectónico claro,
-  contrato o abstracción canónica, punto de extensión único y mecanismo común
-  de wiring (`descriptor`, `policy`, `registry` o equivalente).
-- `planner`, `generator`, `router` y `execute` deben consumir la abstracción
-  canónica; no deben convertirse en acumuladores de excepciones por herramienta
-  o path.
-- Está prohibido dar por resuelta una capability transversal mediante ramas
-  locales del tipo `if tool == ...`, `if channel == ...`,
+  contrato o abstracción canónica, punto de extensión único y mecanismo común de wiring (`descriptor`, `policy`, `registry` o equivalente).
+- `planner`, `generator`, `router` y `execute` deben consumir la abstracción canónica; no deben convertirse en acumuladores de excepciones por herramienta o path.
+- Está prohibido dar por resuelta una capability transversal mediante ramas locales del tipo `if tool == ...`, `if channel == ...`,
   `if filters.get(...)`, flags path-specific, bypass o hacks equivalentes.
-- Está prohibida la coexistencia de múltiples caminos activos para la misma
-  capability: coverage vertical aislada por herramienta, paths paralelos o
-  fallback legacy conviviendo con el camino canónico.
+- Está prohibida la coexistencia de múltiples caminos activos para la misma capability: coverage vertical aislada por herramienta, paths paralelos o fallback legacy conviviendo con el camino canónico.
 
 ## 4) Capability closure, wiring y retiro de legacy
 
-- Una capability no se considera completada mientras no esté conectada en su
-  wiring canónico sobre todas las superficies incluidas en alcance.
-- Queda prohibido cerrar una iniciativa con integraciones huérfanas: handler,
-  regla, descriptor, policy, registry o wiring añadido sin consumo real.
-- Si una iniciativa introduce un camino canónico nuevo para una capability,
-  el legacy equivalente debe eliminarse, quedar desactivado o declararse fuera
-  de alcance con justificación explícita.
-- La validación debe comprobar estructura y no solo el caso puntual: ausencia
-  de branching oportunista fuera del owner arquitectónico, ausencia de
-  convivencia entre camino canónico y legacy, y cobertura del wiring común
-  sobre las superficies afectadas.
-- Cuando el cambio toque el modelo de acción o el plano `planner`/`generator`/
-  `router`/`execute`, debe leerse además `dev/policies/action_policy.md`.
+- Una capability no se considera completada mientras no esté conectada en su wiring canónico sobre todas las superficies incluidas en alcance.
+- Queda prohibido cerrar una iniciativa con integraciones huérfanas: handler, regla, descriptor, policy, registry o wiring añadido sin consumo real.
+- Si una iniciativa introduce un camino canónico nuevo para una capability, el legacy equivalente debe eliminarse, quedar desactivado o declararse fuera de alcance con justificación explícita.
+- La validación debe comprobar estructura y no solo el caso puntual: ausencia de branching oportunista fuera del owner arquitectónico, ausencia de convivencia entre camino canónico y legacy, y cobertura del wiring común sobre las superficies afectadas.
+- Cuando el cambio toque el modelo de acción o el plano `planner`/`generator`/`router`/`execute`, debe leerse además `dev/policies/action_policy.md`.
 
 ## 5) Microimplementación (Clean Code)
 
@@ -70,8 +54,7 @@ Regla de desempate:
 - Una función debe tener responsabilidad principal clara.
 - Evitar flags booleanos que mezclen caminos de lógica.
 - Evitar comentarios compensatorios para justificar código confuso.
-- Al tocar código existente, aplicar mejora incremental dentro del alcance real
-  del cambio (regla Boy Scout acotada).
+- Al tocar código existente, aplicar mejora incremental dentro del alcance real del cambio (regla Boy Scout acotada).
 
 ## 6) Usabilidad cognitiva (Krug)
 

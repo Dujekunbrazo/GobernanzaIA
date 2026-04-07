@@ -1,0 +1,61 @@
+# REPO GOVERNANCE PROFILE
+
+## Identidad
+
+- Repo: <nombre_repo>
+- Propósito: <dominio_del_repo>
+- Superficie principal: <producto_cli_backend_ui_etc>
+
+## Capacidades de gobernanza
+
+- governance_search: DISPONIBLE | NO_DISPONIBLE
+- Corpus de gobernanza local válido: SI | NO
+
+## Capacidades de código vivo
+
+- symdex_code: DISPONIBLE | NO_DISPONIBLE
+- Rutas indexables principales:
+  - <ruta_1>
+  - <ruta_2>
+
+## Capacidades de memoria estructural
+
+- codebase-memory-mcp: DISPONIBLE | NO_DISPONIBLE
+- Estado de validación local: VALIDADO | PENDIENTE | NO_APLICA
+- Cobertura esperada:
+  - wiring global: SI | NO
+  - blast radius: SI | NO
+  - dead code / legacy: SI | NO
+  - arquitectura estructural: SI | NO
+
+## Validación real
+
+- F8 observable: SI | NO
+- Superficies reales de validación:
+  - <superficie_1>
+  - <superficie_2>
+- trace on o equivalente: SI | NO
+- terminal/logs observables: SI | NO
+
+## Restricciones locales
+
+- Restricciones de entorno:
+  - <restriccion_1>
+- Riesgos operativos conocidos:
+  - <riesgo_1>
+
+## Fallbacks
+
+- Si falta governance_search:
+  - <fallback>
+- Si falta symdex_code:
+  - <fallback>
+- Si falta codebase-memory-mcp:
+  - <fallback>
+- Si falta validación real:
+  - <fallback o BLOQUEADO>
+
+## Notas
+
+- Este perfil describe capacidades reales del repo.
+- No redefine el workflow canónico ni la gobernanza normativa.

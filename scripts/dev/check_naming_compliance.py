@@ -20,6 +20,7 @@ INITIATIVE_ALLOWED_FILES = {
     "baseline_freeze.md",
     "capability_closure.md",
     "exception_record.md",
+    "real_validation.md",
 }
 
 TEMPLATE_REQUIRED_FILES = {

@@ -17,20 +17,22 @@
 - Si Claude es `motor_auditor`, usar `hallazgos` solo para problemas materiales y `observaciones` para ruido no bloqueante.
 - Para gobernanza dinámica, usar `governance_search` con filtros por `phase`,
   `document_type` y `motor` antes de cargar documentos completos.
-- Para código vivo, usar `symdex_search_code` y luego `symdex_read_code`.
+- Para código vivo, usar `semantic_search` (o `search_symbols`/`search_text`)
+  y luego `get_symbol` (o `get_file_outline`/`get_symbols`) via el servidor
+  MCP `symdex_code`.
 - Mantener `SymDex` como vía principal para búsqueda de código vivo y evitar
   búsquedas textuales amplias salvo fallback operativo.
 - Routing obligatorio:
   - gobernanza -> `governance_search` y luego lectura canónica
-  - código -> `symdex_search_code` y luego `symdex_read_code`
+  - código -> `semantic_search` (symdex_code) y luego `get_symbol` (symdex_code)
 - No usar `Glob`, `Globpattern`, `Grep`, `find`, `rg` o lecturas directas como
-  vía principal si `governance_search` o `symdex_search_code` están expuestos.
+  vía principal si `governance_search` o `symdex_code` están expuestos.
 - Herramientas internas solo como fallback si el MCP falla, no está disponible o
   para lectura final puntual del archivo ya localizado.
 - En respuestas técnicas, declarar herramienta usada y fuente canónica usada.
 - Al inicio de sesión o tras recarga, comprobar si están disponibles
-  `governance_search`, `symdex_search_code` y `symdex_read_code`; si no lo
-  están, declarar limitación operativa.
+  `governance_search`, `semantic_search` y `get_symbol` (via symdex_code);
+  si no lo están, declarar limitación operativa.
 - Registrar bloqueos de proceso con evidencia concreta (ruta + estado faltante).
 - Usar solo terminología activa: `motor_activo` y `motor_auditor`.
 - Registrar bitácora tras cada respuesta final con:

@@ -28,6 +28,7 @@ Propósito: validar ejecución real antes del cierre documental.
 - [ ] No introduce branching por `tool`/`path`/`channel`/`filter` para resolver la capability
 - [ ] No deja coverage vertical aislada, wiring parcial ni integraciones huérfanas para la misma capability
 - [ ] No mantiene paths paralelos ni fallback legacy conviviendo con el camino canónico
+- [ ] No maquilla el cierre con archivos brillantes ni documentación pulida si persisten cableado mediocre, wiring incompleto o legacy vivo
 - [ ] `planner`, `generator`, `router` y `execute` consumen el mecanismo común; no absorbieron lógica específica por herramienta fuera del owner arquitectónico
 - [ ] Existe evidencia end-to-end de activación real y evidencia estructural de no-branching y no-convivencia cuando aplique
 
@@ -38,13 +39,25 @@ Propósito: validar ejecución real antes del cierre documental.
 - [ ] No hay hallazgos abiertos
 - [ ] Riesgos remanentes documentados
 - [ ] La post-auditoría verificó ausencia de branching oportunista, wiring parcial, paths paralelos y fallback legacy en las capabilities transversales tocadas
+- [ ] La post-auditoría verificó ausencia de cierre cosmético con archivos brillantes que oculten cableado mediocre o legacy vivo
 
-## Condición para F8
+## Checklist F8 (Validación real guiada)
+
+- [ ] Si la iniciativa toca comportamiento observable del producto, existe `real_validation.md`
+- [ ] Si la iniciativa no toca comportamiento observable, `F8` quedó trazada como `NO_APLICA`
+- [ ] `real_validation.md` registra script o matriz completa de pruebas reales
+- [ ] Cada caso registra esperado, observado, resultado y evidencia
+- [ ] El barrido real se completó antes de decidir fixes generales
+- [ ] No se tocó código tras el primer fallo material salvo bloqueo crítico documentado
+- [ ] `real_validation.md` declara `Decisión final: APTA_PARA_F9`, `REABRIR_F6` o `NO_APLICA`
+- [ ] Si la decisión fue `REABRIR_F6`, no se avanzó a `F9`
+
+## Condición para F9
 
 - [ ] Implementación apta para cierre documental
 
 ## Regla de bloqueo
 
 Si este gate no está en verde:
-- no se puede avanzar a `F8`.
-- una implementación que resuelva la capability con `ifs`, bypass, hacks path-specific, wiring incompleto o caminos paralelos no es apta para `F8` aunque el caso puntual funcione.
+- no se puede avanzar a `F9`.
+- una implementación que resuelva la capability con `ifs`, bypass, hacks path-specific, wiring incompleto o caminos paralelos no es apta para `F9` aunque el caso puntual funcione.

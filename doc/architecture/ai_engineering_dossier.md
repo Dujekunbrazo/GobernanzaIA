@@ -117,7 +117,7 @@ Conflictos frecuentes y resolución:
 
 ## 8) Qué NO pretende este dossier
 
-- no define fases del workflow (`F1-F9`).
+- no define fases del workflow (`F1-F10`).
 - no define gates de Ask/Plan/Implementation/Docs.
 - no define límites de iteración de auditoría.
 

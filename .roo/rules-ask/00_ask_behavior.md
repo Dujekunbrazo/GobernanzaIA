@@ -22,7 +22,7 @@ Objetivo: producir un Ask útil bajo el contrato de `AGENTS.md` y
 ### 1. Confirmación de entrada
 - Resume objetivo, alcance preliminar y restricciones en 3-6 líneas.
 - Si la sesión acaba de arrancar o se ha recargado, confirma si están activos
-  `governance_search`, `symdex_search_code` y `symdex_read_code`.
+  `governance_search`, `semantic_search` y `get_symbol` (via symdex_code).
 - Si Roo va a intervenir como canal de auditoría en `F3`, pregunta antes si el
   usuario desea mantener o cambiar la API/modelo para esa auditoría.
 - Si falta contexto material, declara qué fuente canónica necesitas leer.

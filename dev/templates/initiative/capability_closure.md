@@ -30,6 +30,12 @@
 
 1.
 
+## Anti-maquillaje de cierre
+
+1. El cierre no depende de archivos brillantes ni de documentación pulida para
+   ocultar cableado mediocre, wiring incompleto, integraciones huérfanas o
+   legacy vivo.
+
 ## Decisión de cierre
 
 1.

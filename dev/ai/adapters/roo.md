@@ -4,27 +4,27 @@
 - Toda regla de Roo debe apuntar a `AGENTS.md` y `dev/workflow.md`.
 - Cargar antes `dev/policies/governance_manifest.md` como manifiesto corto de
   routing y carga mínima.
-- Los modos nativos de Roo no redefinen `M0-M4` ni `F1-F9`.
+- Los modos nativos de Roo no redefinen `M0-M4` ni `F1-F10`.
 - Los modos nativos `Ask/Architect/Code/Debug/Orchestrator` son solo una piel
-  de producto; el proceso real sigue siendo `M0-M4` y `F1-F9`.
+  de producto; el proceso real sigue siendo `M0-M4` y `F1-F10`.
 - Roo puede actuar como `motor_activo` o `motor_auditor` solo si el usuario lo designa explícitamente.
 - Usar la capa estática mínima siempre presente y recuperar gobernanza bajo demanda.
 - Usar `SymDex` solo para código vivo; no para gobernanza textual.
 - Para gobernanza dinámica, usar `governance_search` con filtros por `phase`,
   `document_type` y `motor`.
-- Para código vivo, usar `symdex_search_code` y `symdex_read_code`.
+- Para código vivo, usar `semantic_search` y `get_symbol` (via symdex_code).
 - Mantener `SymDex` como vía principal para búsqueda de código vivo y evitar
   búsquedas textuales amplias salvo fallback operativo.
 - Routing obligatorio:
   - consulta de gobernanza -> `governance_search` y luego lectura canónica
-  - consulta de código -> `symdex_search_code` y luego `symdex_read_code`
+  - consulta de código -> `semantic_search` y luego `get_symbol` (via symdex_code)
 - No sustituir ese routing por tools internas salvo bloqueo declarado con
   evidencia.
 - En cada respuesta técnica, declarar herramienta usada y fuente canónica usada.
 - No usar `dev/records/initiatives/` como fuente principal de proceso si existe
   fuente canónica en `dev/`.
 - Al inicio de sesión o tras recarga, comprobar si están disponibles
-  `governance_search`, `symdex_search_code` y `symdex_read_code`; si no lo
+  `governance_search`, `semantic_search` y `get_symbol` (via symdex_code); si no lo
   están, declarar limitación operativa.
 - Si una auditoría formal (`F3`, `F5` o `F7`) va a ejecutarse en Roo, preguntar
   explícitamente al usuario si desea cambiar de API/modelo antes de iniciar la

@@ -22,7 +22,7 @@ Formato:
 - `<prefijo>/<fecha>_<descripcion-corta>`
 
 Ejemplo:
-- `refactor/2026-02-26_context-recovery`
+- `refactor/2026-02-26_kiminion-recovery`
 
 ## 3) Commits atómicos y descriptivos
 
@@ -61,8 +61,8 @@ Si el trabajo está ligado a `dev/records/initiatives/<initiative_id>/`:
 - el slug de rama debe coincidir con la initiative (con separadores válidos)
 
 Ejemplo:
-- Initiative: `2026-02-26_context_recovery`
-- Rama: `initiative/2026-02-26_context-recovery`
+- Initiative: `2026-02-26_kiminion_recovery`
+- Rama: `initiative/2026-02-26_kiminion-recovery`
 
 ## 7) Límite de contexto y handoff de sesión
 
@@ -83,7 +83,7 @@ Al finalizar una rama:
 2. Merge por PR o estrategia aprobada de squash merge.
 3. Borrar rama local/remota cuando el merge esté confirmado.
 4. Registrar resultado en artefactos de iniciativa (`closeout.md` y `lessons_learned.md`).
-5. Generar commit formal de cierre al terminar `F9`, incluyendo como mínimo:
+5. Generar commit formal de cierre al terminar `F10`, incluyendo como mínimo:
    - `closeout.md`
    - `lessons_learned.md`
 
@@ -100,7 +100,7 @@ Si no hay remoto disponible o hay restricción de permisos:
 - registrar la excepción en `execution.md` o `closeout.md`
 - no inventar comandos no ejecutados
 
-## 11) Protocolo anti-bucle para cierre Git (`F8/F9`)
+## 11) Protocolo anti-bucle para cierre Git (`F9/F10`)
 
 Objetivo:
 - evitar iteraciones largas de `git add/commit/push` en entornos con ACL

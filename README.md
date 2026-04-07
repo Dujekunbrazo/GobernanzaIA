@@ -1,11 +1,11 @@
 # GobernanzaIA
 
-Baseline reusable de gobernanza multi-IA para proyectos de software.
+Baseline canonico de gobernanza multi-IA para repositorios de software.
 
-`GobernanzaIA` concentra la parte que debe ser
-canonica, repetible e instalable en cualquier repo nuevo, sin arrastrar
-runtime de producto, historicos de iniciativas ni configuraciones locales
-acopladas a una herramienta concreta.
+`GobernanzaIA` no es una app de negocio. Es la fuente de verdad que define
+como se trabaja, como se distribuye la gobernanza a otros repos y como se
+opera con varias IAs sin depender de memoria de chat, prompts sueltos ni
+runtime local mezclado con producto.
 
 ![Version](https://img.shields.io/badge/version-baseline--dev-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -14,88 +14,266 @@ acopladas a una herramienta concreta.
 
 ## Tabla de contenidos
 
-- [Sobre el proyecto](#sobre-el-proyecto)
-- [Que instala](#que-instala)
-- [Arquitectura de gobernanza](#arquitectura-de-gobernanza)
+- [Que es](#que-es)
+- [Estado actual del canon](#estado-actual-del-canon)
+- [Piezas principales](#piezas-principales)
+- [Stack canonico de contexto](#stack-canonico-de-contexto)
+- [Workflow canonico](#workflow-canonico)
+- [Review semanal MIT](#review-semanal-mit)
+- [Orquestador canonico](#orquestador-canonico)
+- [Distribucion a repos consumidores](#distribucion-a-repos-consumidores)
 - [Estructura del repo](#estructura-del-repo)
-- [Instalacion en otro proyecto](#instalacion-en-otro-proyecto)
+- [Quickstart](#quickstart)
+- [Instalacion en un repo nuevo](#instalacion-en-un-repo-nuevo)
 - [Packs opcionales](#packs-opcionales)
-- [Flujo de sincronizacion con repos consumidores](#flujo-de-sincronizacion-con-repos-consumidores)
-- [Requisitos](#requisitos)
-- [FAQ](#faq)
+- [Validacion del baseline](#validacion-del-baseline)
 
 ---
 
-## Sobre el proyecto
+## Que es
 
-`GobernanzaIA` no es una aplicacion de negocio. Es el baseline operativo que
-define como trabajan varias IAs sobre un repositorio compartido con proceso
-cerrado, trazable y auditable.
+`GobernanzaIA` concentra la parte que debe ser:
 
-El baseline actual prioriza:
+- canonica
+- repetible
+- auditable
+- distribuible
+- separada del runtime del producto
 
-- `AGENTS.md` como contrato universal y fuente primaria de verdad.
-- Workflow canonico `M0-M4` y pipeline formal `F1-F9`.
-- Gates de proceso reutilizables para `ask`, `plan`, `implementacion` y
-  `docs`.
-- Adaptadores por motor para `Codex`, `Claude`, `Gemini` y `Roo`.
-- Bootstrap oficial para instalar la gobernanza en repos nuevos.
-- Perfil multi-IA de instalacion con minimo dos IAs y preferencia separada de
-  trabajo y auditoria.
-- Packs operativos opcionales para `governance_search` y `SymDex`.
-- Frontera explicita entre gobernanza reusable y runtime del producto
-  consumidor.
+Su objetivo es que cualquier repo consumidor pueda heredar:
+
+- reglas duras
+- workflow `M0-M4`
+- pipeline `F1-F10`
+- orquestacion ejecutiva
+- templates y prompts
+- baseline + overlay local
+- tooling MCP canonicamente integrado
+
+sin arrastrar:
+
+- iniciativas reales
+- historicos de producto
+- caches o runtime efimero
+- configuraciones locales acopladas a una maquina concreta
 
 ---
 
-## Que instala
+## Estado actual del canon
 
-El baseline instala:
+Esta rama ya refleja un salto importante respecto al baseline anterior.
+
+El estado real ahora incluye:
+
+- gobernanza normativa consolidada
+- orquestador como segunda pata canonica
+- `phase_ticket` y `resume_packet` para rehidratacion
+- `F6` supervisada por commit o tramo cuando aplica
+- `F8` live con evidencia runtime real
+- perfil local de capacidades por repo
+- stack de contexto y routing canonico
+- presupuesto de contexto/tokens
+- baseline exportable + overlay local minima
+- soporte canonico para `codebase-memory-mcp`
+- review semanal MIT con baseline inicial, delta semanal, findings register,
+  candidatas de remediacion y handoff supervisado
+
+En otras palabras: este repo ya no documenta solo un workflow de iniciativas.
+Documenta tambien la supervision ejecutiva, la memoria estructural y el control
+recurrente de salud del repo.
+
+---
+
+## Piezas principales
+
+| Pieza | Responsabilidad |
+| --- | --- |
+| `AGENTS.md` | contrato maestro y reglas duras |
+| `dev/workflow.md` | SOP operativo canonico |
+| `dev/guarantees/` | gates y criterios de paso |
+| `dev/policies/` | restricciones transversales y contratos operativos |
+| `dev/templates/initiative/` | artefactos de `M3/M4` |
+| `dev/templates/orchestrator/` | runtime rehidratable |
+| `dev/templates/governance/` | perfiles, weekly review y remediacion |
+| `doc/governance_prompts/` | prompts de fase y prompts recurrentes |
+| `scripts/dev/` | validadores, ping-pong y orquestador |
+| `scripts/migration/` | bootstrap y sync de consumidores |
+| `scripts/ops/` | instaladores MCP y soporte operativo |
+
+---
+
+## Stack canonico de contexto
+
+La gobernanza ya trabaja con cinco capas explicitamente separadas:
+
+1. `gobernanza normativa`
+2. `gobernanza ejecutiva del orquestador`
+3. `codigo vivo local`
+4. `memoria estructural persistente`
+5. `evidencia runtime real`
+
+Routing oficial:
+
+- gobernanza -> `governance_search`
+- estado operativo -> runtime del orquestador
+- codigo vivo local -> `symdex_code`
+- wiring, impacto, legacy, dead code -> `codebase-memory-mcp`
+- validacion observable -> chat del producto, `trace on`, terminal y evidencia real
+
+La memoria conversacional no cuenta como continuidad valida.
+
+---
+
+## Workflow canonico
+
+### Modos
+
+- `M0 CONVERSACION`
+- `M1 ANALISIS`
+- `M2 DEBUG`
+- `M3 IMPLEMENTACION_MENOR`
+- `M4 INICIATIVA_COMPLETA`
+
+Reglas clave:
+
+- si el usuario no declara modo, se empieza en `M0`
+- para entrar en `M3` o `M4` hace falta aprobacion explicita
+- no existe motor por defecto
+- el usuario designa `motor_activo`
+- en `M4`, el usuario designa `motor_auditor` en `F2`
+
+### Pipeline `F1-F10`
+
+| Fase | Salida principal |
+| --- | --- |
+| `F1` | `ask.md` |
+| `F2` | validacion humana del ask |
+| `F3` | `ask_audit.md` |
+| `F4` | `plan.md` |
+| `F5` | `plan_audit.md` |
+| `F6` | `execution.md` |
+| `F7` | `post_audit.md` |
+| `F8` | `real_validation.md` |
+| `F9` | `closeout.md` |
+| `F10` | `lessons_learned.md` |
+
+Reglas fuertes:
+
+- no se planifica sin `ASK CONGELADO`
+- no se implementa sin `PLAN CONGELADO`
+- las auditorias formales son solo `PASS` o `FAIL`
+- `F8` es obligatoria cuando hay comportamiento observable
+- no se cierra con wiring parcial, legacy vivo o paths paralelos
+
+---
+
+## Review semanal MIT
+
+La review semanal ya es una capacidad canonica separada de `M4`.
+
+No sirve para implementar.
+Sirve para detectar, clasificar y preparar trabajo gobernable.
+
+### Modos de review
+
+- `BASELINE_INICIAL_MIT`
+  - primera corrida profunda
+  - crea la linea base del repo
+  - crea el registro vivo inicial de hallazgos
+
+- `DELTA_SEMANAL_MIT`
+  - compara contra la ultima review valida
+  - distingue hallazgos nuevos, persistentes, resueltos y reclasificados
+
+### Artefactos semanales
+
+- `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_briefing.md`
+- `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_review.md`
+- `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_review_delta.md`
+- `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_review_audit.md`
+- `dev/records/reviews/weekly/<yyyy-mm-dd>/candidate_initiatives.md`
+- `dev/records/reviews/architecture_findings_register.md`
+
+### Flujo de remediacion supervisada
+
+1. la review detecta hallazgos
+2. el findings register los mantiene vivos
+3. se agrupan en `candidate_initiatives.md`
+4. el orquestador puede generar `handoff.md`
+5. el usuario aprueba la remediacion
+6. se abre una iniciativa `M3` o `M4` formal
+
+No se abre `M4` automaticamente sin aprobacion humana explicita.
+
+---
+
+## Orquestador canonico
+
+El orquestador ya no es un helper lateral. Es la capa ejecutiva del sistema.
+
+Responsabilidades:
+
+- abrir y retomar sesiones
+- calcular fase efectiva
+- verificar precondiciones mecanicas
+- emitir `phase_ticket` y `resume_packet`
+- persistir receipts y estado operativo
+- preparar `F8`
+- lanzar checkpoints laterales de `F6`
+- ejecutar la review semanal canonica
+- preparar remediaciones supervisadas
+
+No puede:
+
+- redactar artefactos sustantivos de motor
+- sustituir la auditoria formal
+- inventar validacion observable
+- abrir `M4` sin aprobacion humana
+
+Ruta:
+
+- [governance_orchestrator.py](/c:/Users/Jorge%20Ferrer/Documents/GobernanzaIA/scripts/dev/governance_orchestrator.py)
+
+Guia humana:
+
+- [orchestrator_human_quickstart.md](/c:/Users/Jorge%20Ferrer/Documents/GobernanzaIA/dev/policies/orchestrator_human_quickstart.md)
+
+---
+
+## Distribucion a repos consumidores
+
+El modelo actual ya es:
+
+- `GobernanzaIA` = fuente de verdad viva
+- repo consumidor = baseline distribuido + overlay local minima
+
+### Entra en el baseline exportable
 
 - `AGENTS.md`
 - `dev/workflow.md`
 - `dev/guarantees/`
 - `dev/policies/`
 - `dev/prompts/`
-- `dev/ai/adapters/`
 - `dev/templates/initiative/`
+- `dev/templates/orchestrator/`
+- `dev/templates/governance/`
+- scripts canónicos
+- documentacion reusable
 - scaffolding vacio de `dev/records/`
-- scripts de validacion y bitacora
-- bootstrap oficial de instalacion
 
-El baseline no instala:
+### No entra en el baseline exportable
 
-- runtime de una aplicacion consumidora
+- iniciativas reales
 - historicos reales de `dev/records/`
-- `state/`, `logs/`, `sessions/`, `content/`, `reports/`
-- settings locales como `.claude/settings.local.json`
-- wiring MCP legado o paths hardcodeados de otro repo
+- `.orchestrator_local/`
+- caches, logs, sesiones y outputs generados
+- configuraciones locales efimeras
 
----
+### Overlay local minima
 
-## Arquitectura de gobernanza
+- `dev/repo_governance_profile.md`
 
-La arquitectura se apoya en cuatro piezas:
-
-1. Contrato normativo:
-   `AGENTS.md` define precedencia, modos, pipeline, bloqueos y reglas duras.
-2. Workflow operativo:
-   `dev/workflow.md` convierte ese contrato en fases ejecutables.
-3. Gates y policies:
-   `dev/guarantees/` y `dev/policies/` fijan criterios de aceptacion y
-   restricciones transversales.
-4. Adaptadores por motor:
-   `dev/ai/adapters/` traduce el contrato canonico a superficies concretas sin
-   convertirlas en fuente normativa primaria.
-
-Principios estructurales:
-
-- No existe motor por defecto.
-- El usuario designa `motor_activo`.
-- En `M4`, el usuario designa `motor_auditor`.
-- Las superficies nativas de producto son adaptadores, no gobernanza canonica.
-- Las capabilities transversales deben resolverse mediante abstraccion
-  comun, owner explicito y wiring unico.
+Esa overlay se preserva en actualizaciones del baseline.
 
 ---
 
@@ -103,197 +281,126 @@ Principios estructurales:
 
 ```text
 GobernanzaIA/
-|-- AGENTS.md
-|-- CLAUDE.md
-|-- README.md
-|-- dev/
-|   |-- workflow.md
-|   |-- ai/
-|   |   |-- README.md
-|   |   `-- adapters/
-|   |-- guarantees/
-|   |-- policies/
-|   |-- prompts/
-|   |-- templates/
-|   |   `-- initiative/
-|   `-- records/
-|       |-- README.md
-|       |-- bitacora/
-|       `-- initiatives/
-|-- doc/
-|   `-- architecture/
-`-- scripts/
-    |-- dev/
-    |-- ops/
-    `-- migration/
+├─ AGENTS.md
+├─ README.md
+├─ dev/
+│  ├─ workflow.md
+│  ├─ guarantees/
+│  ├─ policies/
+│  ├─ prompts/
+│  ├─ templates/
+│  │  ├─ initiative/
+│  │  ├─ orchestrator/
+│  │  └─ governance/
+│  └─ records/
+│     ├─ bitacora/
+│     ├─ initiatives/
+│     └─ reviews/
+├─ doc/
+│  ├─ architecture/
+│  └─ governance_prompts/
+├─ scripts/
+│  ├─ dev/
+│  ├─ migration/
+│  └─ ops/
+└─ tests/
 ```
-
-Rutas importantes:
-
-- `scripts/migration/bootstrap_governance.py`: instalador canonico del baseline
-- `scripts/ops/install_governance_mcp.py`: instalador local de
-  `governance_search`
-- `scripts/ops/install_symdex.py`: instalador local de `SymDex`
-- `scripts/dev/check_naming_compliance.py`: validador de nomenclatura
-- `scripts/dev/check_state0.py`: validador de estado base
 
 ---
 
-## Instalacion en otro proyecto
+## Quickstart
 
-### Uso interactivo
+### Abrir una iniciativa `M4`
 
-Si ejecutas el bootstrap sin flags de IA, el script pregunta con que IAs vas a
-trabajar, exige minimo dos y te pide una preferencia separada para trabajo y
-auditoria.
-
-```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino>
+```text
+GOBERNANZA NUEVA | repo=<repo> | initiative_id=<id> | fuente=handoff | motor_activo=<motor>
 ```
 
-### Uso no interactivo minimo
+### Aprobar `F2`
 
-```bash
-python scripts/migration/bootstrap_governance.py \
-  --target <ruta_repo_destino> \
-  --with-ia codex \
-  --with-ia claude \
-  --preferred-working-ia codex \
-  --preferred-auditor-ia claude
+```text
+F2 aprobado, motor_auditor=codex
 ```
 
-### Con governance_search y SymDex
+### Rehidratar `F8`
 
-```bash
-python scripts/migration/bootstrap_governance.py \
-  --target <ruta_repo_destino> \
-  --with-ia codex \
-  --with-ia claude \
-  --preferred-working-ia codex \
-  --preferred-auditor-ia claude \
-  --include-pack governance_search \
-  --include-pack symdex
+```text
+rehidrata F8 de la iniciativa <initiative_id>
 ```
 
-### Que deja instalado
+### Lanzar review semanal inicial
 
-- baseline en el repo destino
-- `dev/governance_baseline.json` con metadata de instalacion
-- perfil multi-IA instalado
-- `governance_search` opcional con wiring MCP en `.mcp.json`
-- `SymDex` opcional desde su GitHub oficial
-- `symdex_code` opcional con wiring MCP en `.mcp.json`
+```text
+REVIEW SEMANAL INICIAL | repo=<repo> | fecha=<yyyy-mm-dd> | motor_activo=claude
+```
 
-Nota importante:
+### Lanzar review semanal recurrente
 
-Las preferencias guardadas en `dev/governance_baseline.json` son solo metadata
-de instalacion. No asignan `motor_activo` ni `motor_auditor` por defecto en
-runtime.
+```text
+REVIEW SEMANAL | repo=<repo> | fecha=<yyyy-mm-dd> | motor_activo=claude
+```
+
+### Aprobar remediacion semanal
+
+```text
+APRUEBA REMEDIACION | repo=<repo> | fecha=<yyyy-mm-dd> | candidate_id=<id> | initiative_id=<initiative_id> | modo=M4 | motor_activo=<motor>
+```
+
+---
+
+## Instalacion en un repo nuevo
+
+Bootstrap minimo:
+
+```bash
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude
+```
+
+Dry run:
+
+```bash
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --dry-run
+```
+
+Sync de consumidores conocidos:
+
+```bash
+python scripts/migration/sync_governance_consumers.py --dry-run
+```
 
 ---
 
 ## Packs opcionales
 
-### `core`
+| Pack | Para que sirve |
+| --- | --- |
+| `governance_search` | retrieval canonico de gobernanza |
+| `symdex` | lectura fina de codigo vivo local |
+| `codebase_memory` | memoria estructural persistente (`codebase-memory-mcp`) |
+| `roo` | superficie reusable de Roo |
+| `claude` | `CLAUDE.md` reusable |
 
-Obligatorio. Instala la gobernanza canonica reusable.
-
-### `claude`
-
-Instala `CLAUDE.md` como superficie reusable de compatibilidad.
-
-### `codex`
-
-Pack explicito de perfil multi-IA. No necesita superficie raiz adicional
-porque la capa normativa de `Codex` ya viaja en `dev/ai/adapters/codex.md`.
-
-### `gemini`
-
-Pack explicito de perfil multi-IA. No necesita superficie raiz adicional
-porque la capa normativa de `Gemini` ya viaja en `dev/ai/adapters/gemini.md`.
-
-### `roo`
-
-Instala reglas Markdown reusables de `Roo`, pero no copia `.roo/mcp.json`
-local del repo fuente.
-
-### `governance_search`
-
-Instala el MCP local de retrieval de gobernanza y, si tambien se instala
-fusiona `governance_retrieval` en `.mcp.json`. Si tambien se instala `roo`,
-añade el mismo servidor a `.roo/mcp.json`.
-
-### `symdex`
-
-Instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera
-`.symdexignore` repo-agnostico y fusiona `symdex_code` en `.mcp.json` usando
-`uvx --from <source> symdex serve`. Si tambien se instala `roo`, añade el
-mismo servidor a `.roo/mcp.json`.
-
----
-
-## Flujo de sincronizacion con repos consumidores
-
-Modelo recomendado:
-
-1. Mejorar lo reusable en `GobernanzaIA`.
-2. Publicar una version o snapshot limpio del baseline.
-3. Reimportarlo en un repo consumidor con
-   `bootstrap_governance.py`.
-4. Mantener en cada proyecto solo overlays locales y `dev/records/` propios.
-
-Regla operativa:
-
-- si una mejora es reusable, nace o se promociona a `GobernanzaIA`
-- si es especifica del runtime de un producto, se queda en ese repo consumidor
-
-Ejemplo de reimportacion en un repo consumidor:
+Ejemplo con memoria estructural:
 
 ```bash
-python scripts/migration/bootstrap_governance.py \
-  --target <ruta_repo_consumidor> \
-  --force \
-  --with-ia codex \
-  --with-ia claude \
-  --preferred-working-ia codex \
-  --preferred-auditor-ia claude \
-  --include-pack governance_search \
-  --include-pack symdex
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search --include-pack symdex --include-pack codebase_memory
 ```
 
 ---
 
-## Requisitos
+## Validacion del baseline
 
-Base:
+Comandos utiles:
 
-- Python 3.10+
+```bash
+python -m unittest tests.test_governance_orchestrator tests.test_bootstrap_governance tests.test_sync_governance_consumers
+python -m py_compile scripts/dev/governance_orchestrator.py scripts/migration/bootstrap_governance.py scripts/migration/sync_governance_consumers.py
+```
 
-Segun packs:
+El baseline se considera sano cuando:
 
-- `governance_search`: `node` + `npm`
-- `symdex`: `uv`/`uvx` para wiring MCP en `.mcp.json` o `.roo/mcp.json`
-- `symdex` sin `uv`: puede instalar runtime por `pip`, pero el wiring MCP
-  sigue requiriendo `uvx`
-
----
-
-## FAQ
-
-### Esto sustituye el runtime de una aplicacion de producto
-
-No. `GobernanzaIA` solo contiene gobernanza reusable y tooling asociado.
-
-### Puedo instalar solo una IA
-
-No. El instalador exige minimo dos IAs para que el repo nazca preparado para
-trabajo y auditoria separados.
-
-### Las preferencias de instalacion fijan motores por defecto
-
-No. Solo dejan constancia de tooling instalado. La designacion real de
-`motor_activo` y `motor_auditor` sigue siendo explicita por usuario.
-
-### Puedo usarlo fuera del repo donde nacio originalmente
-
-Si. Esa es precisamente la finalidad del baseline.
+- el bootstrap exporta solo lo exportable
+- el orquestador mantiene continuidad sin chat
+- la weekly review funciona como control separado
+- la remediacion semanal entra por `M3/M4` supervisada
+- no hay records reales dentro del repo canonico
