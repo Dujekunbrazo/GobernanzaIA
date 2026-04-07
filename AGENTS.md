@@ -74,6 +74,7 @@ Reglas de activación:
 34. La memoria estructural del sistema debe resolverse mediante la capa estructural canónica cuando esté disponible; no puede coexistir como vía opcional lateral frente al camino oficial.
 35. Todo repo consumidor debe declarar un único perfil local de capacidades reales; el orquestador debe degradar según ese perfil y no asumir tooling homogéneo entre repos.
 36. La gobernanza debe optimizar coste total por iniciativa; queda prohibido releer, volcar o expandir contexto masivamente si un retrieval dirigido o un `resume_packet` resuelven la misma necesidad con trazabilidad suficiente.
+37. La revision semanal es un control recurrente canonico separado de `M3/M4`; no autoriza implementar ni sustituye `F1-F10`.
 
 ## 4.1) Apertura durable de M4
 
@@ -113,6 +114,16 @@ Reglas:
   la ejecutabilidad formal sigue dependiendo de `ask.md` y `plan.md`.
 - `F8` es obligatoria cuando la iniciativa toca comportamiento observable del
   producto; si no aplica, debe trazarse como `NO_APLICA`.
+
+## 5.0) Revisión semanal canónica
+
+- la revision semanal es un control recurrente del repo separado de `M0-M4`
+- no sustituye el pipeline `F1-F10`
+- no autoriza cambios de codigo ni cierre de iniciativas por si misma
+- sus hallazgos deben convertirse despues en trabajo gobernado propio cuando
+  exista impacto material
+- su policy operativa de referencia es:
+  - `dev/policies/weekly_review_policy.md`
 
 ## 5.2) Propiedad de artefactos y continuidad operativa
 
@@ -220,6 +231,7 @@ La policy operativa de referencia es:
 - `dev/policies/context_routing_policy.md`
 - `dev/policies/token_budget_policy.md`
 - `dev/policies/structural_memory_policy.md`
+- `dev/policies/weekly_review_policy.md`
 
 ### Capa estática siempre presente
 
@@ -342,6 +354,8 @@ Si esta evidencia falta donde aplica, el estado correcto es `BLOQUEADO`.
   `dev/policies/repo_capabilities_policy.md`
 - Policy de routing de contexto:
   `dev/policies/context_routing_policy.md`
+- Policy de review semanal:
+  `dev/policies/weekly_review_policy.md`
 - Plantilla de perfil local de capacidades:
   `dev/templates/governance/repo_governance_profile.md`
 - Perfil local instalado en cada repo consumidor:

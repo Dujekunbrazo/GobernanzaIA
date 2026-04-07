@@ -20,6 +20,7 @@ Guia corta de invocacion humana del orquestador:
 - `dev/policies/context_routing_policy.md`
 - `dev/policies/token_budget_policy.md`
 - `dev/policies/structural_memory_policy.md`
+- `dev/policies/weekly_review_policy.md`
 
 ## Roles operativos
 
@@ -46,6 +47,17 @@ Reglas:
 - toda transición se registra como:
   `TRANSICION: Mx -> My | motivo | impacto | decision`
 - en `M0/M1/M2` no se modifica código
+
+## Control recurrente semanal
+
+La review semanal canonica es un control recurrente del repo:
+
+- no es un modo `M0-M4`
+- no sustituye `F1-F10`
+- no autoriza implementacion por si misma
+- sirve para detectar hallazgos, riesgos y deriva sistemica
+- todo trabajo material detectado debe traducirse despues a un flujo gobernado
+  propio
 
 ## Artefactos por iniciativa
 
