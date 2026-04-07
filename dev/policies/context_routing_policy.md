@@ -77,6 +77,15 @@ Regla adicional:
   backend semántico de `SymDex` está validado localmente
 - si no lo está, `symdex_code` queda limitado a lookup puntual y el análisis
   conceptual local debe declararse como degradado
+- `symdex_code` es primario para:
+  - localizar símbolos
+  - leer código exacto
+  - obtener outline de archivo
+- `symdex_code` no es primario para:
+  - hubs
+  - blast radius
+  - call paths multiarchivo
+  - acoplamiento global
 
 ### Memoria estructural persistente
 
@@ -97,6 +106,18 @@ Capa primaria:
 Fallback:
 
 - `symdex_code` más lectura canónica del repo
+
+Regla adicional:
+
+- `codebase-memory-mcp` es primario para:
+  - call paths
+  - hubs
+  - impacto de cambio
+  - análisis global de relaciones
+  - legacy estructural
+- `codebase-memory-mcp` no sustituye:
+  - lectura exacta del código
+  - docstrings y detalle fino de símbolo
 
 Referencia:
 
