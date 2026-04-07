@@ -127,6 +127,19 @@ REHIDRATA REVIEW SEMANAL | repo=<repo> | fecha=<yyyy-mm-dd>
 La primera corrida valida debe crear una `BASELINE_INICIAL_MIT`.
 Las corridas posteriores deben operar como `DELTA_SEMANAL_MIT`.
 
+Primera corrida:
+
+- no bebe de una review semanal anterior
+- construye una fotografia profunda del repo
+- crea el primer registro vivo de hallazgos
+- fija la base de comparacion para las siguientes semanas
+
+Corridas posteriores:
+
+- comparan contra la ultima review semanal valida
+- distinguen hallazgos nuevos, persistentes, resueltos y reclasificados
+- priorizan delta y tendencia sobre redescubrimiento completo
+
 Outputs esperados:
 
 - `weekly_briefing.md`
@@ -134,6 +147,14 @@ Outputs esperados:
 - `weekly_review_delta.md`
 - `architecture_findings_register.md`
 - `candidate_initiatives.md`
+
+Si una review ya esta abierta en otro chat, la rehidratacion correcta debe
+devolver:
+
+- artefactos ya creados
+- modo efectivo (`BASELINE_INICIAL_MIT` o `DELTA_SEMANAL_MIT`)
+- ultimo punto aceptado
+- siguiente paso permitido
 
 Si una review genera una remediacion aprobable:
 
