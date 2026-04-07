@@ -507,6 +507,8 @@ Uso operativo:
 - consultar `get_symbol` (via symdex_code) para leer el bloque concreto después de la
   búsqueda
 - no usar `SymDex` para workflow, policies, logs, records o bitácora
+- si el backend semántico no está validado, `semantic_search` no cuenta como
+  vía principal de búsqueda conceptual y debe degradarse a lookup puntual
 
 ### Memoria estructural persistente
 
