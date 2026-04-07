@@ -20,7 +20,7 @@ Propósito:
 
 Queda prohibido tratar ambos niveles como equivalentes.
 
-## 2) Backend canónico
+## 2) Estados de backend
 
 Backends admitidos:
 
@@ -28,10 +28,26 @@ Backends admitidos:
 - `local`
 - `voyage`
 
-Regla canónica:
+Los estados que la gobernanza debe distinguir son:
 
-- el backend por defecto del baseline es `local`
+1. `default backend`
+   - backend que el baseline instala o recomienda por defecto
+2. `validated backend`
+   - backend realmente validado en el repo y la sesión actual
+3. `observed best backend`
+   - backend que ha mostrado mejor calidad empírica observada en un repo
+     concreto
+
+Reglas canónicas:
+
+- el backend por defecto del baseline puede seguir siendo `local`
 - `voyage` es opcional, no obligatorio y nunca puede asumirse por defecto
+- `voyage` puede figurar como `observed best backend` en un repo concreto si
+  la evidencia comparativa lo demuestra
+- el `observed best backend` no sustituye automáticamente al `default backend`
+  del canon
+- el routing operativo debe atender siempre al `validated backend` del repo
+  actual, no al backend por defecto abstracto
 
 ## 3) Regla de verdad
 
@@ -56,6 +72,8 @@ Regla canónica:
 
 Una instalación semántica de `SymDex` es aceptable cuando:
 
+- el perfil del repo distingue `default backend`, `validated backend` y,
+  cuando exista evidencia, `observed best backend`
 - el perfil del repo declara backend activo
 - existe indexado local funcional
 - una búsqueda `semantic_search` devuelve respuesta operativa o deja trazado
@@ -71,6 +89,8 @@ Una instalación semántica de `SymDex` es aceptable cuando:
 - prohibido comparar `SymDex` contra `codebase-memory-mcp` usando
   `semantic_search` sin embeddings
 - prohibido asumir `voyage` como backend canónico o gratuito
+- prohibido promover un `observed best backend` a verdad canónica sin decisión
+  explícita sobre el baseline
 
 ## 7) Referencias
 
