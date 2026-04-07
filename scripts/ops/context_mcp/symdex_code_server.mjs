@@ -113,7 +113,7 @@ function runJson(args, { allowFailure = false } = {}) {
   try {
     return {
       ...result,
-      data: JSON.parse(result.stdout || "{}"),
+      data: JSON.parse(extractJsonPayload(result.stdout || "{}")),
     };
   } catch (error) {
     if (allowFailure) {
@@ -127,6 +127,30 @@ function runJson(args, { allowFailure = false } = {}) {
     }
     throw error;
   }
+}
+
+function extractJsonPayload(raw) {
+  const trimmed = String(raw || "").trim();
+  if (!trimmed) {
+    return "{}";
+  }
+  try {
+    JSON.parse(trimmed);
+    return trimmed;
+  } catch {}
+
+  const lines = trimmed.split(/\r?\n/);
+  for (let index = 0; index < lines.length; index += 1) {
+    const candidate = lines.slice(index).join("\n").trim();
+    if (!candidate.startsWith("{") && !candidate.startsWith("[")) {
+      continue;
+    }
+    try {
+      JSON.parse(candidate);
+      return candidate;
+    } catch {}
+  }
+  throw new Error("No JSON payload found in SymDex stdout");
 }
 
 function normalizePath(value) {
@@ -292,7 +316,9 @@ server.tool(
         query,
         repo,
         mode: "semantic",
-        results: response.data.results || [],
+        results: response.data.results || response.data.symbols || [],
+        roi: response.data.roi || null,
+        roi_summary: response.data.roi_summary || null,
       });
     }
 

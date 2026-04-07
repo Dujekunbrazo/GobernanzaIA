@@ -53,6 +53,72 @@ class InstallSymDexTests(unittest.TestCase):
         self.assertIn("--uvx-bin", config["args"])
         self.assertIn("semantic_search", config["alwaysAllow"])
 
+    def test_select_repo_name_from_registry_prefers_latest_match_for_repo_root(self) -> None:
+        payload = """
+        {
+          "repos": [
+            {
+              "name": "other-repo",
+              "root_path": "C:/repos/Other",
+              "last_indexed": "2026-04-07 12:00:00"
+            },
+            {
+              "name": "kiminion-old",
+              "root_path": "C:/repos/Kiminion",
+              "last_indexed": "2026-04-07 09:00:00"
+            },
+            {
+              "name": "kiminion-new",
+              "root_path": "C:/repos/Kiminion",
+              "last_indexed": "2026-04-07 13:00:00"
+            }
+          ]
+        }
+        """
+
+        selected = symdex.select_repo_name_from_registry(payload, Path("C:/repos/Kiminion"))
+
+        self.assertEqual(selected, "kiminion-new")
+
+    def test_validate_semantic_backend_uses_resolved_repo_name_for_probe(self) -> None:
+        repo_root = Path("C:/repos/Kiminion")
+
+        with (
+            mock.patch.object(
+                symdex,
+                "resolve_repo_name_for_validation",
+                return_value="kiminion-current-index",
+            ),
+            mock.patch.object(
+                symdex,
+                "run_symdex_cli",
+                return_value=mock.Mock(returncode=0, stdout='{"symbols":[]}', stderr=""),
+            ) as run_symdex_cli,
+        ):
+            result = symdex.validate_semantic_backend(
+                repo_root=repo_root,
+                source=symdex.DEFAULT_SOURCE,
+                semantic_backend="local",
+                dry_run=False,
+            )
+
+        self.assertEqual(result, "VALIDATED")
+        run_symdex_cli.assert_called_once()
+        self.assertEqual(
+            run_symdex_cli.call_args.kwargs["args"],
+            [
+                "semantic",
+                "routing logic",
+                "--repo",
+                "kiminion-current-index",
+                "--limit",
+                "1",
+                "--json",
+                "--state-dir",
+                str(repo_root / ".symdex"),
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

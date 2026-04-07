@@ -10,9 +10,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from roo_mcp_config import upsert_root_server, upsert_roo_server
@@ -316,7 +318,23 @@ def validate_semantic_backend(
         return "SKIPPED_NONE"
 
     state_dir = repo_root / ".symdex"
-    probe_args = ["semantic", "routing logic", "--limit", "1", "--json", "--state-dir", str(state_dir)]
+    repo_name = resolve_repo_name_for_validation(
+        repo_root=repo_root,
+        source=source,
+        semantic_backend=semantic_backend,
+        state_dir=state_dir,
+    )
+    probe_args = [
+        "semantic",
+        "routing logic",
+        "--repo",
+        repo_name,
+        "--limit",
+        "1",
+        "--json",
+        "--state-dir",
+        str(state_dir),
+    ]
 
     if dry_run:
         print(f"DRY-RUN VALIDATE: semantic backend={semantic_backend} probe={' '.join(probe_args)}")
@@ -368,6 +386,76 @@ def validate_semantic_backend(
         f"{initial.stderr.strip() or initial.stdout.strip()}"
     )
     return "FAILED"
+
+
+def resolve_repo_name_for_validation(
+    *,
+    repo_root: Path,
+    source: str,
+    semantic_backend: str,
+    state_dir: Path,
+) -> str:
+    repos_result = run_symdex_cli(
+        source=source,
+        semantic_backend=semantic_backend,
+        args=["repos", "--json", "--state-dir", str(state_dir)],
+    )
+    if repos_result.returncode == 0:
+        selected = select_repo_name_from_registry(repos_result.stdout, repo_root)
+        if selected:
+            return selected
+
+    index_result = run_symdex_cli(
+        source=source,
+        semantic_backend=semantic_backend,
+        args=["index", str(repo_root), "--state-dir", str(state_dir)],
+    )
+    if index_result.returncode != 0:
+        raise RuntimeError(
+            "SymDex validation could not index the repo: "
+            f"{index_result.stderr.strip() or index_result.stdout.strip()}"
+        )
+
+    repos_result = run_symdex_cli(
+        source=source,
+        semantic_backend=semantic_backend,
+        args=["repos", "--json", "--state-dir", str(state_dir)],
+    )
+    if repos_result.returncode != 0:
+        raise RuntimeError(
+            "SymDex validation could not list indexed repos: "
+            f"{repos_result.stderr.strip() or repos_result.stdout.strip()}"
+        )
+    selected = select_repo_name_from_registry(repos_result.stdout, repo_root)
+    if not selected:
+        raise RuntimeError(f"SymDex validation could not resolve repo name for {repo_root}")
+    return selected
+
+
+def select_repo_name_from_registry(payload: str, repo_root: Path) -> str | None:
+    try:
+        data = json.loads(payload)
+    except json.JSONDecodeError:
+        return None
+
+    expected_root = str(repo_root.resolve()).replace("/", "\\").lower()
+    candidates: list[tuple[datetime, str]] = []
+    for entry in data.get("repos", []):
+        root_path = str(entry.get("root_path", "")).replace("/", "\\").lower()
+        if root_path != expected_root:
+            continue
+        raw_last_indexed = str(entry.get("last_indexed", "")).strip()
+        try:
+            parsed = datetime.fromisoformat(raw_last_indexed.replace(" ", "T"))
+        except ValueError:
+            parsed = datetime.min
+        candidates.append((parsed, str(entry.get("name", ""))))
+
+    if not candidates:
+        return None
+
+    candidates.sort(reverse=True)
+    return candidates[0][1]
 
 
 def ensure_root_mcp(
