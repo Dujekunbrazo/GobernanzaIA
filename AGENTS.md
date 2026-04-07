@@ -235,6 +235,7 @@ La policy operativa de referencia es:
 - `dev/policies/structural_memory_policy.md`
 - `dev/policies/weekly_review_policy.md`
 - `dev/policies/weekly_briefing_policy.md`
+- `dev/policies/weekly_review_outputs_policy.md`
 
 ### Capa estática siempre presente
 
