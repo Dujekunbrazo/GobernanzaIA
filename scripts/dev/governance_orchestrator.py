@@ -101,6 +101,34 @@ class SessionContext:
     repo_capabilities: RepoCapabilities
 
 
+@dataclass(frozen=True)
+class WeeklyReviewPaths:
+    root: Path
+    weekly_root: Path
+    review_dir: Path
+    briefing: Path
+    review: Path
+    delta: Path
+    audit: Path
+    candidates: Path
+    findings_register: Path
+
+
+@dataclass(frozen=True)
+class WeeklyReviewContext:
+    target_repo: Path
+    review_date: str
+    runtime_root: Path
+    session_id: str
+    session_dir: Path
+    prompts_dir: Path
+    outputs_dir: Path
+    receipts_dir: Path
+    session_file: Path
+    repo_capabilities: RepoCapabilities
+    paths: WeeklyReviewPaths
+
+
 def today_iso() -> str:
     return dt.date.today().isoformat()
 
@@ -198,6 +226,50 @@ def build_session_context(target_repo: Path, initiative_id: str) -> SessionConte
     )
 
 
+def weekly_review_session_id_for(target_repo: Path, review_date: str) -> str:
+    digest = hashlib.sha1(str(target_repo).encode("utf-8")).hexdigest()[:10]
+    return f"{digest}_weekly_{review_date}"
+
+
+def build_weekly_review_context(target_repo: Path, review_date: str) -> WeeklyReviewContext:
+    runtime_root = ensure_local_runtime()
+    session_id = weekly_review_session_id_for(target_repo, review_date)
+    session_dir = runtime_root / "sessions" / session_id
+    prompts_dir = session_dir / "prompts"
+    outputs_dir = session_dir / "outputs"
+    receipts_dir = session_dir / "receipts"
+    for path in (session_dir, prompts_dir, outputs_dir, receipts_dir):
+        path.mkdir(parents=True, exist_ok=True)
+    reviews_root = target_repo / "dev" / "records" / "reviews"
+    weekly_root = reviews_root / "weekly"
+    review_dir = weekly_root / review_date
+    review_dir.mkdir(parents=True, exist_ok=True)
+    repo_capabilities = load_repo_capabilities(target_repo / "dev" / "repo_governance_profile.md")
+    return WeeklyReviewContext(
+        target_repo=target_repo,
+        review_date=review_date,
+        runtime_root=runtime_root,
+        session_id=session_id,
+        session_dir=session_dir,
+        prompts_dir=prompts_dir,
+        outputs_dir=outputs_dir,
+        receipts_dir=receipts_dir,
+        session_file=session_dir / "session.json",
+        repo_capabilities=repo_capabilities,
+        paths=WeeklyReviewPaths(
+            root=reviews_root,
+            weekly_root=weekly_root,
+            review_dir=review_dir,
+            briefing=review_dir / "weekly_briefing.md",
+            review=review_dir / "weekly_review.md",
+            delta=review_dir / "weekly_review_delta.md",
+            audit=review_dir / "weekly_review_audit.md",
+            candidates=review_dir / "candidate_initiatives.md",
+            findings_register=reviews_root / "architecture_findings_register.md",
+        ),
+    )
+
+
 def parse_profile_value(text: str, key: str) -> str:
     pattern = rf"(?im)^\s*-\s*{re.escape(key)}\s*:\s*(.+?)\s*$"
     match = re.search(pattern, text)
@@ -256,6 +328,91 @@ def snapshot(paths: gpp.InitiativePaths) -> dict[str, str]:
         "plan_audit": gpp.get_verdict(paths.plan_audit) or "<empty>",
         "post_audit": gpp.get_verdict(paths.post_audit) or "<empty>",
         "next_step": gpp.recommend_next_step(paths),
+    }
+
+
+def write_text_if_missing(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        return
+    path.write_text(text, encoding="utf-8")
+
+
+def previous_weekly_review_date(ctx: WeeklyReviewContext) -> str:
+    if not ctx.paths.weekly_root.exists():
+        return ""
+    dates: list[str] = []
+    for path in ctx.paths.weekly_root.iterdir():
+        if not path.is_dir():
+            continue
+        if path.name >= ctx.review_date:
+            continue
+        if (path / "weekly_review.md").exists():
+            dates.append(path.name)
+    return max(dates) if dates else ""
+
+
+def weekly_review_mode(ctx: WeeklyReviewContext, initial_baseline: bool = False) -> str:
+    if initial_baseline:
+        return "BASELINE_INICIAL_MIT"
+    return "DELTA_SEMANAL_MIT" if previous_weekly_review_date(ctx) else "BASELINE_INICIAL_MIT"
+
+
+def replace_or_insert_metadata_line(text: str, key: str, value: str) -> str:
+    return gpp.replace_metadata_line(text, key, value)
+
+
+def seeded_weekly_template(path: Path, metadata: dict[str, str]) -> str:
+    text = path.read_text(encoding="utf-8")
+    for key, value in metadata.items():
+        text = replace_or_insert_metadata_line(text, key, value)
+    return text
+
+
+def scaffold_weekly_review_artifacts(ctx: WeeklyReviewContext, *, initial_baseline: bool = False) -> dict[str, str]:
+    mode = weekly_review_mode(ctx, initial_baseline=initial_baseline)
+    repo_name = ctx.target_repo.name
+    metadata = {
+        "Repo": repo_name,
+        "Fecha": ctx.review_date,
+        "Review mode": mode,
+        "Estado": "PROPUESTO",
+        "Generado por": "governance_orchestrator",
+        "Fuente de verdad": "GobernanzaIA",
+        "Motor revisor": "claude",
+        "Compara contra": previous_weekly_review_date(ctx) or "BASELINE_INICIAL_MIT",
+        "Fecha de actualizacion": ctx.review_date,
+        "Estado general": "PROPUESTO",
+        "Fuente": f"weekly/{ctx.review_date}",
+    }
+    governance_template_root = CANONICAL_REPO_ROOT / "dev" / "templates" / "governance"
+    write_text_if_missing(
+        ctx.paths.briefing,
+        seeded_weekly_template(governance_template_root / "weekly_briefing.md", metadata),
+    )
+    write_text_if_missing(
+        ctx.paths.review,
+        seeded_weekly_template(governance_template_root / "weekly_review.md", metadata),
+    )
+    write_text_if_missing(
+        ctx.paths.delta,
+        seeded_weekly_template(governance_template_root / "weekly_review_delta.md", metadata),
+    )
+    write_text_if_missing(
+        ctx.paths.audit,
+        seeded_weekly_template(governance_template_root / "weekly_review_audit.md", metadata),
+    )
+    write_text_if_missing(
+        ctx.paths.candidates,
+        seeded_weekly_template(governance_template_root / "candidate_initiatives.md", metadata),
+    )
+    write_text_if_missing(
+        ctx.paths.findings_register,
+        seeded_weekly_template(governance_template_root / "architecture_findings_register.md", metadata),
+    )
+    return {
+        "review_mode": mode,
+        "compare_against": previous_weekly_review_date(ctx) or "BASELINE_INICIAL_MIT",
     }
 
 
@@ -1416,6 +1573,33 @@ def doctor(args: argparse.Namespace) -> int:
     return 0
 
 
+def prepare_weekly_review(args: argparse.Namespace) -> int:
+    target_repo = parse_target_repo(args.target_repo)
+    gpp.configure_repo_root(str(target_repo))
+    gpp.ensure_repo_supports_governance()
+    ctx = build_weekly_review_context(target_repo, args.review_date)
+    summary = scaffold_weekly_review_artifacts(ctx, initial_baseline=args.initial_baseline)
+    write_json(
+        ctx.session_file,
+        {
+            "session_id": ctx.session_id,
+            "target_repo": str(ctx.target_repo),
+            "review_date": ctx.review_date,
+            "review_mode": summary["review_mode"],
+            "compare_against": summary["compare_against"],
+            "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        },
+    )
+    print(f"review_date={ctx.review_date}")
+    print(f"review_mode={summary['review_mode']}")
+    print(f"briefing={ctx.paths.briefing}")
+    print(f"weekly_review={ctx.paths.review}")
+    print(f"weekly_delta={ctx.paths.delta}")
+    print(f"findings_register={ctx.paths.findings_register}")
+    print(f"candidate_initiatives={ctx.paths.candidates}")
+    return 0
+
+
 def shutil_which(name: str) -> bool:
     result = subprocess.run(
         ["where", name] if sys.platform.startswith("win") else ["which", name],
@@ -1485,6 +1669,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     doctor_parser = subparsers.add_parser("doctor", help="Diagnostica disponibilidad del orquestador y del repo objetivo.")
     doctor_parser.set_defaults(func=doctor)
+
+    weekly_prepare_parser = subparsers.add_parser(
+        "prepare-weekly-review",
+        help="Prepara el arbol de artefactos de la review semanal MIT.",
+    )
+    weekly_prepare_parser.add_argument("--review-date", required=True)
+    weekly_prepare_parser.add_argument("--initial-baseline", action="store_true")
+    weekly_prepare_parser.set_defaults(func=prepare_weekly_review)
 
     current_parser = subparsers.add_parser("run-current-step", help="Ejecuta el paso actual sugerido por la máquina de estados.")
     current_parser.add_argument("--dry-run", action="store_true")

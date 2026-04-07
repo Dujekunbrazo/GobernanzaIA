@@ -31,6 +31,15 @@ class GovernanceOrchestratorTests(unittest.TestCase):
             exclude = (repo_root / ".git" / "info" / "exclude").read_text(encoding="utf-8")
             self.assertIn(".orchestrator_local/", exclude)
 
+    def make_governance_ready_repo(self, root: Path) -> Path:
+        target_repo = root / "target"
+        (target_repo / ".git" / "info").mkdir(parents=True, exist_ok=True)
+        (target_repo / "AGENTS.md").write_text("x\n", encoding="utf-8")
+        (target_repo / "dev" / "templates" / "initiative").mkdir(parents=True, exist_ok=True)
+        (target_repo / "scripts" / "dev").mkdir(parents=True, exist_ok=True)
+        (target_repo / "scripts" / "dev" / "initiative_preflight.py").write_text("print('ok')\n", encoding="utf-8")
+        return target_repo
+
     def test_session_id_is_stable(self) -> None:
         target = Path("C:/tmp/repo")
         self.assertEqual(
@@ -52,6 +61,39 @@ class GovernanceOrchestratorTests(unittest.TestCase):
                 self.assertIn("Puedes escribir solo:", prompt)
                 self.assertIn("dev/records/initiatives/2026-03-28_demo/ask.md", prompt)
                 self.assertNotIn(str(ctx.paths.ask), prompt)
+            finally:
+                orch.ensure_local_runtime = original_ensure_runtime
+
+    def test_prepare_weekly_review_scaffolds_weekly_artifacts(self) -> None:
+        with self.make_tempdir() as repo_root:
+            target_repo = self.make_governance_ready_repo(repo_root)
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                parser = orch.build_parser()
+                args = parser.parse_args(
+                    [
+                        "--target-repo",
+                        str(target_repo),
+                        "--initiative-id",
+                        "unused",
+                        "prepare-weekly-review",
+                        "--review-date",
+                        "2026-04-07",
+                        "--initial-baseline",
+                    ]
+                )
+                exit_code = args.func(args)
+                self.assertEqual(exit_code, 0)
+                review_dir = target_repo / "dev" / "records" / "reviews" / "weekly" / "2026-04-07"
+                self.assertTrue((review_dir / "weekly_briefing.md").exists())
+                self.assertTrue((review_dir / "weekly_review.md").exists())
+                self.assertTrue((review_dir / "weekly_review_delta.md").exists())
+                self.assertTrue((target_repo / "dev" / "records" / "reviews" / "architecture_findings_register.md").exists())
+                self.assertIn(
+                    "BASELINE_INICIAL_MIT",
+                    (review_dir / "weekly_briefing.md").read_text(encoding="utf-8"),
+                )
             finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 
