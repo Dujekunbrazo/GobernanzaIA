@@ -133,6 +133,7 @@ class GovernanceOrchestratorTests(unittest.TestCase):
                 receipt = json.loads(orch.weekly_receipt_file_for(ctx).read_text(encoding="utf-8"))
                 self.assertEqual(receipt["phase"], "WEEKLY_REVIEW")
                 self.assertIn("findings_summary", receipt)
+                self.assertIn("candidate_initiatives_summary", receipt)
                 prompt = orch.weekly_prompt_copy_for(ctx).read_text(encoding="utf-8")
                 self.assertIn("WEEKLY MIT REVIEW", prompt)
                 self.assertIn("weekly_review.md", prompt)

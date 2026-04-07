@@ -589,6 +589,14 @@ def findings_register_summary(path: Path) -> dict[str, int]:
     return summary
 
 
+def candidate_initiatives_summary(path: Path) -> dict[str, object]:
+    if not path.exists():
+        return {"total": 0, "candidate_ids": []}
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    candidate_ids = re.findall(r"(?im)^###\s+(CANDIDATE-[0-9A-Za-z_-]+)\s*$", text)
+    return {"total": len(candidate_ids), "candidate_ids": candidate_ids}
+
+
 def workflow_state(paths: gpp.InitiativePaths, override_phase: str = "") -> dict[str, str]:
     state = snapshot(paths)
     if override_phase:
@@ -1806,6 +1814,7 @@ def run_weekly_review(args: argparse.Namespace) -> int:
         )
         ensure_weekly_artifacts_updated(ctx, previous_mtimes)
     findings_summary = findings_register_summary(ctx.paths.findings_register)
+    candidates_summary = candidate_initiatives_summary(ctx.paths.candidates)
     receipt = {
         "status": "completed",
         "phase": "WEEKLY_REVIEW",
@@ -1821,6 +1830,7 @@ def run_weekly_review(args: argparse.Namespace) -> int:
         "findings_register_file": str(ctx.paths.findings_register),
         "findings_summary": findings_summary,
         "candidate_initiatives_file": str(ctx.paths.candidates),
+        "candidate_initiatives_summary": candidates_summary,
         "started_at": started_at,
         "finished_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "timestamp": started_at,
@@ -1836,10 +1846,24 @@ def run_weekly_review(args: argparse.Namespace) -> int:
             "compare_against": summary["compare_against"],
             "last_phase": "WEEKLY_REVIEW",
             "findings_summary": findings_summary,
+            "candidate_initiatives_summary": candidates_summary,
             "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         },
     )
     print(json.dumps(receipt, indent=2, ensure_ascii=True))
+    return 0
+
+
+def list_weekly_candidates(args: argparse.Namespace) -> int:
+    target_repo = parse_target_repo(args.target_repo)
+    gpp.configure_repo_root(str(target_repo))
+    gpp.ensure_repo_supports_governance()
+    ctx = build_weekly_review_context(target_repo, args.review_date)
+    summary = candidate_initiatives_summary(ctx.paths.candidates)
+    print(f"review_date={ctx.review_date}")
+    print(f"candidate_total={summary['total']}")
+    for candidate_id in summary["candidate_ids"]:
+        print(f"candidate_id={candidate_id}")
     return 0
 
 
@@ -1931,6 +1955,13 @@ def build_parser() -> argparse.ArgumentParser:
     weekly_run_parser.add_argument("--claude-model", default="")
     weekly_run_parser.add_argument("--claude-effort", default="")
     weekly_run_parser.set_defaults(func=run_weekly_review)
+
+    weekly_candidates_parser = subparsers.add_parser(
+        "list-weekly-candidates",
+        help="Lista iniciativas candidatas detectadas por la review semanal.",
+    )
+    weekly_candidates_parser.add_argument("--review-date", required=True)
+    weekly_candidates_parser.set_defaults(func=list_weekly_candidates)
 
     current_parser = subparsers.add_parser("run-current-step", help="Ejecuta el paso actual sugerido por la máquina de estados.")
     current_parser.add_argument("--dry-run", action="store_true")
