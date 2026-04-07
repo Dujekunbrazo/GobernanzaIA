@@ -21,6 +21,7 @@ Guia corta de invocacion humana del orquestador:
 - `dev/policies/token_budget_policy.md`
 - `dev/policies/structural_memory_policy.md`
 - `dev/policies/weekly_review_policy.md`
+- `dev/policies/weekly_briefing_policy.md`
 
 ## Roles operativos
 
