@@ -13,6 +13,30 @@ Propósito:
 
 ## 2) Routing por tipo de consulta
 
+### Tabla canónica de preguntas
+
+| Tipo de pregunta | Capa primaria | Capa secundaria |
+| --- | --- | --- |
+| `¿qué hace este símbolo?` | `symdex_code` | ninguna |
+| `¿dónde está este símbolo?` | `symdex_code` | `codebase-memory-mcp` |
+| `¿quién llama a X?` | `codebase-memory-mcp` | ninguna |
+| `¿qué impacta cambiar X?` | `codebase-memory-mcp` | ninguna |
+| `¿cómo está organizado este archivo?` | `symdex_code` | ninguna |
+| `¿cuáles son los hubs?` | `codebase-memory-mcp` | ninguna |
+| `¿qué tests cubren esto?` | `codebase-memory-mcp` | ninguna |
+| `¿hay duplicación?` | `codebase-memory-mcp` | ninguna |
+| `¿qué endpoint HTTP usa esto?` | lectura canónica de `manifests` / `openapi.yaml` | `symdex_code` o `codebase-memory-mcp` solo como apoyo |
+| `busco algo que haga X` | `symdex_code semantic_search` si backend semántico validado | `codebase-memory-mcp` |
+
+Notas:
+
+- si `symdex_code` no tiene backend semántico validado, `busco algo que haga X`
+  degrada a lookup puntual más declaración explícita de degradación
+- si `codebase-memory-mcp` no conecta rutas HTTP reales, la pregunta sobre
+  endpoints debe resolverse por lectura canónica del repo
+- queda prohibido responder una misma pregunta con dos capas primarias
+  simultáneas
+
 ### Gobernanza normativa
 
 Preguntas típicas:
@@ -61,7 +85,7 @@ Preguntas típicas:
 - archivo
 - bloque concreto
 - implementación local
-- callers o usos locales acotados
+- búsqueda conceptual local cuando exista backend semántico validado
 
 Capa primaria:
 
@@ -81,11 +105,14 @@ Regla adicional:
   - localizar símbolos
   - leer código exacto
   - obtener outline de archivo
+  - responder qué hace un símbolo
 - `symdex_code` no es primario para:
   - hubs
   - blast radius
   - call paths multiarchivo
   - acoplamiento global
+  - cobertura de tests
+  - endpoints HTTP del sistema
 
 ### Memoria estructural persistente
 
@@ -98,6 +125,8 @@ Preguntas típicas:
 - legacy
 - call paths
 - arquitectura estructural
+- tests conectados
+- duplicación estructural
 
 Capa primaria:
 
@@ -115,9 +144,13 @@ Regla adicional:
   - impacto de cambio
   - análisis global de relaciones
   - legacy estructural
+  - cobertura estructural de tests
+  - duplicación por similitud
 - `codebase-memory-mcp` no sustituye:
   - lectura exacta del código
   - docstrings y detalle fino de símbolo
+  - lectura canónica de `manifests` y `openapi.yaml` cuando el grafo no
+    conecta rutas HTTP
 
 Referencia:
 
