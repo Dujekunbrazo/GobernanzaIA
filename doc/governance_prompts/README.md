@@ -39,6 +39,10 @@ La idea es simple:
 - `15_f4_remediacion_plan.md`
 - `17_f6_remediacion_ejecucion.md`
 
+## Prompts de review recurrente
+
+- `20_weekly_mit_review.md`
+
 ## Regla rápida
 
 - al abrir `M4`, antes de `F1`: `handoff.md`
