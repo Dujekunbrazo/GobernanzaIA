@@ -102,6 +102,43 @@ class GovernanceOrchestratorTests(unittest.TestCase):
             finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 
+    def test_run_weekly_review_dry_run_writes_prompt_and_receipt(self) -> None:
+        with self.make_tempdir() as repo_root:
+            target_repo = self.make_governance_ready_repo(repo_root)
+            (target_repo / "dev").mkdir(parents=True, exist_ok=True)
+            (target_repo / "dev" / "repo_governance_profile.md").write_text(
+                "# REPO GOVERNANCE PROFILE\n\n- Repo: target\n- Propósito: testing\n- Superficie principal: backend\n- governance_search: DISPONIBLE\n- symdex_code: DISPONIBLE\n- codebase-memory-mcp: NO_DISPONIBLE\n- F8 observable: NO\n- trace on o equivalente: NO\n- terminal/logs observables: NO\n",
+                encoding="utf-8",
+            )
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                parser = orch.build_parser()
+                args = parser.parse_args(
+                    [
+                        "--target-repo",
+                        str(target_repo),
+                        "--initiative-id",
+                        "unused",
+                        "run-weekly-review",
+                        "--review-date",
+                        "2026-04-07",
+                        "--initial-baseline",
+                        "--dry-run",
+                    ]
+                )
+                exit_code = args.func(args)
+                self.assertEqual(exit_code, 0)
+                ctx = orch.build_weekly_review_context(target_repo, "2026-04-07")
+                receipt = json.loads(orch.weekly_receipt_file_for(ctx).read_text(encoding="utf-8"))
+                self.assertEqual(receipt["phase"], "WEEKLY_REVIEW")
+                prompt = orch.weekly_prompt_copy_for(ctx).read_text(encoding="utf-8")
+                self.assertIn("WEEKLY MIT REVIEW", prompt)
+                self.assertIn("weekly_review.md", prompt)
+                self.assertIn("architecture_findings_register.md", prompt)
+            finally:
+                orch.ensure_local_runtime = original_ensure_runtime
+
     def test_f4_remediation_prompt_does_not_include_pre00_prompt_99(self) -> None:
         with self.make_tempdir() as repo_root:
             (repo_root / ".git" / "info").mkdir(parents=True)

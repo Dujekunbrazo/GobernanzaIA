@@ -522,6 +522,62 @@ def render_weekly_briefing(ctx: WeeklyReviewContext, review_mode: str, compare_a
     )
 
 
+def weekly_output_file_for(ctx: WeeklyReviewContext, engine: str) -> Path:
+    return ctx.outputs_dir / f"weekly_review_{ctx.review_date}_{engine}.txt"
+
+
+def weekly_receipt_file_for(ctx: WeeklyReviewContext) -> Path:
+    return ctx.receipts_dir / f"WEEKLY_REVIEW_{ctx.review_date}.json"
+
+
+def weekly_prompt_copy_for(ctx: WeeklyReviewContext) -> Path:
+    return ctx.prompts_dir / f"weekly_review_{ctx.review_date}.txt"
+
+
+def build_weekly_review_prompt(ctx: WeeklyReviewContext, review_mode: str) -> str:
+    base_prompt = load_prompt_text("20_weekly_mit_review.md")
+    writes = "\n".join(
+        f"- {safe_relative_to_target(ctx, path)}"
+        for path in (ctx.paths.review, ctx.paths.delta, ctx.paths.findings_register, ctx.paths.candidates)
+    )
+    reads = "\n".join(
+        f"- {safe_relative_to_target(ctx, path)}"
+        for path in (
+            ctx.paths.briefing,
+            ctx.repo_capabilities.profile_path if ctx.repo_capabilities.exists else ctx.paths.briefing,
+        )
+    )
+    return (
+        "[ORCHESTRATOR]\n"
+        f"Repo objetivo: {ctx.target_repo}\n"
+        f"Review date: {ctx.review_date}\n"
+        f"Review mode: {review_mode}\n"
+        "Motor esperado: claude\n\n"
+        "Lee solo:\n"
+        f"{reads}\n\n"
+        "Puedes escribir solo:\n"
+        f"{writes}\n\n"
+        "No toques otros archivos.\n"
+        "No abras una iniciativa ni implementes codigo.\n"
+        "Confirma repo y review_date antes de trabajar.\n\n"
+        f"{base_prompt}\n"
+    )
+
+
+def weekly_artifact_mtimes(ctx: WeeklyReviewContext) -> dict[Path, int | None]:
+    return {
+        path: artifact_mtime_ns(path)
+        for path in (ctx.paths.review, ctx.paths.delta, ctx.paths.findings_register, ctx.paths.candidates)
+    }
+
+
+def ensure_weekly_artifacts_updated(ctx: WeeklyReviewContext, previous_mtimes: dict[Path, int | None]) -> None:
+    required = (ctx.paths.review, ctx.paths.findings_register, ctx.paths.candidates)
+    for path in required:
+        if artifact_mtime_ns(path) == previous_mtimes.get(path):
+            raise RuntimeError(f"Expected updated weekly artifact in {path}")
+
+
 def workflow_state(paths: gpp.InitiativePaths, override_phase: str = "") -> dict[str, str]:
     state = snapshot(paths)
     if override_phase:
@@ -1710,6 +1766,69 @@ def prepare_weekly_review(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_weekly_review(args: argparse.Namespace) -> int:
+    target_repo = parse_target_repo(args.target_repo)
+    gpp.configure_repo_root(str(target_repo))
+    gpp.ensure_repo_supports_governance()
+    ctx = build_weekly_review_context(target_repo, args.review_date)
+    summary = scaffold_weekly_review_artifacts(ctx, initial_baseline=args.initial_baseline)
+    ctx.paths.briefing.write_text(
+        render_weekly_briefing(ctx, summary["review_mode"], summary["compare_against"]),
+        encoding="utf-8",
+    )
+    prompt = build_weekly_review_prompt(ctx, summary["review_mode"])
+    prompt_copy = weekly_prompt_copy_for(ctx)
+    prompt_copy.write_text(prompt, encoding="utf-8")
+    previous_mtimes = weekly_artifact_mtimes(ctx)
+    output_path = weekly_output_file_for(ctx, "claude")
+    started_at = dt.datetime.now(dt.timezone.utc).isoformat()
+    if args.dry_run:
+        output_path.write_text(prompt, encoding="utf-8")
+    else:
+        output_path = run_claude(
+            build_session_context(ctx.target_repo, args.initiative_id),
+            f"weekly_review_{ctx.review_date}",
+            prompt,
+            dry_run=False,
+            model=args.claude_model,
+            effort=args.claude_effort,
+        )
+        ensure_weekly_artifacts_updated(ctx, previous_mtimes)
+    receipt = {
+        "status": "completed",
+        "phase": "WEEKLY_REVIEW",
+        "engine": "claude",
+        "target_repo": str(ctx.target_repo),
+        "review_date": ctx.review_date,
+        "review_mode": summary["review_mode"],
+        "prompt_file": str(prompt_copy),
+        "output_file": str(output_path),
+        "briefing_file": str(ctx.paths.briefing),
+        "review_file": str(ctx.paths.review),
+        "delta_file": str(ctx.paths.delta),
+        "findings_register_file": str(ctx.paths.findings_register),
+        "candidate_initiatives_file": str(ctx.paths.candidates),
+        "started_at": started_at,
+        "finished_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "timestamp": started_at,
+    }
+    write_json(weekly_receipt_file_for(ctx), receipt)
+    write_json(
+        ctx.session_file,
+        {
+            "session_id": ctx.session_id,
+            "target_repo": str(ctx.target_repo),
+            "review_date": ctx.review_date,
+            "review_mode": summary["review_mode"],
+            "compare_against": summary["compare_against"],
+            "last_phase": "WEEKLY_REVIEW",
+            "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        },
+    )
+    print(json.dumps(receipt, indent=2, ensure_ascii=True))
+    return 0
+
+
 def shutil_which(name: str) -> bool:
     result = subprocess.run(
         ["where", name] if sys.platform.startswith("win") else ["which", name],
@@ -1787,6 +1906,17 @@ def build_parser() -> argparse.ArgumentParser:
     weekly_prepare_parser.add_argument("--review-date", required=True)
     weekly_prepare_parser.add_argument("--initial-baseline", action="store_true")
     weekly_prepare_parser.set_defaults(func=prepare_weekly_review)
+
+    weekly_run_parser = subparsers.add_parser(
+        "run-weekly-review",
+        help="Ejecuta la review semanal MIT con briefing canonico y receipt local.",
+    )
+    weekly_run_parser.add_argument("--review-date", required=True)
+    weekly_run_parser.add_argument("--initial-baseline", action="store_true")
+    weekly_run_parser.add_argument("--dry-run", action="store_true")
+    weekly_run_parser.add_argument("--claude-model", default="")
+    weekly_run_parser.add_argument("--claude-effort", default="")
+    weekly_run_parser.set_defaults(func=run_weekly_review)
 
     current_parser = subparsers.add_parser("run-current-step", help="Ejecuta el paso actual sugerido por la máquina de estados.")
     current_parser.add_argument("--dry-run", action="store_true")
