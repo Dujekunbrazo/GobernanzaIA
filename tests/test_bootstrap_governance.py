@@ -3,6 +3,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from scripts.migration import bootstrap_governance as bg
 
@@ -40,6 +41,25 @@ class BootstrapGovernanceTests(unittest.TestCase):
             overlay = target_root / "dev" / "repo_governance_profile.md"
             self.assertTrue(overlay.exists())
             self.assertIn("# REPO GOVERNANCE PROFILE", overlay.read_text(encoding="utf-8"))
+
+    def test_parse_args_defaults_symdex_semantic_backend_to_local(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            argv = [
+                "bootstrap_governance.py",
+                "--target",
+                tmp,
+                "--with-ia",
+                "codex",
+                "--with-ia",
+                "claude",
+                "--preferred-working-ia",
+                "codex",
+                "--preferred-auditor-ia",
+                "claude",
+            ]
+            with mock.patch("sys.argv", argv):
+                args = bg.parse_args()
+            self.assertEqual(args.symdex_semantic_backend, "local")
 
 
 if __name__ == "__main__":
