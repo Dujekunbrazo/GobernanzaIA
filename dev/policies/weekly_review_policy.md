@@ -14,6 +14,32 @@ sin mezclarla con una iniciativa `M3` o `M4`.
 - no cierra ni reabre fases de una iniciativa existente salvo que sus hallazgos
   se traduzcan despues a trabajo gobernado
 
+## Modos de revision semanal
+
+### `BASELINE_INICIAL_MIT`
+
+Primera corrida profunda del control semanal cuando el repo aun no dispone de
+una revision semanal canonica valida.
+
+Reglas:
+
+- no compara contra una revision semanal anterior
+- debe producir una fotografia base del repo
+- debe crear el primer registro vivo de hallazgos arquitectonicos
+- debe dejar una linea base MIT para revisiones futuras
+
+### `DELTA_SEMANAL_MIT`
+
+Corrida recurrente una vez existe una `BASELINE_INICIAL_MIT` valida.
+
+Reglas:
+
+- compara contra la ultima revision semanal valida
+- distingue hallazgos `nuevos`, `persistentes`, `resueltos` y
+  `reclasificados`
+- debe registrar tendencia y delta, no redescubrir el repo completo sin
+  necesidad
+
 ## Alcance minimo
 
 La review semanal debe poder:
@@ -31,6 +57,8 @@ La review semanal debe poder:
   iniciativa concreta
 - si la review detecta trabajo material, ese trabajo debe abrir despues un flujo
   gobernado propio
+- la primera corrida semanal valida debe declararse explicitamente como
+  `BASELINE_INICIAL_MIT`
 
 ## Regla de evidencia
 
@@ -46,3 +74,4 @@ La review semanal solo se considera canonica si:
 - no depende de memoria conversacional
 - no crea una ruta paralela a `M4`
 - no introduce implementacion sin apertura formal posterior
+- diferencia de forma explicita entre baseline inicial y delta semanal

@@ -58,6 +58,8 @@ La review semanal canonica es un control recurrente del repo:
 - sirve para detectar hallazgos, riesgos y deriva sistemica
 - todo trabajo material detectado debe traducirse despues a un flujo gobernado
   propio
+- su primera corrida valida es `BASELINE_INICIAL_MIT`
+- sus corridas recurrentes son `DELTA_SEMANAL_MIT`
 
 ## Artefactos por iniciativa
 

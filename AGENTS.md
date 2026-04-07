@@ -122,6 +122,8 @@ Reglas:
 - no autoriza cambios de codigo ni cierre de iniciativas por si misma
 - sus hallazgos deben convertirse despues en trabajo gobernado propio cuando
   exista impacto material
+- la primera corrida valida debe declararse como `BASELINE_INICIAL_MIT`
+- las corridas posteriores deben declararse como `DELTA_SEMANAL_MIT`
 - su policy operativa de referencia es:
   - `dev/policies/weekly_review_policy.md`
 
