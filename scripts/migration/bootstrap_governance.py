@@ -76,6 +76,8 @@ PACKS: dict[str, PackSpec] = {
             Path("dev/records/bitacora/README.md"),
             Path("dev/records/bitacora/.gitkeep"),
             Path("dev/records/initiatives/.gitkeep"),
+            Path("dev/records/reviews/README.md"),
+            Path("dev/records/reviews/weekly/.gitkeep"),
             Path("doc/architecture/ai_engineering_dossier.md"),
             Path("doc/architecture/context_retrieval_architecture.md"),
             Path("doc/governance_ping_pong_guide.md"),

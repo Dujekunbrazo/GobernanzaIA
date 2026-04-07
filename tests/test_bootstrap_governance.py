@@ -14,6 +14,8 @@ class BootstrapGovernanceTests(unittest.TestCase):
         self.assertIn(Path("dev/templates/orchestrator/phase_ticket.md"), rel_paths)
         self.assertIn(Path("dev/templates/orchestrator/resume_packet.md"), rel_paths)
         self.assertIn(Path("dev/templates/governance/repo_governance_profile.md"), rel_paths)
+        self.assertIn(Path("dev/records/reviews/README.md"), rel_paths)
+        self.assertIn(Path("dev/records/reviews/weekly/.gitkeep"), rel_paths)
 
     def test_ensure_repo_governance_profile_preserves_existing_overlay(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

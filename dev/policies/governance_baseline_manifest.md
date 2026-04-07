@@ -17,6 +17,7 @@ Propósito:
 - `dev/ai/`
 - scripts canónicos de `dev`, `ops` y `migration`
 - documentación reusable de gobernanza
+- scaffolding vacío de `dev/records/` para iniciativas, bitácora y reviews
 
 ## 2) No entra en el baseline exportable
 
