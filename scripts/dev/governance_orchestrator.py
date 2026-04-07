@@ -416,6 +416,112 @@ def scaffold_weekly_review_artifacts(ctx: WeeklyReviewContext, *, initial_baseli
     }
 
 
+def safe_git_log(target_repo: Path, *, since_date: str = "", until_date: str = "") -> list[str]:
+    command = ["git", "log", "--pretty=format:%h %ad %s", "--date=short", "--max-count", "20"]
+    if since_date:
+        command.extend(["--since", since_date])
+    if until_date:
+        command.extend(["--until", until_date])
+    result = subprocess.run(
+        command,
+        cwd=target_repo,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="ignore",
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def safe_relative_to_target(ctx: WeeklyReviewContext, path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ctx.target_repo.resolve())).replace("\\", "/")
+    except ValueError:
+        return str(path)
+
+
+def repo_identity_from_profile(ctx: WeeklyReviewContext) -> tuple[str, str, str]:
+    if not ctx.repo_capabilities.exists:
+        return (ctx.target_repo.name, "NO_EVIDENCIA_EN_PROFILE", "NO_EVIDENCIA_EN_PROFILE")
+    text = ctx.repo_capabilities.profile_path.read_text(encoding="utf-8", errors="ignore")
+    return (
+        parse_profile_value(text, "Repo"),
+        parse_profile_value(text, "Propósito"),
+        parse_profile_value(text, "Superficie principal"),
+    )
+
+
+def render_weekly_briefing(ctx: WeeklyReviewContext, review_mode: str, compare_against: str) -> str:
+    repo_name, purpose, primary_surface = repo_identity_from_profile(ctx)
+    since_date = compare_against if compare_against not in {"", "BASELINE_INICIAL_MIT"} else ""
+    commit_lines = safe_git_log(ctx.target_repo, since_date=since_date, until_date=ctx.review_date)
+    commit_block = "\n".join(f"- {line}" for line in commit_lines[:10]) if commit_lines else "- NO EVIDENCIA EN REPO"
+    compare_label = compare_against if compare_against else "BASELINE_INICIAL_MIT"
+    if review_mode == "BASELINE_INICIAL_MIT":
+        from_label = "<sin review semanal previa>"
+        delta_note = "- Esta corrida funda la linea base semanal."
+    else:
+        from_label = compare_against or "<sin review valida previa>"
+        delta_note = f"- Compara contra la revision semanal previa: {compare_label}."
+    routing_lines = "\n".join(f"- {line}" for line in repo_capabilities_summary(ctx.repo_capabilities))
+    profile_line = (
+        f"- Perfil local de capacidades: {safe_relative_to_target(ctx, ctx.repo_capabilities.profile_path)}"
+        if ctx.repo_capabilities.exists
+        else "- Perfil local de capacidades: NO_ENCONTRADO"
+    )
+    return (
+        "# WEEKLY BRIEFING\n\n"
+        f"- Repo: {repo_name}\n"
+        f"- Fecha: {ctx.review_date}\n"
+        f"- Review mode: {review_mode}\n"
+        "- Generado por: governance_orchestrator\n"
+        "- Fuente de verdad: GobernanzaIA\n\n"
+        "## Identidad del repo\n\n"
+        f"- Propósito: {purpose}\n"
+        f"- Superficie principal: {primary_surface}\n"
+        f"{profile_line}\n\n"
+        "## Alcance temporal\n\n"
+        f"- Desde: {from_label}\n"
+        f"- Hasta: {ctx.review_date}\n"
+        f"- Motivo del rango: {review_mode}\n\n"
+        "## Delta semanal\n\n"
+        f"- Commits o cambios relevantes:\n{commit_block}\n"
+        "- Superficies tocadas:\n"
+        f"- {primary_surface}\n"
+        f"{delta_note}\n\n"
+        "## Capas de contexto y evidencia usada\n\n"
+        "- Gobernanza normativa: `governance_search` + lectura canónica cuando aplique.\n"
+        "- Runtime del orquestador: runtime local y receipts.\n"
+        "- Codigo vivo local: `symdex_code` cuando esté disponible.\n"
+        "- Memoria estructural persistente: `codebase-memory-mcp` cuando esté disponible.\n"
+        "- Evidencia runtime real: tests, logs, CI o señales observables si existen.\n\n"
+        "## Behaviors y superficies observadas\n\n"
+        f"- Behavior 1: Superficie principal declarada -> {primary_surface}\n"
+        "- Behavior 2: NO EVIDENCIA EN BRIEFING\n\n"
+        "## Wiring, impacto y legacy\n\n"
+        "- Call paths o rutas estructurales relevantes: derivar de la memoria estructural si esta disponible.\n"
+        "- Blast radius esperado: contrastar con el delta semanal y las areas tocadas.\n"
+        "- Legacy o dead code sospechoso: contrastar con findings persistentes si los hubiera.\n"
+        "- Integraciones huerfanas o paths paralelos: NO EVIDENCIA EN BRIEFING.\n\n"
+        "## Calidad operativa y validacion\n\n"
+        "- Tests y CI: NO EVIDENCIA EN BRIEFING.\n"
+        "- Logs / incidentes / errores: NO EVIDENCIA EN BRIEFING.\n"
+        "- Cambios observables o riesgos de validacion: derivar de hallazgos y deltas.\n\n"
+        "## Riesgos y preguntas abiertas para la review\n\n"
+        "- Riesgo 1: confirmar que el delta no esconde paths paralelos o legacy vivo.\n"
+        "- Pregunta 1: que capability o boundary acumula mayor tension MIT esta semana.\n\n"
+        "## Instrucciones para el motor revisor\n\n"
+        "- Anclar toda afirmacion importante al briefing.\n"
+        "- Declarar `NO EVIDENCIA EN BRIEFING` cuando falte soporte.\n"
+        "- Priorizar MIT: Incrementality, Integrity, Transparency.\n\n"
+        "## Resumen de capacidades\n\n"
+        f"{routing_lines}\n"
+    )
+
+
 def workflow_state(paths: gpp.InitiativePaths, override_phase: str = "") -> dict[str, str]:
     state = snapshot(paths)
     if override_phase:
@@ -1579,6 +1685,10 @@ def prepare_weekly_review(args: argparse.Namespace) -> int:
     gpp.ensure_repo_supports_governance()
     ctx = build_weekly_review_context(target_repo, args.review_date)
     summary = scaffold_weekly_review_artifacts(ctx, initial_baseline=args.initial_baseline)
+    ctx.paths.briefing.write_text(
+        render_weekly_briefing(ctx, summary["review_mode"], summary["compare_against"]),
+        encoding="utf-8",
+    )
     write_json(
         ctx.session_file,
         {

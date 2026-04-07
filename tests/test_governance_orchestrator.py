@@ -67,6 +67,11 @@ class GovernanceOrchestratorTests(unittest.TestCase):
     def test_prepare_weekly_review_scaffolds_weekly_artifacts(self) -> None:
         with self.make_tempdir() as repo_root:
             target_repo = self.make_governance_ready_repo(repo_root)
+            (target_repo / "dev").mkdir(parents=True, exist_ok=True)
+            (target_repo / "dev" / "repo_governance_profile.md").write_text(
+                "# REPO GOVERNANCE PROFILE\n\n- Repo: target\n- Propósito: testing\n- Superficie principal: backend\n- governance_search: DISPONIBLE\n- symdex_code: DISPONIBLE\n- codebase-memory-mcp: NO_DISPONIBLE\n- F8 observable: NO\n- trace on o equivalente: NO\n- terminal/logs observables: NO\n",
+                encoding="utf-8",
+            )
             original_ensure_runtime = orch.ensure_local_runtime
             try:
                 orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
@@ -90,10 +95,10 @@ class GovernanceOrchestratorTests(unittest.TestCase):
                 self.assertTrue((review_dir / "weekly_review.md").exists())
                 self.assertTrue((review_dir / "weekly_review_delta.md").exists())
                 self.assertTrue((target_repo / "dev" / "records" / "reviews" / "architecture_findings_register.md").exists())
-                self.assertIn(
-                    "BASELINE_INICIAL_MIT",
-                    (review_dir / "weekly_briefing.md").read_text(encoding="utf-8"),
-                )
+                briefing = (review_dir / "weekly_briefing.md").read_text(encoding="utf-8")
+                self.assertIn("BASELINE_INICIAL_MIT", briefing)
+                self.assertIn("Propósito: testing", briefing)
+                self.assertIn("Governance retrieval: DISPONIBLE", briefing)
             finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 
