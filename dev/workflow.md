@@ -61,6 +61,8 @@ La review semanal canonica es un control recurrente del repo:
   propio
 - su primera corrida valida es `BASELINE_INICIAL_MIT`
 - sus corridas recurrentes son `DELTA_SEMANAL_MIT`
+- el routing de hallazgos a `WATCHLIST`, `M3` o `M4` se rige por:
+  - `dev/policies/findings_routing_policy.md`
 
 ## Artefactos por iniciativa
 
