@@ -84,10 +84,17 @@ No vive aqui la autoria del motor semantico ni de la memoria estructural.
 
 Nota operativa sobre `SymDex`:
 
-- el baseline canónico usa backend semántico `local` por defecto
+- el baseline canónico puede seguir usando backend semántico `local` por
+  defecto
 - `voyage` es opcional
+- la gobernanza distingue ahora entre:
+  - backend por defecto del baseline
+  - backend realmente validado en el repo
+  - backend de mejor calidad empírica observada en un repo concreto
 - que la tool `semantic_search` exista no basta; la búsqueda semántica solo se
   considera disponible cuando backend e indexado quedan validados de verdad
+- un backend observado como mejor en un repo concreto no sustituye por sí solo
+  al backend por defecto del canon
 
 ---
 
@@ -107,6 +114,13 @@ El estado real ahora incluye:
 - presupuesto de contexto/tokens
 - baseline exportable + overlay local minima
 - soporte canonico para `codebase-memory-mcp`
+- routing canonico por tipo de pregunta y por capa primaria
+- protocolo de analisis estructural serio con declaracion obligatoria de
+  limites metodologicos
+- autochequeo dual `symdex_code` + `codebase-memory-mcp` antes de analisis
+  profundos
+- perfil local de repo capaz de declarar backend por defecto, backend
+  validado, calidad observada y limites conocidos
 - review semanal MIT con baseline inicial, delta semanal, findings register,
   candidatas de remediacion y handoff supervisado
 
@@ -151,6 +165,15 @@ Routing oficial:
 - codigo vivo local -> `symdex_code`
 - wiring, impacto, legacy, dead code -> `codebase-memory-mcp`
 - validacion observable -> chat del producto, `trace on`, terminal y evidencia real
+
+Frontera operativa resumida:
+
+- `symdex_code` responde: `que dice el codigo`
+- `codebase-memory-mcp` responde: `que se conecta con que`
+- ninguna capa sustituye a la otra
+- si la pregunta es `que endpoint HTTP usa esto` y el grafo no conecta rutas
+  reales, la fuente primaria pasa a ser la lectura canonica de `manifests` u
+  `openapi.yaml`
 
 La memoria conversacional no cuenta como continuidad valida.
 
@@ -269,6 +292,8 @@ Ruta:
 Guia humana:
 
 - [orchestrator_human_quickstart.md](/c:/Users/Jorge%20Ferrer/Documents/GobernanzaIA/dev/policies/orchestrator_human_quickstart.md)
+- [context_routing_policy.md](/c:/Users/Jorge%20Ferrer/Documents/GobernanzaIA/dev/policies/context_routing_policy.md)
+- [structural_analysis_execution_policy.md](/c:/Users/Jorge%20Ferrer/Documents/GobernanzaIA/dev/policies/structural_analysis_execution_policy.md)
 
 ---
 
@@ -376,6 +401,32 @@ REVIEW SEMANAL | repo=<repo> | fecha=<yyyy-mm-dd> | motor_activo=claude
 
 ```text
 APRUEBA REMEDIACION | repo=<repo> | fecha=<yyyy-mm-dd> | candidate_id=<id> | initiative_id=<initiative_id> | modo=M4 | motor_activo=<motor>
+```
+
+### Autochequeo dual MCP antes de analisis serio
+
+Cuando un repo declare `symdex_code` o `codebase-memory-mcp` como
+`DISPONIBLE`, la comprobacion minima ya no es unilateral.
+
+La frase recomendada es:
+
+```text
+Haz un autochequeo de MCP local y estructural en esta sesión y confirma:
+1. tools expuestas
+2. si SymDex tiene semantic_search real, un símbolo ambiguo como classify y un símbolo único como _build_rules
+3. si codebase-memory-mcp responde list_projects, index_status y trace_path sobre un nodo real
+4. qué limitación metodológica visible existe en cada capa
+5. termina con ESTADO: OK o ESTADO: FALTA ...
+```
+
+Para una comparativa dura entre ambas capas:
+
+```text
+ANALISIS COMPARATIVO MCP LOCAL + ESTRUCTURAL
+Usa symdex_code y codebase-memory-mcp de forma conjunta.
+Primero haz autocheck dual de ambas capas.
+Después compara qué responde mejor cada una, qué no responde bien ninguna,
+y termina con una recomendación de routing canónico basada en evidencia.
 ```
 
 ---
