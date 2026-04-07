@@ -29,7 +29,7 @@ TOOLS = (
     "delete_project",
     "index_status",
     "search_graph",
-    "trace_call_path",
+    "trace_path",
     "detect_changes",
     "query_graph",
     "get_graph_schema",

@@ -206,7 +206,13 @@ def symdex_server_config(repo_root: Path, source: str) -> dict:
             "--source",
             source,
         ],
-        "env": {"SYMDEX_STATE_DIR": ".symdex"},
+        "env": {
+            "SYMDEX_STATE_DIR": ".symdex",
+            "FASTMCP_LOG_ENABLED": "false",
+            "FASTMCP_SHOW_SERVER_BANNER": "false",
+            "FASTMCP_CHECK_FOR_UPDATES": "off",
+            "FASTMCP_ENABLE_RICH_LOGGING": "false",
+        },
         "alwaysAllow": list(SYMDEX_TOOLS),
     }
 

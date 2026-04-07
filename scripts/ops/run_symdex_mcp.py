@@ -74,11 +74,17 @@ def main() -> int:
     command, backend = resolve_command(args.source)
     env = os.environ.copy()
     env["SYMDEX_STATE_DIR"] = str(state_path)
+    # FastMCP must stay quiet on stdio clients or some agents reject the server.
+    env.setdefault("FASTMCP_LOG_ENABLED", "false")
+    env.setdefault("FASTMCP_SHOW_SERVER_BANNER", "false")
+    env.setdefault("FASTMCP_CHECK_FOR_UPDATES", "off")
+    env.setdefault("FASTMCP_ENABLE_RICH_LOGGING", "false")
 
-    print(
-        f"[run_symdex_mcp] backend={backend} repo_root={repo_root} state_dir={state_path}",
-        file=sys.stderr,
-    )
+    if env.get("SYMDEX_MCP_DEBUG") == "1":
+        print(
+            f"[run_symdex_mcp] backend={backend} repo_root={repo_root} state_dir={state_path}",
+            file=sys.stderr,
+        )
     subprocess.run(command, cwd=repo_root, env=env, check=True)
     return 0
 
