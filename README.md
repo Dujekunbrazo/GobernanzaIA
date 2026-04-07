@@ -82,6 +82,13 @@ Lo que vive en este repo es:
 
 No vive aqui la autoria del motor semantico ni de la memoria estructural.
 
+Nota operativa sobre `SymDex`:
+
+- el baseline canónico usa backend semántico `local` por defecto
+- `voyage` es opcional
+- que la tool `semantic_search` exista no basta; la búsqueda semántica solo se
+  considera disponible cuando backend e indexado quedan validados de verdad
+
 ---
 
 ## Estado actual del canon
@@ -400,7 +407,7 @@ python scripts/migration/sync_governance_consumers.py --dry-run
 | Pack | Para que sirve |
 | --- | --- |
 | `governance_search` | retrieval canonico de gobernanza |
-| `symdex` | lectura fina de codigo vivo local |
+| `symdex` | lectura fina de codigo vivo local y búsqueda semántica local cuando esté validada |
 | `codebase_memory` | memoria estructural persistente (`codebase-memory-mcp`) |
 | `roo` | superficie reusable de Roo |
 | `claude` | `CLAUDE.md` reusable |
