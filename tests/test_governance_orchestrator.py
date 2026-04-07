@@ -35,7 +35,11 @@ class GovernanceOrchestratorTests(unittest.TestCase):
         target_repo = root / "target"
         (target_repo / ".git" / "info").mkdir(parents=True, exist_ok=True)
         (target_repo / "AGENTS.md").write_text("x\n", encoding="utf-8")
-        (target_repo / "dev" / "templates" / "initiative").mkdir(parents=True, exist_ok=True)
+        template_root = target_repo / "dev" / "templates" / "initiative"
+        template_root.mkdir(parents=True, exist_ok=True)
+        canonical_template_root = orch.CANONICAL_REPO_ROOT / "dev" / "templates" / "initiative"
+        for src in canonical_template_root.glob("*.md"):
+            (template_root / src.name).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
         (target_repo / "scripts" / "dev").mkdir(parents=True, exist_ok=True)
         (target_repo / "scripts" / "dev" / "initiative_preflight.py").write_text("print('ok')\n", encoding="utf-8")
         return target_repo
@@ -192,6 +196,63 @@ class GovernanceOrchestratorTests(unittest.TestCase):
             text = handoff.read_text(encoding="utf-8")
             self.assertIn("CANDIDATE-001", text)
             self.assertIn("Router cleanup", text)
+
+    def test_approve_remediation_opens_supervised_initiative(self) -> None:
+        with self.make_tempdir() as repo_root:
+            target_repo = self.make_governance_ready_repo(repo_root)
+            review_dir = target_repo / "dev" / "records" / "reviews" / "weekly" / "2026-04-07"
+            review_dir.mkdir(parents=True, exist_ok=True)
+            (review_dir / "candidate_initiatives.md").write_text(
+                "\n".join(
+                    [
+                        "# CANDIDATE INITIATIVES",
+                        "",
+                        "### CANDIDATE-001",
+                        "",
+                        "- Estado: PROPUESTA",
+                        "- Modo sugerido: M4",
+                        "- Titulo: Router cleanup",
+                        "- Objetivo: eliminar legacy y wiring paralelo",
+                        "- Hallazgos agrupados: FINDING-001, FINDING-002",
+                        "- Write set dominante: core/router.py, tests/test_router.py",
+                        "- Concept / area: routing",
+                        "- Synchronization / boundary: router boundary",
+                        "- Riesgo: medio",
+                        "- Razon del clustering: misma causa raiz",
+                        "- Via de apertura sugerida: M4",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            original_ensure_runtime = orch.ensure_local_runtime
+            try:
+                orch.ensure_local_runtime = lambda base_repo=None: original_ensure_runtime(repo_root)
+                parser = orch.build_parser()
+                args = parser.parse_args(
+                    [
+                        "--target-repo",
+                        str(target_repo),
+                        "--initiative-id",
+                        "unused",
+                        "approve-remediation",
+                        "--review-date",
+                        "2026-04-07",
+                        "--candidate-id",
+                        "CANDIDATE-001",
+                        "--new-initiative-id",
+                        "2026-04-07_router_cleanup",
+                    ]
+                )
+                exit_code = args.func(args)
+                self.assertEqual(exit_code, 0)
+                handoff = target_repo / "dev" / "records" / "initiatives" / "2026-04-07_router_cleanup" / "handoff.md"
+                self.assertTrue(handoff.exists())
+                ctx = orch.build_session_context(target_repo, "2026-04-07_router_cleanup")
+                session = json.loads(ctx.session_file.read_text(encoding="utf-8"))
+                self.assertEqual(session["snapshot"]["next_step"], "RUN_F1")
+            finally:
+                orch.ensure_local_runtime = original_ensure_runtime
 
     def test_f4_remediation_prompt_does_not_include_pre00_prompt_99(self) -> None:
         with self.make_tempdir() as repo_root:

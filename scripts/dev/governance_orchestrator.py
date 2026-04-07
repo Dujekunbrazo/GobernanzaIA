@@ -1975,6 +1975,69 @@ def prepare_remediation_handoff(args: argparse.Namespace) -> int:
     return 0
 
 
+def approve_remediation(args: argparse.Namespace) -> int:
+    target_repo = parse_target_repo(args.target_repo)
+    gpp.configure_repo_root(str(target_repo))
+    gpp.ensure_repo_supports_governance()
+    weekly_ctx = build_weekly_review_context(target_repo, args.review_date)
+    candidate_block = extract_candidate_block(weekly_ctx.paths.candidates, args.candidate_id)
+    gpp.init_artifacts(
+        argparse.Namespace(
+            initiative_id=args.new_initiative_id,
+            force=args.force,
+            branch="",
+            motor_activo=args.motor_activo,
+            motor_auditor="",
+            baseline_mit=gpp.DEFAULT_BASELINE_MIT,
+            with_handoff=True,
+            with_real_validation=False,
+            summary="",
+        )
+    )
+    initiative_root = target_repo / "dev" / "records" / "initiatives" / args.new_initiative_id
+    handoff_path = initiative_root / "handoff.md"
+    handoff_path.write_text(
+        render_remediation_handoff(
+            target_repo=target_repo,
+            review_date=args.review_date,
+            candidate_id=args.candidate_id,
+            candidate_block=candidate_block,
+            initiative_id=args.new_initiative_id,
+            mode=args.mode,
+            motor_activo=args.motor_activo,
+        ),
+        encoding="utf-8",
+    )
+    approval_dir = weekly_ctx.paths.review_dir / "approved_remediations"
+    approval_dir.mkdir(parents=True, exist_ok=True)
+    approval_receipt = approval_dir / f"{safe_slug(args.candidate_id)}.json"
+    approval_payload = {
+        "review_date": args.review_date,
+        "candidate_id": args.candidate_id,
+        "initiative_id": args.new_initiative_id,
+        "mode": args.mode,
+        "motor_activo": args.motor_activo,
+        "approved_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+    }
+    write_json(approval_receipt, approval_payload)
+    initiative_ctx = build_session_context(target_repo, args.new_initiative_id)
+    session_data = persist_session(
+        initiative_ctx,
+        {
+            "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "opened_from_weekly_review": args.review_date,
+            "source_candidate_id": args.candidate_id,
+        },
+    )
+    print(f"TRANSICION: M0 -> {args.mode} | remediacion semanal aprobada | apertura supervisada | approved")
+    print(f"initiative_id={args.new_initiative_id}")
+    print(f"candidate_id={args.candidate_id}")
+    print(f"handoff={handoff_path}")
+    print(f"approval_receipt={approval_receipt}")
+    print_snapshot(session_data["snapshot"])
+    return 0
+
+
 def shutil_which(name: str) -> bool:
     result = subprocess.run(
         ["where", name] if sys.platform.startswith("win") else ["which", name],
@@ -2082,6 +2145,18 @@ def build_parser() -> argparse.ArgumentParser:
     remediation_parser.add_argument("--motor-activo", default="claude")
     remediation_parser.add_argument("--force", action="store_true")
     remediation_parser.set_defaults(func=prepare_remediation_handoff)
+
+    approve_remediation_parser = subparsers.add_parser(
+        "approve-remediation",
+        help="Aprueba una candidata semanal y abre la remediacion formal supervisada.",
+    )
+    approve_remediation_parser.add_argument("--review-date", required=True)
+    approve_remediation_parser.add_argument("--candidate-id", required=True)
+    approve_remediation_parser.add_argument("--new-initiative-id", required=True)
+    approve_remediation_parser.add_argument("--mode", default="M4", choices=("M3", "M4"))
+    approve_remediation_parser.add_argument("--motor-activo", default="claude")
+    approve_remediation_parser.add_argument("--force", action="store_true")
+    approve_remediation_parser.set_defaults(func=approve_remediation)
 
     current_parser = subparsers.add_parser("run-current-step", help="Ejecuta el paso actual sugerido por la máquina de estados.")
     current_parser.add_argument("--dry-run", action="store_true")
