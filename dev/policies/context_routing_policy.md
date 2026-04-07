@@ -156,6 +156,7 @@ Referencia:
 
 - `dev/policies/structural_memory_policy.md`
 - `dev/policies/symdex_semantic_policy.md`
+- `dev/policies/structural_analysis_execution_policy.md`
 
 ### Evidencia runtime real
 

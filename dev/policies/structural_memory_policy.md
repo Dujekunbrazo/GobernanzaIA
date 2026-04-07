@@ -90,3 +90,9 @@ La integración estructural es aceptable cuando:
 - existe fallback explícito
 - no crea rutas paralelas de análisis estructural
 - los límites reales del grafo se declaran cuando afectan al análisis
+
+## 9) Referencias
+
+- `dev/policies/context_routing_policy.md`
+- `dev/policies/context_stack_policy.md`
+- `dev/policies/structural_analysis_execution_policy.md`

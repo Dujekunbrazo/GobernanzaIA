@@ -200,3 +200,7 @@ Primero haz autocheck dual de ambas capas.
 Después compara qué responde mejor cada una, qué no responde bien ninguna,
 y termina con una recomendación de routing canónico basada en evidencia.
 ```
+
+Referencia de ejecución:
+
+- `dev/policies/structural_analysis_execution_policy.md`
