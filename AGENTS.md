@@ -239,6 +239,7 @@ La policy operativa de referencia es:
 - `dev/policies/findings_register_policy.md`
 - `dev/policies/findings_routing_policy.md`
 - `dev/policies/remediation_clustering_policy.md`
+- `dev/policies/remediation_handoff_policy.md`
 
 ### Capa estática siempre presente
 
