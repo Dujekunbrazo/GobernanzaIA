@@ -20,11 +20,13 @@ La gobernanza opera sobre cinco capas distintas:
 3. `código vivo local`
    - fuente: `symdex_code`
    - resuelve lectura fina de símbolos, archivos, bloques y wiring local
+   - `symdex_code` responde ante todo: "¿qué dice el código?"
    - su búsqueda semántica requiere backend de embeddings validado
 4. `memoria estructural persistente`
    - fuente prevista: `codebase-memory-mcp`
    - resuelve call paths, blast radius, legacy, dead code, arquitectura
      estructural y contraste entre wiring esperado y wiring real
+   - `codebase-memory-mcp` responde ante todo: "¿qué se conecta con qué?"
 5. `evidencia runtime real`
    - fuente: chat del producto, `trace on`, terminal, logs y resultados
      visibles en ejecución real
@@ -35,6 +37,8 @@ La gobernanza opera sobre cinco capas distintas:
 - cada pregunta debe rutearse a la capa mínima que la responda de forma
   canónica
 - ninguna capa sustituye responsabilidades de otra
+- `symdex_code` y `codebase-memory-mcp` son complementarias; ninguna sustituye
+  a la otra
 - el orquestador coordina capas; no reemplaza artefactos sustantivos de motor
 - la memoria del chat no es una capa válida de contexto
 

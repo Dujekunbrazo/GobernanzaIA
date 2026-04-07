@@ -60,14 +60,28 @@ Si la capacidad no está disponible o no está validada localmente:
 - dejar trazado en el perfil local del repo
 - no simular que la capacidad existe
 
-## 6) Prohibiciones
+## 6) Límites conocidos del grafo
+
+Cuando aparezcan, deben declararse explícitamente:
+
+- routes HTTP huérfanas o desconectadas
+- edges `TESTS` a nivel clase pero no de método
+- `RAISES` subindexado
+- ruido excesivo de nodos `Section`
+- falta de secuencia exacta de ejecución cuando el grafo solo muestra
+  topología
+
+`cross_service` puede ser `NO_APTO` en arquitecturas con HTTP dinámico cuando
+el boundary Python -> HTTP no esté conectado realmente en el grafo.
+
+## 7) Prohibiciones
 
 - prohibido tratar `codebase-memory-mcp` como ayuda opcional lateral cuando ya
   esté validado
 - prohibido mantener dos vías estructurales primarias en paralelo
 - prohibido declararlo como disponible si no está realmente operativo
 
-## 7) Criterio de aceptabilidad
+## 8) Criterio de aceptabilidad
 
 La integración estructural es aceptable cuando:
 
@@ -75,3 +89,4 @@ La integración estructural es aceptable cuando:
 - el routing canónico lo prioriza donde corresponde
 - existe fallback explícito
 - no crea rutas paralelas de análisis estructural
+- los límites reales del grafo se declaran cuando afectan al análisis
