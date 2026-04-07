@@ -141,6 +141,58 @@ class GovernanceOrchestratorTests(unittest.TestCase):
             finally:
                 orch.ensure_local_runtime = original_ensure_runtime
 
+    def test_prepare_remediation_handoff_from_weekly_candidate(self) -> None:
+        with self.make_tempdir() as repo_root:
+            target_repo = self.make_governance_ready_repo(repo_root)
+            review_dir = target_repo / "dev" / "records" / "reviews" / "weekly" / "2026-04-07"
+            review_dir.mkdir(parents=True, exist_ok=True)
+            (review_dir / "candidate_initiatives.md").write_text(
+                "\n".join(
+                    [
+                        "# CANDIDATE INITIATIVES",
+                        "",
+                        "### CANDIDATE-001",
+                        "",
+                        "- Estado: PROPUESTA",
+                        "- Modo sugerido: M4",
+                        "- Titulo: Router cleanup",
+                        "- Objetivo: eliminar legacy y wiring paralelo",
+                        "- Hallazgos agrupados: FINDING-001, FINDING-002",
+                        "- Write set dominante: core/router.py, tests/test_router.py",
+                        "- Concept / area: routing",
+                        "- Synchronization / boundary: router boundary",
+                        "- Riesgo: medio",
+                        "- Razon del clustering: misma causa raiz",
+                        "- Via de apertura sugerida: M4",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            parser = orch.build_parser()
+            args = parser.parse_args(
+                [
+                    "--target-repo",
+                    str(target_repo),
+                    "--initiative-id",
+                    "unused",
+                    "prepare-remediation-handoff",
+                    "--review-date",
+                    "2026-04-07",
+                    "--candidate-id",
+                    "CANDIDATE-001",
+                    "--new-initiative-id",
+                    "2026-04-07_router_cleanup",
+                ]
+            )
+            exit_code = args.func(args)
+            self.assertEqual(exit_code, 0)
+            handoff = target_repo / "dev" / "records" / "initiatives" / "2026-04-07_router_cleanup" / "handoff.md"
+            self.assertTrue(handoff.exists())
+            text = handoff.read_text(encoding="utf-8")
+            self.assertIn("CANDIDATE-001", text)
+            self.assertIn("Router cleanup", text)
+
     def test_f4_remediation_prompt_does_not_include_pre00_prompt_99(self) -> None:
         with self.make_tempdir() as repo_root:
             (repo_root / ".git" / "info").mkdir(parents=True)

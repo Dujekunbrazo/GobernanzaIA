@@ -597,6 +597,86 @@ def candidate_initiatives_summary(path: Path) -> dict[str, object]:
     return {"total": len(candidate_ids), "candidate_ids": candidate_ids}
 
 
+def extract_candidate_block(path: Path, candidate_id: str) -> str:
+    if not path.exists():
+        raise SystemExit(f"Missing candidate initiatives file: {path}")
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    pattern = re.compile(
+        rf"(?ms)^###\s+{re.escape(candidate_id)}\s*$\n(.*?)(?=^###\s+CANDIDATE-|^##\s|\Z)"
+    )
+    match = pattern.search(text)
+    if not match:
+        raise SystemExit(f"Candidate not found: {candidate_id}")
+    return match.group(1).strip()
+
+
+def extract_candidate_metadata(block: str, key: str) -> str:
+    match = re.search(rf"(?im)^\s*-\s*{re.escape(key)}:\s*(.+?)\s*$", block)
+    return match.group(1).strip() if match else ""
+
+
+def render_remediation_handoff(
+    *,
+    target_repo: Path,
+    review_date: str,
+    candidate_id: str,
+    candidate_block: str,
+    initiative_id: str,
+    mode: str,
+    motor_activo: str,
+) -> str:
+    title = extract_candidate_metadata(candidate_block, "Titulo") or candidate_id
+    objective = extract_candidate_metadata(candidate_block, "Objetivo") or "Corregir hallazgos materiales detectados por la review semanal."
+    write_set = extract_candidate_metadata(candidate_block, "Write set dominante") or "NO_EVIDENCIA_EN_CANDIDATE"
+    concept = extract_candidate_metadata(candidate_block, "Concept / area") or "NO_EVIDENCIA_EN_CANDIDATE"
+    synchronization = extract_candidate_metadata(candidate_block, "Synchronization / boundary") or "NO_EVIDENCIA_EN_CANDIDATE"
+    risk = extract_candidate_metadata(candidate_block, "Riesgo") or "NO_EVIDENCIA_EN_CANDIDATE"
+    grouped = extract_candidate_metadata(candidate_block, "Hallazgos agrupados") or "NO_EVIDENCIA_EN_CANDIDATE"
+    return (
+        "# HANDOFF\n\n"
+        f"- Initiative ID: {initiative_id}\n"
+        "- Estado: PRE-F1\n"
+        f"- Fecha: {review_date}\n"
+        f"- motor_activo: {motor_activo}\n"
+        f"- Rama: {gpp.planned_branch_name(initiative_id)}\n"
+        f"- baseline_mit: {gpp.DEFAULT_BASELINE_MIT}\n"
+        f"- Modo: {mode}\n"
+        "- Origen: APERTURA_M4\n\n"
+        "## Objetivo y problema\n\n"
+        f"- Candidate ID: {candidate_id}\n"
+        f"- Titulo: {title}\n"
+        f"- Objetivo: {objective}\n\n"
+        "## Evidencia técnica\n\n"
+        f"- Fuente semanal: dev/records/reviews/weekly/{review_date}/candidate_initiatives.md\n"
+        f"- Hallazgos agrupados: {grouped}\n"
+        f"- Concept / area: {concept}\n"
+        f"- Synchronization / boundary: {synchronization}\n"
+        f"- Riesgo: {risk}\n\n"
+        "## Alcance propuesto\n\n"
+        f"- Resolver el frente agrupado en `{candidate_id}`.\n"
+        f"- Write set dominante esperado: {write_set}\n\n"
+        "## No-alcance propuesto\n\n"
+        "- No ampliar el alcance mas alla de los hallazgos agrupados por la review semanal.\n"
+        "- No introducir refactor no justificado por la remediacion.\n\n"
+        "## Supuestos\n\n"
+        f"- La candidata `{candidate_id}` sigue siendo valida en el repo objetivo {target_repo.name}.\n"
+        "- La apertura formal posterior confirmara alcance final en ask.md.\n\n"
+        "## Preguntas abiertas\n\n"
+        "- Confirmar si el write set dominante sigue vigente.\n"
+        "- Confirmar si la remediacion mantiene modo M4 o puede reducirse.\n\n"
+        "## Opciones y trade-offs\n\n"
+        "- Ejecutar la remediacion como iniciativa formal y preservar trazabilidad completa.\n\n"
+        "## Recomendación\n\n"
+        f"- Abrir remediacion gobernada en modo {mode}.\n\n"
+        "## Borrador de plan por commits\n\n"
+        "- Derivar en F4 desde este handoff y el ask congelado.\n\n"
+        "## Criterios de derivación a ask.md\n\n"
+        "- Preservar evidencia semanal, alcance propuesto y riesgos materiales.\n\n"
+        "## Criterios de derivación a plan.md\n\n"
+        "- Mantener el write set dominante y justificar cualquier delta material.\n"
+    )
+
+
 def workflow_state(paths: gpp.InitiativePaths, override_phase: str = "") -> dict[str, str]:
     state = snapshot(paths)
     if override_phase:
@@ -1867,6 +1947,34 @@ def list_weekly_candidates(args: argparse.Namespace) -> int:
     return 0
 
 
+def prepare_remediation_handoff(args: argparse.Namespace) -> int:
+    target_repo = parse_target_repo(args.target_repo)
+    gpp.configure_repo_root(str(target_repo))
+    gpp.ensure_repo_supports_governance()
+    ctx = build_weekly_review_context(target_repo, args.review_date)
+    candidate_block = extract_candidate_block(ctx.paths.candidates, args.candidate_id)
+    initiative_root = target_repo / "dev" / "records" / "initiatives" / args.new_initiative_id
+    initiative_root.mkdir(parents=True, exist_ok=True)
+    handoff_path = initiative_root / "handoff.md"
+    if handoff_path.exists() and not args.force:
+        raise SystemExit(f"Handoff already exists: {handoff_path}")
+    handoff_text = render_remediation_handoff(
+        target_repo=target_repo,
+        review_date=args.review_date,
+        candidate_id=args.candidate_id,
+        candidate_block=candidate_block,
+        initiative_id=args.new_initiative_id,
+        mode=args.mode,
+        motor_activo=args.motor_activo,
+    )
+    handoff_path.write_text(handoff_text, encoding="utf-8")
+    print(f"review_date={ctx.review_date}")
+    print(f"candidate_id={args.candidate_id}")
+    print(f"initiative_id={args.new_initiative_id}")
+    print(f"handoff={handoff_path}")
+    return 0
+
+
 def shutil_which(name: str) -> bool:
     result = subprocess.run(
         ["where", name] if sys.platform.startswith("win") else ["which", name],
@@ -1962,6 +2070,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     weekly_candidates_parser.add_argument("--review-date", required=True)
     weekly_candidates_parser.set_defaults(func=list_weekly_candidates)
+
+    remediation_parser = subparsers.add_parser(
+        "prepare-remediation-handoff",
+        help="Genera handoff de remediacion desde una candidata semanal.",
+    )
+    remediation_parser.add_argument("--review-date", required=True)
+    remediation_parser.add_argument("--candidate-id", required=True)
+    remediation_parser.add_argument("--new-initiative-id", required=True)
+    remediation_parser.add_argument("--mode", default="M4", choices=("M3", "M4"))
+    remediation_parser.add_argument("--motor-activo", default="claude")
+    remediation_parser.add_argument("--force", action="store_true")
+    remediation_parser.set_defaults(func=prepare_remediation_handoff)
 
     current_parser = subparsers.add_parser("run-current-step", help="Ejecuta el paso actual sugerido por la máquina de estados.")
     current_parser.add_argument("--dry-run", action="store_true")
