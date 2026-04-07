@@ -578,6 +578,17 @@ def ensure_weekly_artifacts_updated(ctx: WeeklyReviewContext, previous_mtimes: d
             raise RuntimeError(f"Expected updated weekly artifact in {path}")
 
 
+def findings_register_summary(path: Path) -> dict[str, int]:
+    if not path.exists():
+        return {"total": 0, "NUEVO": 0, "PERSISTENTE": 0, "RESUELTO": 0, "RECLASIFICADO": 0}
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    states = re.findall(r"(?im)^\s*-\s*Estado:\s*(NUEVO|PERSISTENTE|RESUELTO|RECLASIFICADO)\s*$", text)
+    summary = {"total": len(states), "NUEVO": 0, "PERSISTENTE": 0, "RESUELTO": 0, "RECLASIFICADO": 0}
+    for state in states:
+        summary[state] += 1
+    return summary
+
+
 def workflow_state(paths: gpp.InitiativePaths, override_phase: str = "") -> dict[str, str]:
     state = snapshot(paths)
     if override_phase:
@@ -1794,6 +1805,7 @@ def run_weekly_review(args: argparse.Namespace) -> int:
             effort=args.claude_effort,
         )
         ensure_weekly_artifacts_updated(ctx, previous_mtimes)
+    findings_summary = findings_register_summary(ctx.paths.findings_register)
     receipt = {
         "status": "completed",
         "phase": "WEEKLY_REVIEW",
@@ -1807,6 +1819,7 @@ def run_weekly_review(args: argparse.Namespace) -> int:
         "review_file": str(ctx.paths.review),
         "delta_file": str(ctx.paths.delta),
         "findings_register_file": str(ctx.paths.findings_register),
+        "findings_summary": findings_summary,
         "candidate_initiatives_file": str(ctx.paths.candidates),
         "started_at": started_at,
         "finished_at": dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -1822,6 +1835,7 @@ def run_weekly_review(args: argparse.Namespace) -> int:
             "review_mode": summary["review_mode"],
             "compare_against": summary["compare_against"],
             "last_phase": "WEEKLY_REVIEW",
+            "findings_summary": findings_summary,
             "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         },
     )
