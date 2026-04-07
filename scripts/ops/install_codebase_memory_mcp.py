@@ -29,7 +29,7 @@ TOOLS = (
     "delete_project",
     "index_status",
     "search_graph",
-    "trace_call_path",
+    "trace_path",
     "detect_changes",
     "query_graph",
     "get_graph_schema",
@@ -115,6 +115,29 @@ def install_codebase_memory(installer: str, dry_run: bool) -> str:
     raise RuntimeError(f"Unsupported installer strategy: {installer}")
 
 
+def resolve_binary_command(binary_command: str) -> str:
+    candidate = Path(binary_command)
+    if candidate.is_absolute() and candidate.exists():
+        return str(candidate)
+
+    resolved = shutil.which(binary_command)
+    if resolved:
+        return resolved
+
+    if sys.platform.startswith("win"):
+        windows_candidate = (
+            Path.home()
+            / "AppData"
+            / "Local"
+            / "codebase-memory-mcp"
+            / "codebase-memory-mcp.exe"
+        )
+        if windows_candidate.exists():
+            return str(windows_candidate)
+
+    return binary_command
+
+
 def codebase_memory_server_config(binary_command: str) -> dict:
     return {
         "type": "stdio",
@@ -152,11 +175,12 @@ def main() -> int:
 
     chosen_installer = install_codebase_memory(installer=args.installer, dry_run=args.dry_run)
     print(f"Installer used: {chosen_installer}")
+    resolved_binary_command = resolve_binary_command(args.binary_command)
 
     if args.write_root_mcp:
         ensure_root_mcp(
             repo_root=repo_root,
-            binary_command=args.binary_command,
+            binary_command=resolved_binary_command,
             force=args.force,
             dry_run=args.dry_run,
         )
@@ -164,7 +188,7 @@ def main() -> int:
     if args.write_roo_mcp:
         ensure_roo_mcp(
             repo_root=repo_root,
-            binary_command=args.binary_command,
+            binary_command=resolved_binary_command,
             force=args.force,
             dry_run=args.dry_run,
         )
@@ -173,7 +197,7 @@ def main() -> int:
     print("-------------------------------------")
     print(f"Repo root: {repo_root}")
     print(f"Installer: {chosen_installer}")
-    print(f"Binary command: {args.binary_command}")
+    print(f"Binary command: {resolved_binary_command}")
     print(f"Root MCP wiring: {'yes' if args.write_root_mcp else 'no'}")
     print(f"Roo MCP wiring: {'yes' if args.write_roo_mcp else 'no'}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")

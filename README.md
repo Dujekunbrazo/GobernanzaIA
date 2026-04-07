@@ -15,6 +15,7 @@ runtime local mezclado con producto.
 ## Tabla de contenidos
 
 - [Que es](#que-es)
+- [Dependencias externas y atribucion](#dependencias-externas-y-atribucion)
 - [Estado actual del canon](#estado-actual-del-canon)
 - [Piezas principales](#piezas-principales)
 - [Stack canonico de contexto](#stack-canonico-de-contexto)
@@ -56,6 +57,30 @@ sin arrastrar:
 - historicos de producto
 - caches o runtime efimero
 - configuraciones locales acopladas a una maquina concreta
+
+---
+
+## Dependencias externas y atribucion
+
+`GobernanzaIA` define el canon, el wiring y los instaladores.
+No reclama autoria sobre herramientas externas integradas por el baseline.
+
+En particular:
+
+- `SymDex` es una dependencia externa instalada desde su proyecto upstream:
+  `https://github.com/husnainpk/SymDex`
+- `codebase-memory-mcp` es una dependencia externa instalada desde su proyecto
+  upstream oficial
+
+Lo que vive en este repo es:
+
+- la politica de uso
+- el routing canonico
+- los instaladores
+- el wiring MCP comun
+- la integracion operativa en repos consumidores
+
+No vive aqui la autoria del motor semantico ni de la memoria estructural.
 
 ---
 

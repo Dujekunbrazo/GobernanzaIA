@@ -39,7 +39,7 @@ KNOWN_CONSUMERS: dict[str, ConsumerProfile] = {
         installed_ias=("codex", "claude", "roo"),
         preferred_working_ia="codex",
         preferred_auditor_ia="claude",
-        include_packs=("governance_search", "symdex"),
+        include_packs=("governance_search", "symdex", "codebase_memory"),
     ),
     "mcp_boletinesoficiales": ConsumerProfile(
         key="mcp_boletinesoficiales",
@@ -47,7 +47,7 @@ KNOWN_CONSUMERS: dict[str, ConsumerProfile] = {
         installed_ias=("codex", "claude"),
         preferred_working_ia="codex",
         preferred_auditor_ia="claude",
-        include_packs=("governance_search", "symdex"),
+        include_packs=("governance_search", "symdex", "codebase_memory"),
     ),
 }
 

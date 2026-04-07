@@ -37,26 +37,12 @@ DEFAULT_IGNORE_LINES = (
     "legacy/",
 )
 SYMDEX_TOOLS = (
-    "index_folder",
-    "index_repo",
     "search_symbols",
     "semantic_search",
     "search_text",
     "get_symbol",
     "get_symbols",
     "get_file_outline",
-    "get_file_tree",
-    "get_repo_outline",
-    "get_callers",
-    "get_callees",
-    "search_routes",
-    "get_index_status",
-    "get_repo_stats",
-    "get_graph_diagram",
-    "find_circular_deps",
-    "list_repos",
-    "invalidate_cache",
-    "gc_stale_indexes",
 )
 
 
@@ -108,12 +94,13 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run_command(command: list[str], dry_run: bool) -> None:
+def run_command(command: list[str], dry_run: bool, cwd: Path | None = None) -> None:
     rendered = " ".join(command)
     if dry_run:
-        print(f"DRY-RUN INSTALL: {rendered}")
+        suffix = f" (cwd={cwd})" if cwd else ""
+        print(f"DRY-RUN INSTALL: {rendered}{suffix}")
         return
-    subprocess.run(command, check=True)
+    subprocess.run(command, check=True, cwd=cwd)
 
 
 def install_symdex(
@@ -187,12 +174,56 @@ def ensure_symdexignore(repo_root: Path, force: bool, dry_run: bool) -> None:
     write_text_file(repo_root / ".symdexignore", content, force=force, dry_run=dry_run)
 
 
-def symdex_server_config(source: str) -> dict:
+def resolve_node_command() -> str:
+    node_path = shutil.which("node")
+    if node_path is None:
+        raise RuntimeError("SymDex MCP wiring requires node in PATH.")
+    return str(Path(node_path).resolve())
+
+
+def resolve_server_path(repo_root: Path) -> str:
+    return str((repo_root / "scripts" / "ops" / "context_mcp" / "symdex_code_server.mjs").resolve())
+
+
+def install_context_mcp_dependencies(repo_root: Path, dry_run: bool, force: bool) -> str:
+    package_dir = repo_root / "scripts" / "ops" / "context_mcp"
+    npm_path = shutil.which("npm")
+    if npm_path is None:
+        raise RuntimeError("SymDex MCP wiring requires npm to install context_mcp dependencies.")
+
+    command = [npm_path, "ci" if (package_dir / "package-lock.json").exists() else "install"]
+    if force and command[1] == "install":
+        command.append("--force")
+    run_command(command, dry_run=dry_run, cwd=package_dir)
+    return "npm"
+
+
+def resolve_symdex_binary() -> str | None:
+    symdex_path = shutil.which("symdex")
+    if symdex_path is None:
+        return None
+    return str(Path(symdex_path).resolve())
+
+
+def resolve_uvx_binary() -> str | None:
+    uvx_path = shutil.which("uvx")
+    if uvx_path is None:
+        return None
+    return str(Path(uvx_path).resolve())
+
+
+def symdex_server_config(repo_root: Path, source: str) -> dict:
+    args = [resolve_server_path(repo_root), "--symdex-source", source]
+    symdex_binary = resolve_symdex_binary()
+    uvx_binary = resolve_uvx_binary()
+    if symdex_binary:
+        args.extend(["--symdex-bin", symdex_binary])
+    if uvx_binary:
+        args.extend(["--uvx-bin", uvx_binary])
     return {
         "type": "stdio",
-        "command": "python",
-        "args": ["scripts/ops/run_symdex_mcp.py", "--source", source],
-        "env": {"SYMDEX_STATE_DIR": ".symdex"},
+        "command": resolve_node_command(),
+        "args": args,
         "alwaysAllow": list(SYMDEX_TOOLS),
     }
 
@@ -221,30 +252,26 @@ def warmup_symdex(source: str, dry_run: bool) -> None:
 
 
 def ensure_root_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) -> None:
-    if not dry_run and shutil.which("python") is None:
-        raise RuntimeError(
-            "Root MCP wiring for SymDex requires python in PATH. Install Python or omit --write-root-mcp."
-        )
+    if not dry_run and shutil.which("node") is None:
+        raise RuntimeError("Root MCP wiring for SymDex requires node in PATH.")
 
     upsert_root_server(
         repo_root=repo_root,
         server_name="symdex_code",
-        server_config=symdex_server_config(source),
+        server_config=symdex_server_config(repo_root, source),
         force=force,
         dry_run=dry_run,
     )
 
 
 def ensure_roo_mcp(repo_root: Path, source: str, force: bool, dry_run: bool) -> None:
-    if not dry_run and shutil.which("python") is None:
-        raise RuntimeError(
-            "Roo wiring for SymDex requires python in PATH. Install Python or omit --write-roo-mcp."
-        )
+    if not dry_run and shutil.which("node") is None:
+        raise RuntimeError("Roo wiring for SymDex requires node in PATH.")
 
     upsert_roo_server(
         repo_root=repo_root,
         server_name="symdex_code",
-        server_config=symdex_server_config(source),
+        server_config=symdex_server_config(repo_root, source),
         force=force,
         dry_run=dry_run,
     )
@@ -268,6 +295,11 @@ def main() -> int:
     ensure_state_dir(repo_root=repo_root, dry_run=args.dry_run)
     ensure_symdexignore(repo_root=repo_root, force=args.force, dry_run=args.dry_run)
     warmup_symdex(source=args.source, dry_run=args.dry_run)
+    chosen_context_installer = install_context_mcp_dependencies(
+        repo_root=repo_root,
+        dry_run=args.dry_run,
+        force=args.force,
+    )
 
     if args.write_root_mcp:
         ensure_root_mcp(
@@ -290,6 +322,7 @@ def main() -> int:
     print(f"Repo root: {repo_root}")
     print(f"Source: {args.source}")
     print(f"Installer: {chosen_installer}")
+    print(f"Context MCP installer: {chosen_context_installer}")
     print(f"Root MCP wiring: {'yes' if args.write_root_mcp else 'no'}")
     print(f"Roo MCP wiring: {'yes' if args.write_roo_mcp else 'no'}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")
