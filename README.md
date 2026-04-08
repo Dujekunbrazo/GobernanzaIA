@@ -2,18 +2,16 @@
 
 Baseline canonico de gobernanza multi-IA para repositorios de software.
 
-`GobernanzaIA` es el baseline canonico de norma compartida. Define como se
-trabaja, como se distribuye la gobernanza a otros repos y que reglas aplican
-a cualquier repo consumidor.
+`GobernanzaIA` define como se trabaja, como se distribuye la gobernanza a
+otros repos y que reglas aplican a cualquier repo consumidor.
 
-No es el orquestador. El runtime ejecutivo (state machine, sesiones,
-checkpoints, phase tickets) vive en el repo
-[Orquestador](https://github.com/Dujekunbrazo/Orquestador).
+Los motores directos (`Claude` y `Codex`) comparten la misma gobernanza
+sustantiva a traves de `AGENTS.md`.
 
 ![Version](https://img.shields.io/badge/version-baseline--dev-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.10+-blue?logo=python)
-![Motores](https://img.shields.io/badge/ias-codex%20%7C%20claude%20%7C%20gemini-informational)
+![Motores](https://img.shields.io/badge/ias-codex%20%7C%20claude-informational)
 
 ## Tabla de contenidos
 
@@ -24,7 +22,6 @@ checkpoints, phase tickets) vive en el repo
 - [Stack canonico de contexto](#stack-canonico-de-contexto)
 - [Workflow canonico](#workflow-canonico)
 - [Review semanal MIT](#review-semanal-mit)
-- [Orquestador canonico](#orquestador-canonico)
 - [Distribucion a repos consumidores](#distribucion-a-repos-consumidores)
 - [Estructura del repo](#estructura-del-repo)
 - [Quickstart](#quickstart)
@@ -49,7 +46,6 @@ Su objetivo es que cualquier repo consumidor pueda heredar:
 - reglas duras
 - workflow `M0-M4`
 - pipeline `F1-F10`
-- orquestacion ejecutiva
 - templates y prompts
 - baseline + overlay local
 - tooling MCP canonicamente integrado
@@ -72,8 +68,8 @@ En particular:
 
 - `SymDex` es una dependencia externa instalada desde su proyecto upstream:
   `https://github.com/husnainpk/SymDex`
-- `codebase-memory-mcp` es una dependencia externa instalada desde su proyecto 
-  upstream oficial  `https://github.com/DeusData/codebase-memory-mcp/`
+- `codebase-memory-mcp` es una dependencia externa instalada desde su proyecto
+  upstream oficial `https://github.com/DeusData/codebase-memory-mcp/`
 
 Lo que vive en este repo es:
 
@@ -87,35 +83,30 @@ No vive aqui la autoria del motor semantico ni de la memoria estructural.
 
 Nota operativa sobre `SymDex`:
 
-- el baseline canónico usa backend semántico `local` por defecto
+- el baseline canonico usa backend semantico `local` por defecto
 - `voyage` es opcional
-- que la tool `semantic_search` exista no basta; la búsqueda semántica solo se
+- que la tool `semantic_search` exista no basta; la busqueda semantica solo se
   considera disponible cuando backend e indexado quedan validados de verdad
 
 ---
 
 ## Estado actual del canon
 
-Esta rama ya refleja un salto importante respecto al baseline anterior.
+El estado real incluye:
 
-El estado real ahora incluye:
-
-- gobernanza normativa consolidada
-- orquestador como segunda pata canonica
-- `phase_ticket` y `resume_packet` para rehidratacion
-- `F6` supervisada por commit o tramo cuando aplica
+- gobernanza normativa consolidada para motores directos
+- `AGENTS.md` como contrato compartido entre Claude y Codex
+- stack de 4 capas de contexto con routing MCP canonico
 - `F8` live con evidencia runtime real
 - perfil local de capacidades por repo
-- stack de contexto y routing canonico
 - presupuesto de contexto/tokens
 - baseline exportable + overlay local minima
 - soporte canonico para `codebase-memory-mcp`
 - review semanal MIT con baseline inicial, delta semanal, findings register,
   candidatas de remediacion y handoff supervisado
 
-En otras palabras: este repo ya no documenta solo un workflow de iniciativas.
-Documenta tambien la supervision ejecutiva, la memoria estructural y el control
-recurrente de salud del repo.
+El runtime ejecutivo del orquestador vive en su propio repo:
+[Orquestador](https://github.com/Dujekunbrazo/Orquestador)
 
 ---
 
@@ -123,15 +114,14 @@ recurrente de salud del repo.
 
 | Pieza | Responsabilidad |
 | --- | --- |
-| `AGENTS.md` | contrato maestro y reglas duras |
-| `dev/workflow.md` | SOP operativo canonico |
+| `AGENTS.md` | contrato maestro, reglas duras y routing MCP |
+| `dev/workflow.md` | referencia operativa compacta para motores directos |
 | `dev/guarantees/` | gates y criterios de paso |
 | `dev/policies/` | restricciones transversales y contratos operativos |
 | `dev/templates/initiative/` | artefactos de `M3/M4` |
-| `dev/templates/orchestrator/` | runtime rehidratable |
 | `dev/templates/governance/` | perfiles, weekly review y remediacion |
 | `doc/governance_prompts/` | prompts de fase y prompts recurrentes |
-| `scripts/dev/` | validadores, ping-pong y orquestador |
+| `scripts/dev/` | validadores y enforcement |
 | `scripts/migration/` | bootstrap y sync de consumidores |
 | `scripts/ops/` | instaladores MCP y soporte operativo |
 
@@ -139,18 +129,16 @@ recurrente de salud del repo.
 
 ## Stack canonico de contexto
 
-La gobernanza ya trabaja con cinco capas explicitamente separadas:
+La gobernanza trabaja con cuatro capas explicitamente separadas:
 
 1. `gobernanza normativa`
-2. `gobernanza ejecutiva del orquestador`
-3. `codigo vivo local`
-4. `memoria estructural persistente`
-5. `evidencia runtime real`
+2. `codigo vivo local`
+3. `memoria estructural persistente`
+4. `evidencia runtime real`
 
 Routing oficial:
 
 - gobernanza -> `governance_search`
-- estado operativo -> runtime del orquestador
 - codigo vivo local -> `symdex_code`
 - wiring, impacto, legacy, dead code -> `codebase-memory-mcp`
 - validacion observable -> chat del producto, `trace on`, terminal y evidencia real
@@ -204,7 +192,7 @@ Reglas fuertes:
 
 ## Review semanal MIT
 
-La review semanal ya es una capacidad canonica separada de `M4`.
+La review semanal es una capacidad canonica separada de `M4`.
 
 No sirve para implementar.
 Sirve para detectar, clasificar y preparar trabajo gobernable.
@@ -229,33 +217,21 @@ Sirve para detectar, clasificar y preparar trabajo gobernable.
 - `dev/records/reviews/weekly/<yyyy-mm-dd>/candidate_initiatives.md`
 - `dev/records/reviews/architecture_findings_register.md`
 
-### Flujo de remediacion supervisada
+### Flujo de remediacion
 
 1. la review detecta hallazgos
 2. el findings register los mantiene vivos
 3. se agrupan en `candidate_initiatives.md`
-4. el orquestador puede generar `handoff.md`
-5. el usuario aprueba la remediacion
-6. se abre una iniciativa `M3` o `M4` formal
+4. el usuario aprueba la remediacion
+5. se abre una iniciativa `M3` o `M4` formal
 
 No se abre `M4` automaticamente sin aprobacion humana explicita.
 
 ---
 
-## Orquestador canonico
-
-El runtime ejecutivo del sistema vive en un repo separado:
-[Orquestador](https://github.com/Dujekunbrazo/Orquestador)
-
-El Orquestador es un consumidor privilegiado de este baseline: recibe la norma
-compartida y anade su propia capa ejecutiva (state machine, sesiones,
-checkpoints, phase tickets, resume packets).
-
----
-
 ## Distribucion a repos consumidores
 
-El modelo actual ya es:
+El modelo es:
 
 - `GobernanzaIA` = fuente de verdad viva
 - repo consumidor = baseline distribuido + overlay local minima
@@ -268,9 +244,8 @@ El modelo actual ya es:
 - `dev/policies/`
 - `dev/prompts/`
 - `dev/templates/initiative/`
-- `dev/templates/orchestrator/`
 - `dev/templates/governance/`
-- scripts canónicos
+- scripts canonicos
 - documentacion reusable
 - scaffolding vacio de `dev/records/`
 
@@ -278,9 +253,9 @@ El modelo actual ya es:
 
 - iniciativas reales
 - historicos reales de `dev/records/`
-- `.orchestrator_local/`
 - caches, logs, sesiones y outputs generados
 - configuraciones locales efimeras
+- artefactos de una capa ejecutiva externa
 
 ### Overlay local minima
 
@@ -295,15 +270,18 @@ Esa overlay se preserva en actualizaciones del baseline.
 ```text
 GobernanzaIA/
 ├─ AGENTS.md
+├─ CLAUDE.md
 ├─ README.md
 ├─ dev/
 │  ├─ workflow.md
+│  ├─ repo_governance_profile.md
+│  ├─ ai/
+│  │  └─ adapters/
 │  ├─ guarantees/
 │  ├─ policies/
 │  ├─ prompts/
 │  ├─ templates/
 │  │  ├─ initiative/
-│  │  ├─ orchestrator/
 │  │  └─ governance/
 │  └─ records/
 │     ├─ bitacora/
@@ -325,39 +303,18 @@ GobernanzaIA/
 
 ### Abrir una iniciativa `M4`
 
-```text
-GOBERNANZA NUEVA | repo=<repo> | initiative_id=<id> | fuente=handoff | motor_activo=<motor>
-```
+Usa los prompts de `doc/governance_prompts/`:
 
-### Aprobar `F2`
+1. `00_abrir_m4_y_handoff.md` — abrir M4 y crear handoff
+2. `01_f1_ask.md` — generar ask
+3. `02_f2_validacion_ask.md` — validar ask
+4. `03_f3_auditoria_ask.md` — auditar ask
+5. (y asi sucesivamente hasta `09_f9_f10_cierre_y_lecciones.md`)
 
-```text
-F2 aprobado, motor_auditor=codex
-```
+### Lanzar review semanal
 
-### Rehidratar `F8`
-
-```text
-rehidrata F8 de la iniciativa <initiative_id>
-```
-
-### Lanzar review semanal inicial
-
-```text
-REVIEW SEMANAL INICIAL | repo=<repo> | fecha=<yyyy-mm-dd> | motor_activo=claude
-```
-
-### Lanzar review semanal recurrente
-
-```text
-REVIEW SEMANAL | repo=<repo> | fecha=<yyyy-mm-dd> | motor_activo=claude
-```
-
-### Aprobar remediacion semanal
-
-```text
-APRUEBA REMEDIACION | repo=<repo> | fecha=<yyyy-mm-dd> | candidate_id=<id> | initiative_id=<initiative_id> | modo=M4 | motor_activo=<motor>
-```
+Usa el prompt `doc/governance_prompts/20_weekly_mit_review.md` con un
+briefing tecnico generado previamente.
 
 ---
 
@@ -388,11 +345,11 @@ python scripts/migration/sync_governance_consumers.py --dry-run
 | Pack | Para que sirve |
 | --- | --- |
 | `governance_search` | retrieval canonico de gobernanza |
-| `symdex` | lectura fina de codigo vivo local y búsqueda semántica local cuando esté validada |
+| `symdex` | lectura fina de codigo vivo local y busqueda semantica local cuando este validada |
 | `codebase_memory` | memoria estructural persistente (`codebase-memory-mcp`) |
 | `claude` | `CLAUDE.md` reusable |
 
-Ejemplo con memoria estructural:
+Ejemplo con todos los packs:
 
 ```bash
 python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search --include-pack symdex --include-pack codebase_memory
@@ -405,14 +362,14 @@ python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --
 Comandos utiles:
 
 ```bash
-python -m unittest tests.test_governance_orchestrator tests.test_bootstrap_governance tests.test_sync_governance_consumers
-python -m py_compile scripts/dev/governance_orchestrator.py scripts/migration/bootstrap_governance.py scripts/migration/sync_governance_consumers.py
+python scripts/dev/check_naming_compliance.py
+python scripts/dev/check_state0.py
+python -m py_compile scripts/migration/bootstrap_governance.py scripts/migration/sync_governance_consumers.py
 ```
 
 El baseline se considera sano cuando:
 
 - el bootstrap exporta solo lo exportable
-- el orquestador mantiene continuidad sin chat
 - la weekly review funciona como control separado
-- la remediacion semanal entra por `M3/M4` supervisada
+- la remediacion semanal entra por `M3/M4` con aprobacion humana
 - no hay records reales dentro del repo canonico

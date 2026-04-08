@@ -1,8 +1,8 @@
 # Governance Baseline Manifest (Hard)
 
-Propósito:
-- declarar qué forma parte del baseline canónico exportable y qué queda fuera
-  como overlay local o runtime operativo.
+Proposito:
+- declarar que forma parte del baseline canonico exportable y que queda fuera
+  como overlay local o runtime operativo
 
 ## 1) Entra en el baseline exportable
 
@@ -12,42 +12,41 @@ Propósito:
 - `dev/policies/`
 - `dev/prompts/`
 - `dev/templates/initiative/`
-- `dev/templates/orchestrator/`
 - `dev/templates/governance/`
 - `dev/ai/`
-- scripts canónicos de `dev`, `ops` y `migration`
-- documentación reusable de gobernanza
-- scaffolding vacío de `dev/records/` para iniciativas, bitácora y reviews
+- scripts canonicos de `dev`, `ops` y `migration`
+- documentacion reusable de gobernanza
+- scaffolding vacio de `dev/records/` para iniciativas, bitacora y reviews
 
 ## 2) No entra en el baseline exportable
 
-- `dev/records/` como histórico real
+- `dev/records/` como historico real
 - iniciativas concretas
-- bitácoras reales
-- `.orchestrator_local/`
+- bitacoras reales
 - caches, logs, sesiones o outputs generados
-- configuraciones locales efímeras del operador
+- configuraciones locales efimeras del operador
+- artefactos de una capa ejecutiva externa al repo consumidor
 
-## 3) Overlay local mínima del repo consumidor
+## 3) Overlay local minima del repo consumidor
 
-La overlay mínima del repo consumidor incluye:
+La overlay minima del repo consumidor incluye:
 
 - `dev/repo_governance_profile.md`
 
-Puede incluir además adaptadores locales de producto, siempre que no
+Puede incluir ademas adaptadores locales de producto, siempre que no
 sustituyan el canon.
 
-## 4) Regla de instalación y actualización
+## 4) Regla de instalacion y actualizacion
 
 - el baseline se instala desde `GobernanzaIA`
-- la actualización de consumidores debe tocar solo archivos del baseline
+- la actualizacion de consumidores debe tocar solo archivos del baseline
   exportable
-- el runtime operativo y la overlay local no se tratan como baseline
+- la overlay local no se trata como baseline
 
 ## 5) Criterio de aceptabilidad
 
-El baseline está bien definido cuando:
+El baseline esta bien definido cuando:
 
-- el bootstrap puede copiarlo sin ambigüedad
-- el consumidor sabe qué puede personalizar localmente
-- no se exportan records reales ni runtime efímero
+- el bootstrap puede copiarlo sin ambiguedad
+- el consumidor sabe que puede personalizar localmente
+- no se exportan records reales ni runtime efimero

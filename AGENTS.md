@@ -9,82 +9,80 @@ Orden de precedencia:
 3. `dev/guarantees/*.md`
 4. `dev/ai/adapters/*.md`
 5. `dev/policies/*.md`
-6. superficies nativas de producto (`.claude/*`, `CLAUDE.md` y equivalentes) como capa de compatibilidad/adaptacion
+6. superficies nativas de producto (`CLAUDE.md`, `.claude/*` y equivalentes)
+   como capa de compatibilidad
 
-Si hay conflicto, prevalece el nivel superior.
+Si hay conflicto, prevalece la capa superior.
 
 ## 2) Objetivo operativo
 
-Trabajar con un proceso cerrado, repetible y auditable.
-La gobernanza define como se procede; el codigo define sobre que se trabaja.
+Trabajar en cada repo con un proceso simple, repetible y auditable para motores
+directos.
 
-## 3) Modos M0-M4
+La gobernanza define como se procede.
+El codigo define sobre que se trabaja.
+
+## 3) Motores directos
+
+- `Claude` y `Codex` deben trabajar con la misma gobernanza sustantiva.
+- `AGENTS.md` es el contrato compartido real para ambos.
+- Los adapters por motor solo pueden afinar detalles de producto; no deben
+  crear workflow ni routing paralelos.
+- No existe motor por defecto.
+- El usuario designa `motor_activo` y, cuando aplique, `motor_auditor`.
+
+## 4) Modos M0-M4
 
 - `M0 CONVERSACION`: ideacion, aclaraciones y discusion tecnica sin ejecucion.
 - `M1 ANALISIS`: diagnostico tecnico sin cambios de codigo.
 - `M2 DEBUG`: reproduccion y aislamiento de fallos sin implementar fix.
 - `M3 IMPLEMENTACION_MENOR`: cambio acotado de bajo riesgo.
-- `M4 INICIATIVA_COMPLETA`: cambio mediano/grande con trazabilidad formal.
+- `M4 INICIATIVA_COMPLETA`: cambio mediano o grande con trazabilidad formal.
 
-Reglas de activacion:
+Reglas:
 
-- Si el usuario no declara modo, iniciar en `M0`.
-- Para entrar en `M3` o `M4` se requiere aprobacion explicita del usuario.
-- Toda transicion usa:
-  `TRANSICION: Mx -> My | motivo | impacto | decision`.
-- No existe motor por defecto.
-- El usuario designa `motor_activo`.
-- En `M4`, el usuario designa `motor_auditor` en `F2`.
+- si el usuario no declara modo, iniciar en `M0`
+- para entrar en `M3` o `M4`, se requiere aprobacion explicita del usuario
+- toda transicion se registra como:
+  `TRANSICION: Mx -> My | motivo | impacto | decision`
+- en `M0`, `M1` y `M2` no se modifica codigo
 
-## 4) Reglas duras no negociables
+## 5) Reglas duras no negociables
 
-1. Si el usuario no declara modo, iniciar en `M0`.
-2. Para entrar en `M3` o `M4` se requiere aprobacion explicita del usuario.
-3. Toda transicion usa el formato `TRANSICION: Mx -> My | motivo | impacto | decision`.
-4. En `M0/M1/M2` esta prohibido editar codigo.
-5. En `M3` solo se permite cambio acotado y trazable.
-6. En `M4` aplica pipeline `F1-F10` completo.
-7. En `M4` no se planifica sin `ASK CONGELADO`.
-8. En `M4` no se implementa sin `PLAN CONGELADO`.
-9. Si cambia el alcance, se reabre la fase previa correspondiente.
-10. Las auditorias formales solo admiten `PASS` o `FAIL`.
-11. No se permite `PASS` mientras exista cualquier hallazgo pendiente.
-12. En auditorias formales no existe categoria operativa de observaciones; todo punto senalado por el auditor debe registrarse como hallazgo o no incluirse.
-13. No se permite `PASS` mientras exista cualquier punto senalado pendiente, ambiguedad material, debilidad operativa o riesgo descrito por el auditor.
-14. Maximo 1 auditoria inicial y 2 re-auditorias por fase.
-15. Un cambio logico por commit.
-16. Prohibido refactor encubierto.
-17. README solo incremental.
-18. No inventar rutas, comandos o features.
-19. Prohibido mezclar runtime del proyecto con artefactos de gobernanza.
-20. Sin compliance de nomenclatura y state0 no hay cierre formal.
-21. Toda capability transversal del sistema debe resolverse mediante abstraccion canonica, owner arquitectonico explicito, punto de extension definido y wiring comun.
-22. Queda prohibido resolver capabilities transversales mediante branching por `tool`/`path`/`channel`/`filter`, coverage vertical aislada, paths paralelos, fallback legacy conviviendo con el camino canonico o logica especifica por herramienta.
-23. Ninguna capability se considera completada mientras no este conectada en su wiring canonico sobre todas las superficies incluidas en alcance.
-24. Queda prohibido cerrar una iniciativa con wiring parcial, integraciones huerfanas, convivencia legacy/canonico o paths paralelos para la misma capability.
-25. En cada nueva iniciativa esta prohibido terminar con archivos brillantes, cableado mediocre o legacy vivo.
-26. Si una iniciativa `M4` modifica comportamiento observable del producto, no puede cerrar `F8` ni avanzar a `F9` sin `real_validation.md` completado.
-27. Durante la validacion real guiada no se toca codigo tras el primer fallo material, salvo bloqueo critico que impida continuar el barrido.
+1. En `M3` solo se permite cambio acotado y trazable.
+2. En `M4` aplica el pipeline `F1-F10`.
+3. En `M4` no se planifica sin `ASK CONGELADO`.
+4. En `M4` no se implementa sin `PLAN CONGELADO`.
+5. Las auditorias formales solo admiten `PASS` o `FAIL`.
+6. No se permite `PASS` mientras exista cualquier hallazgo pendiente.
+7. Si cambia el alcance, se reabre la fase previa correspondiente.
+8. Un cambio logico por commit.
+9. Prohibido refactor encubierto.
+10. README solo incremental.
+11. No inventar rutas, comandos o features.
+12. Prohibido mezclar runtime del proyecto con artefactos de gobernanza.
+13. Toda consulta debe rutearse a la capa canonica minima que la responda.
+14. Queda prohibido usar dos capas primarias simultaneas para la misma
+    responsabilidad.
+15. La memoria estructural del sistema debe resolverse mediante la capa
+    estructural canonica cuando este disponible.
+16. Toda capability transversal debe resolverse mediante abstraccion canonica,
+    owner explicito, punto de extension definido y wiring comun.
+17. Queda prohibido cerrar una capability con wiring parcial, integraciones
+    huerfanas, coexistencia legacy/canonica o paths paralelos.
+18. La validacion observable no se inventa: si falta evidencia real donde
+    aplica, el estado correcto es `BLOQUEADO`.
+19. Si una iniciativa modifica comportamiento observable del producto, no puede
+    cerrar sin validacion real completada.
+20. La gobernanza debe optimizar coste total por tarea usando retrieval
+    dirigido, no expansion masiva de contexto.
 
-Reglas 28-37 son especificas del orquestador y viven en el repo Orquestador.
-
-## 4.1) Apertura durable de M4
-
-- `handoff.md` no puede nacer en `M0`; en `M0` no se crean artefactos.
-- Tras la transicion `M0 -> M4`, y antes de `F1`, puede crearse
-  `dev/records/initiatives/<initiative_id>/handoff.md`.
-- `handoff.md` no sustituye `ask.md` ni `plan.md` y no redefine el pipeline
-  `F1-F10`.
-- Si existe `handoff.md`, `F1` debe derivar el `ask.md` desde ese artefacto.
-- Si existe `handoff.md`, `F4` debe derivar el `plan.md` desde ese artefacto y
-  desde el `ask.md` congelado.
-
-## 5) Pipeline F1-F10
+## 6) Pipeline F1-F10
 
 | Fase | Proposito |
 | ---- | --------- |
 | `F1` | Ask propuesto |
-| `F2` | Validacion de ask por usuario + designacion de `motor_auditor` |
+| `F2` | Validacion de ask por usuario |
 | `F3` | Auditoria y congelado de ask |
 | `F4` | Plan propuesto |
 | `F5` | Auditoria y congelado de plan |
@@ -92,52 +90,35 @@ Reglas 28-37 son especificas del orquestador y viven en el repo Orquestador.
 | `F7` | Post-auditoria / debug |
 | `F8` | Validacion real guiada |
 | `F9` | Docs + cierre |
-| `F10` | Lecciones finales y feedback de gobernanza |
+| `F10` | Lecciones finales |
 
 Reglas:
 
-- En `F3`, `F5` y `F7` solo el `motor_auditor` emite la auditoria formal.
-- Si el resultado es `FAIL`, no se avanza de fase.
-- Si falta precondicion, el estado correcto es `BLOQUEADO`.
-- Si existe `handoff.md`, se usa como fuente canonica de apertura de `M4`, pero
-  la ejecutabilidad formal sigue dependiendo de `ask.md` y `plan.md`.
+- en `F3`, `F5` y `F7` solo el `motor_auditor` emite la auditoria formal
+- si el resultado es `FAIL`, no se avanza de fase
+- si falta precondicion, el estado correcto es `BLOQUEADO`
 - `F8` es obligatoria cuando la iniciativa toca comportamiento observable del
-  producto; si no aplica, debe trazarse como `NO_APLICA`.
+  producto; si no aplica, debe trazarse como `NO_APLICA`
 
-## 5.0) Revision semanal canonica
-
-La revision semanal es un control recurrente separado de `M0-M4`.
-Policy operativa: `dev/policies/weekly_review_policy.md`
-
-## 5.2) Propiedad de artefactos
-
-- `F1`: `ask.md` lo escribe solo el `motor_activo`.
-- `F3`: `ask_audit.md` lo escribe solo el `motor_auditor`.
-- `F4`: `plan.md` lo escribe solo el `motor_activo`.
-- `F5`: `plan_audit.md` lo escribe solo el `motor_auditor`.
-- `F6`: `execution.md` lo escribe y mantiene solo el `motor_activo`.
-- `F7`: `post_audit.md` lo escribe solo el `motor_auditor`.
-- `F8`: `real_validation.md` lo escribe quien guia o ejecuta la validacion real.
-- el orquestador no sustituye la autoria de los motores; coordina fases,
-  gates, intentos, excepciones, tickets y contexto operativo.
-- detalle operativo del orquestador:
-  `dev/policies/orchestrator_execution_policy.md`
-
-## 5.1) F8 — Validacion real guiada
+## 7) Validacion real F8
 
 `F8` formaliza el barrido real antes del cierre documental.
 
 Reglas:
 
-- no es una auditoria formal nueva
 - su salida obligatoria es `real_validation.md` cuando aplica
 - debe ejecutar el barrido real completo antes de decidir fixes
 - si aparecen fallos materiales, corresponde reabrir `F6`
 - si se reabre `F6`, deben repetirse `F7` y `F8` antes de `F9`
-- solo puede avanzar a `F9` cuando `real_validation.md` declare
+- `F9` solo puede empezar cuando `real_validation.md` declare
   `Decision final: APTA_PARA_F9`
+- la evidencia de primer nivel incluye:
+  - chat del producto
+  - `trace on`
+  - terminal o logs de la superficie validada
+  - resultados visibles en runtime real
 
-## 6) Precedencia tecnica
+## 8) Precedencia tecnica
 
 1. MIT Concept-Sync para macroarquitectura.
 2. Clean Code para microimplementacion.
@@ -145,80 +126,106 @@ Reglas:
 4. Rendimiento puede excepcionar Clean Code solo en hot paths con evidencia.
 5. Validacion determina aceptabilidad final.
 
-## 7) Corpus de contexto
+## 9) Stack canonico de contexto
 
-Toda consulta debe usar la capa canonica minima que la responda.
-La memoria del chat no es fuente valida de continuidad.
+El sistema opera sobre cuatro capas:
 
-Routing de detalle: `dev/policies/context_routing_policy.md`
+1. `gobernanza normativa`
+   - reglas, workflow, guarantees, policies y adapters
+2. `codigo vivo local`
+   - lectura fina de simbolos y bloques concretos
+3. `memoria estructural persistente`
+   - wiring global, impacto, legacy y arquitectura estructural
+4. `evidencia runtime real`
+   - comportamiento observable, trazas, terminal y resultados visibles
 
-### Gobernanza recuperable
+La memoria conversacional no forma parte del stack canonico.
+
+### Capa estatica siempre presente
+
+- reglas duras no negociables
+- resumen del workflow
+- routing MCP canonico
+- instrucciones de degradacion
+
+### Gobernanza dinamica bajo demanda
 
 Corpus canonico:
 
+- `dev/workflow.md`
 - `dev/policies/`
 - `dev/guarantees/`
 - `dev/prompts/`
 - `dev/templates/initiative/`
 - `dev/ai/adapters/`
-- `dev/workflow.md`
+- `dev/repo_governance_profile.md`
 - `doc/architecture/`
 
 Exclusiones duras:
 
-- `dev/records/` como historico
+- `dev/records/`
+- `dev/records/legacy/`
 - `.claude/` y `CLAUDE.md` como corpus de retrieval
+- historico, bitacoras y salidas generadas
 
-La recuperacion de gobernanza debe ser hibrida:
+## 10) Routing MCP canonico
 
-- filtro determinista por fase, tipo de documento y motor
-- ranking semantico dentro del subconjunto
-- fallback al documento canonico completo si hay ambiguedad
-- herramienta operativa: `governance_search`
+Autocheck obligatorio al inicio de sesion o tras recarga:
 
-### SymDex
+- `governance_search`
+- `symdex_code.semantic_search`
+- `symdex_code.get_symbol`
+- `codebase-memory-mcp`
 
-`SymDex` se usa solo para codigo vivo del producto.
+Si alguna capacidad falta o falla, debe declararse antes de continuar.
 
-Excluir: `node_modules`, `.venv`, `__pycache__`, caches, logs, `state`,
-`sessions`, `content`, gobernanza y artefactos historicos.
+Routing por responsabilidad:
 
-Herramientas operativas (via symdex_code):
-- `semantic_search`, `search_symbols`, `search_text`
-- `get_symbol`, `get_file_outline`, `get_symbols`
+- gobernanza -> `governance_search`
+- codigo vivo -> `symdex_code`
+- wiring, impacto estructural, blast radius, hubs, legacy y dead code ->
+  `codebase-memory-mcp`
 
-`semantic_search` solo cuenta como capacidad real de busqueda conceptual si
-el backend semantico esta validado en el perfil del repo.
+Reglas:
 
-### Memoria estructural persistente
+- usar `semantic_search` solo si la capacidad semantica de `SymDex` esta
+  validada en el repo
+- si no lo esta, degradar a `search_symbols` y `search_text`
+- usar `codebase-memory-mcp` para localizar relaciones y volver a
+  `symdex_code` para leer fino el codigo exacto
+- `Glob`, `Grep`, `find`, `rg`, `Read` o `Bash` solo se permiten como fallback
+  si el MCP correspondiente falla o no esta disponible, o para lectura final
+  puntual del archivo ya localizado
 
-Reservada para: call paths reales, blast radius, legacy y dead code,
-arquitectura estructural, contraste entre wiring esperado y wiring real.
+## 11) Perfil local de capacidades
 
-Cuando no este instalada, degrada a `SymDex` mas lectura canonica del repo.
-Policy: `dev/policies/structural_memory_policy.md`
+Cada repo consumidor debe mantener un unico perfil local en:
 
-## 8) Motores
+- `dev/repo_governance_profile.md`
 
-- `Codex`, `Claude` y `Gemini` pueden actuar como `motor_activo` o `motor_auditor` si el usuario los designa explicitamente.
-- Los unicos roles operativos de la gobernanza son `motor_activo` y `motor_auditor`.
+Ese perfil:
 
-## 9) Rutas canonicas
+- describe tooling realmente disponible
+- declara el estado real de `governance_search`, `symdex_code` y
+  `codebase-memory-mcp`
+- fija degradaciones aceptables
+- no redefine el canon
 
-- Gobernanza activa: `dev/`
-- Iniciativas: `dev/records/initiatives/<initiative_id>/`
-- Bitacora diaria: `dev/records/bitacora/`
-- Script oficial de bitacora: `scripts/ops/bitacora_append.py`
-- Validadores de cierre:
+## 12) Rutas canonicas
+
+- gobernanza activa: `dev/`
+- workflow de referencia: `dev/workflow.md`
+- perfil local: `dev/repo_governance_profile.md`
+- iniciativas: `dev/records/initiatives/<initiative_id>/`
+- validacion real guiada: `dev/records/initiatives/<initiative_id>/real_validation.md`
+- validadores de cierre:
   - `scripts/dev/check_naming_compliance.py`
   - `scripts/dev/check_state0.py`
-- Perfil local de capacidades:
-  `dev/repo_governance_profile.md`
 
-## 10) Contrato de bloqueo
+## 13) Contrato de bloqueo
 
 Si falta contexto, evidencia o precondicion, la IA debe:
 
-1. Parar.
-2. Declarar bloqueo con evidencia.
-3. Proponer el siguiente paso minimo seguro.
+1. parar
+2. declarar bloqueo con evidencia
+3. proponer el siguiente paso minimo seguro

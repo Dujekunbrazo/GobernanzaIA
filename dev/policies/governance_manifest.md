@@ -1,31 +1,26 @@
 # Governance Manifest (Hard)
 
-Propósito:
-- minimizar carga de contexto sin perder enforcement.
-- la policy de routing detallado es:
-  - `dev/policies/context_routing_policy.md`
+Proposito:
+- minimizar carga de contexto sin perder enforcement
+- fijar la estrategia de carga minima para motores directos
 
-## 1) Regla de carga mínima
+## 1) Regla de carga minima
 
-- Cargar por defecto solo:
+- cargar por defecto solo:
   - `AGENTS.md`
-  - `dev/workflow.md`
+  - `dev/workflow.md` cuando haga falta detalle de proceso
   - un gate relevante
-  - una policy de dominio relevante
-- No cargar más de `1 workflow + 1 gate + 1 policy de dominio + 1 policy de
-  soporte` salvo ambigüedad real.
+  - una policy de soporte relevante
+- no cargar mas de `1 workflow + 1 gate + 1 policy de soporte` salvo ambiguedad
+  real
 
 ## 2) Routing de carga
 
-- Gobernanza general:
+- gobernanza general:
   - `AGENTS.md`
   - `dev/workflow.md`
-  - `dev/policies/context_routing_policy.md` si existe ambigüedad de capa
+  - `dev/policies/context_routing_policy.md` si existe ambiguedad de capa
     primaria
-- Estado operativo y continuidad:
-  - runtime del orquestador
-  - `phase_ticket`
-  - `resume_packet`
 - `M3`:
   - `dev/workflow.md`
   - `dev/guarantees/m3_delivery_gate.md`
@@ -34,57 +29,49 @@ Propósito:
   - `dev/workflow.md`
   - `dev/guarantees/plan_gate.md`
   - policy de dominio aplicable
-- `M4` implementación/post-auditoría:
+- `M4` implementacion y post-auditoria:
   - `dev/workflow.md`
   - `dev/guarantees/implementation_gate.md`
   - policy de dominio aplicable
-- Capacidades transversales del plano de acción:
-  - `dev/policies/action_policy.md`
-  - gate vigente del modo/fase
-- Excepciones:
-  - `dev/policies/exception_rules.md`
-  - `exception_record.md` de la iniciativa si existe
-- Código vivo:
-  - `semantic_search` y luego `get_symbol` (via symdex_code)
-  - evitar `rg` o lecturas amplias salvo fallback operativo real
-- Memoria estructural:
-  - `codebase-memory-mcp` cuando esté disponible
-  - si no está disponible, fallback explícito a `symdex_code` más lectura
-    puntual del repo
-- Validación observable:
+- codigo vivo:
+  - `symdex_code`
+- memoria estructural:
+  - `codebase-memory-mcp` cuando este disponible
+  - si no lo esta, fallback explicito a `symdex_code` mas lectura puntual del
+    repo
+- validacion observable:
   - evidencia runtime real
   - `trace on`, terminal, logs y resultados visibles
-- Cierre documental:
+- cierre documental:
   - `dev/guarantees/docs_gate.md`
   - `dev/policies/documentation_rules.md`
 
 ## 3) Excepciones de carga
 
-- `dev/records/` no forma parte del contexto base.
+- `dev/records/` no forma parte del contexto base
 - `dev/records/` solo se carga por ruta exacta cuando la iniciativa activa lo
-  exige.
-- Dosieres largos y arquitectura extensa solo se cargan cuando la policy corta
-  no basta.
+  exige
+- dosieres largos y arquitectura extensa solo se cargan cuando la policy corta
+  no basta
 
 ## 4) Superficies nativas de producto
 
-- `.claude/`, `CLAUDE.md` y equivalentes son superficies nativas de producto.
-- No son fuente de verdad normativa.
-- Deben comportarse como adaptadores o compatibilidad local.
-- Si difieren de `AGENTS.md` o `dev/`, prevalece la gobernanza canónica.
+- `CLAUDE.md`, `.claude/` y equivalentes son superficies nativas de producto
+- no son fuente de verdad normativa
+- deben comportarse como adaptadores o compatibilidad local
+- si difieren de `AGENTS.md` o `dev/`, prevalece la gobernanza canonica
 
-## 5) Regla de compresión
+## 5) Regla de compresion
 
-- Preferir tablas, checklists y templates breves frente a prosa larga.
-- Si una regla necesita más de un documento largo para aplicarse, debe
-  resumirse en una policy o manifest más corto.
+- preferir tablas, checklists y templates breves frente a prosa larga
+- si una regla necesita mas de un documento largo para aplicarse, debe
+  resumirse en una policy o manifest mas corto
 
 ## 6) Regla de no solape
 
-- una consulta debe tener una sola capa primaria de resolución
-- el runtime del orquestador no sustituye retrieval normativo
+- una consulta debe tener una sola capa primaria de resolucion
 - `symdex_code` no sustituye memoria estructural global
-- la evidencia runtime no sustituye análisis estructural
-- la memoria del chat no sustituye ninguna capa canónica
+- la evidencia runtime no sustituye analisis estructural
+- la memoria del chat no sustituye ninguna capa canonica
 - si existe duda sobre el routing correcto, prevalece
   `dev/policies/context_routing_policy.md`

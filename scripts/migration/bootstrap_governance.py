@@ -23,11 +23,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PACKS = ("core",)
 DEFAULT_SYMDEX_SOURCE = "git+https://github.com/husnainpk/SymDex.git"
-IA_CHOICES = ("claude", "codex", "gemini")
+IA_CHOICES = ("claude", "codex")
 IA_PACKS = {
     "claude": "claude",
     "codex": "codex",
-    "gemini": "gemini",
 }
 MANIFEST_PATH = Path("dev/governance_baseline.json")
 REPO_PROFILE_TEMPLATE_PATH = Path("dev/templates/governance/repo_governance_profile.md")
@@ -80,10 +79,10 @@ PACKS: dict[str, PackSpec] = {
             Path("dev/records/initiatives/.gitkeep"),
             Path("dev/records/reviews/README.md"),
             Path("dev/records/reviews/weekly/.gitkeep"),
+            Path("dev/templates/orchestrator/execution_checkpoint.md"),
             Path("doc/architecture/ai_engineering_dossier.md"),
             Path("doc/architecture/context_retrieval_architecture.md"),
             Path("doc/governance_ping_pong_guide.md"),
-            Path("doc/governance_orchestrator_guide.md"),
             Path("doc/governance_prompts/README.md"),
             Path("scripts/README.md"),
             Path("scripts/ops/bitacora_append.py"),
@@ -96,7 +95,6 @@ PACKS: dict[str, PackSpec] = {
             Path("scripts/dev/check_state0.py"),
             Path("scripts/dev/governance_ping_pong.py"),
             Path("scripts/dev/governance_ping_pong_launcher.bat"),
-            Path("scripts/dev/governance_orchestrator.py"),
             Path("scripts/dev/initiative_preflight.py"),
             Path("scripts/migration/bootstrap_governance.py"),
             Path("scripts/migration/sync_governance_consumers.py"),
@@ -107,7 +105,6 @@ PACKS: dict[str, PackSpec] = {
             (Path("dev/prompts"), "*.md", False),
             (Path("dev/ai/adapters"), "*.md", False),
             (Path("dev/templates/initiative"), "*.md", False),
-            (Path("dev/templates/orchestrator"), "*.md", False),
             (Path("dev/templates/governance"), "*.md", False),
             (Path("doc/governance_prompts"), "*.md", False),
         ),
@@ -124,13 +121,6 @@ PACKS: dict[str, PackSpec] = {
             "Perfil opcional de Codex para instalacion multi-IA. La capa"
             " normativa de Codex ya viaja dentro de core mediante"
             " dev/ai/adapters/codex.md."
-        ),
-    ),
-    "gemini": PackSpec(
-        description=(
-            "Perfil opcional de Gemini para instalacion multi-IA. La capa"
-            " normativa de Gemini ya viaja dentro de core mediante"
-            " dev/ai/adapters/gemini.md."
         ),
     ),
     "symdex": PackSpec(

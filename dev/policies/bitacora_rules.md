@@ -7,7 +7,6 @@ Estas reglas definen la bitácora automática de trabajo con IAs para desarrollo
 Aplica a interacciones de trabajo con:
 - Codex
 - Claude
-- Gemini
 
 No aplica al runtime de Kiminion.
 
@@ -18,7 +17,6 @@ No aplica al runtime de Kiminion.
 Archivo por IA y día:
 - `YYYY-MM-DD_codex.md`
 - `YYYY-MM-DD_claude.md`
-- `YYYY-MM-DD_gemini.md`
 
 ## 3) Creación automática
 
@@ -47,7 +45,7 @@ Script canónico:
 
 ## 7) Enforcements
 
-- Cada adapter de IA debe registrar turno tras cada respuesta final.
+- La IA debe registrar turno tras cada respuesta final usando el script oficial.
 - Cierre de iniciativa requiere evidencia de bitácora del periodo trabajado.
 - En cierre `F9/F10`, el append de bitácora del cierre debe ejecutarse antes del
   commit formal final para evitar commits/push extra por trazabilidad tardía.
