@@ -9,28 +9,28 @@ Orden de precedencia:
 3. `dev/guarantees/*.md`
 4. `dev/ai/adapters/*.md`
 5. `dev/policies/*.md`
-6. superficies nativas de producto (`.roo/*`, `.claude/*`, `CLAUDE.md` y equivalentes) como capa de compatibilidad/adaptación
+6. superficies nativas de producto (`.claude/*`, `CLAUDE.md` y equivalentes) como capa de compatibilidad/adaptacion
 
 Si hay conflicto, prevalece el nivel superior.
 
 ## 2) Objetivo operativo
 
 Trabajar con un proceso cerrado, repetible y auditable.
-La gobernanza define como se procede; el código define sobre qué se trabaja.
+La gobernanza define como se procede; el codigo define sobre que se trabaja.
 
 ## 3) Modos M0-M4
 
-- `M0 CONVERSACION`: ideación, aclaraciones y discusión técnica sin ejecución.
-- `M1 ANALISIS`: diagnóstico técnico sin cambios de código.
-- `M2 DEBUG`: reproducción y aislamiento de fallos sin implementar fix.
+- `M0 CONVERSACION`: ideacion, aclaraciones y discusion tecnica sin ejecucion.
+- `M1 ANALISIS`: diagnostico tecnico sin cambios de codigo.
+- `M2 DEBUG`: reproduccion y aislamiento de fallos sin implementar fix.
 - `M3 IMPLEMENTACION_MENOR`: cambio acotado de bajo riesgo.
 - `M4 INICIATIVA_COMPLETA`: cambio mediano/grande con trazabilidad formal.
 
-Reglas de activación:
+Reglas de activacion:
 
 - Si el usuario no declara modo, iniciar en `M0`.
-- Para entrar en `M3` o `M4` se requiere aprobación explícita del usuario.
-- Toda transición usa:
+- Para entrar en `M3` o `M4` se requiere aprobacion explicita del usuario.
+- Toda transicion usa:
   `TRANSICION: Mx -> My | motivo | impacto | decision`.
 - No existe motor por defecto.
 - El usuario designa `motor_activo`.
@@ -39,51 +39,40 @@ Reglas de activación:
 ## 4) Reglas duras no negociables
 
 1. Si el usuario no declara modo, iniciar en `M0`.
-2. Para entrar en `M3` o `M4` se requiere aprobación explícita del usuario.
-3. Toda transición usa el formato `TRANSICION: Mx -> My | motivo | impacto | decision`.
-4. En `M0/M1/M2` está prohibido editar código.
+2. Para entrar en `M3` o `M4` se requiere aprobacion explicita del usuario.
+3. Toda transicion usa el formato `TRANSICION: Mx -> My | motivo | impacto | decision`.
+4. En `M0/M1/M2` esta prohibido editar codigo.
 5. En `M3` solo se permite cambio acotado y trazable.
 6. En `M4` aplica pipeline `F1-F10` completo.
 7. En `M4` no se planifica sin `ASK CONGELADO`.
 8. En `M4` no se implementa sin `PLAN CONGELADO`.
 9. Si cambia el alcance, se reabre la fase previa correspondiente.
-10. Las auditorías formales solo admiten `PASS` o `FAIL`.
+10. Las auditorias formales solo admiten `PASS` o `FAIL`.
 11. No se permite `PASS` mientras exista cualquier hallazgo pendiente.
-12. En auditorías formales no existe categoría operativa de observaciones; todo punto señalado por el auditor debe registrarse como hallazgo o no incluirse.
-13. No se permite `PASS` mientras exista cualquier punto señalado pendiente, ambigüedad material, debilidad operativa o riesgo descrito por el auditor.
-14. Máximo 1 auditoría inicial y 2 re-auditorías por fase.
-15. Un cambio lógico por commit.
+12. En auditorias formales no existe categoria operativa de observaciones; todo punto senalado por el auditor debe registrarse como hallazgo o no incluirse.
+13. No se permite `PASS` mientras exista cualquier punto senalado pendiente, ambiguedad material, debilidad operativa o riesgo descrito por el auditor.
+14. Maximo 1 auditoria inicial y 2 re-auditorias por fase.
+15. Un cambio logico por commit.
 16. Prohibido refactor encubierto.
 17. README solo incremental.
 18. No inventar rutas, comandos o features.
 19. Prohibido mezclar runtime del proyecto con artefactos de gobernanza.
 20. Sin compliance de nomenclatura y state0 no hay cierre formal.
-21. Toda capability transversal del sistema debe resolverse mediante abstracción canónica, owner arquitectónico explícito, punto de extensión definido y wiring común.
-22. Queda prohibido resolver capabilities transversales mediante branching por `tool`/`path`/`channel`/`filter`, coverage vertical aislada, paths paralelos, fallback legacy conviviendo con el camino canónico o lógica específica por herramienta en `planner`/`generator`/`router`/`execute` cuando corresponda `descriptor`/`policy`/`registry` común.
-23. Ninguna capability se considera completada mientras no esté conectada en su wiring canónico sobre todas las superficies incluidas en alcance.
-24. Queda prohibido cerrar una iniciativa con wiring parcial, integraciones huérfanas, convivencia legacy/canónico o paths paralelos para la misma capability.
-25. En cada nueva iniciativa está prohibido terminar con archivos brillantes, cableado mediocre o legacy vivo. Se considera incumplimiento material cualquier cierre cosmético o documentalmente pulido que oculte wiring deficiente, paths paralelos, integraciones huérfanas o convivencia legacy/canónico.
+21. Toda capability transversal del sistema debe resolverse mediante abstraccion canonica, owner arquitectonico explicito, punto de extension definido y wiring comun.
+22. Queda prohibido resolver capabilities transversales mediante branching por `tool`/`path`/`channel`/`filter`, coverage vertical aislada, paths paralelos, fallback legacy conviviendo con el camino canonico o logica especifica por herramienta.
+23. Ninguna capability se considera completada mientras no este conectada en su wiring canonico sobre todas las superficies incluidas en alcance.
+24. Queda prohibido cerrar una iniciativa con wiring parcial, integraciones huerfanas, convivencia legacy/canonico o paths paralelos para la misma capability.
+25. En cada nueva iniciativa esta prohibido terminar con archivos brillantes, cableado mediocre o legacy vivo.
 26. Si una iniciativa `M4` modifica comportamiento observable del producto, no puede cerrar `F8` ni avanzar a `F9` sin `real_validation.md` completado.
-27. Durante la validación real guiada no se toca código tras el primer fallo material, salvo bloqueo crítico que impida continuar el barrido.
-28. Los artefactos sustantivos de fase pertenecen al motor responsable de esa fase; el orquestador no redacta `ask.md`, `plan.md`, `execution.md`, `ask_audit.md`, `plan_audit.md`, `post_audit.md` ni `real_validation.md`.
-29. El orquestador solo puede reparar formato o metadata de un artefacto sustantivo cuando exista autorización explícita del usuario o fallo mecánico de la máquina de estados.
-30. La continuidad operativa no puede depender de la memoria del chat; toda reentrada de motor debe arrancar con `phase_ticket` y `resume_packet` emitidos por el orquestador.
-31. En `F6` largas, multi-commit o de alto riesgo, la ejecución debe supervisarse por commit con checkpoint antes de liberar el siguiente tramo.
-32. En `F8`, la evidencia de primer nivel incluye chat del producto, `trace on`, terminal de la superficie probada y resultados visibles en runtime real.
-33. Toda consulta debe rutearse a la capa canónica mínima que la responda; queda prohibido usar dos capas primarias simultáneas para la misma responsabilidad.
-34. La memoria estructural del sistema debe resolverse mediante la capa estructural canónica cuando esté disponible; no puede coexistir como vía opcional lateral frente al camino oficial.
-35. Todo repo consumidor debe declarar un único perfil local de capacidades reales; el orquestador debe degradar según ese perfil y no asumir tooling homogéneo entre repos.
-36. La gobernanza debe optimizar coste total por iniciativa; queda prohibido releer, volcar o expandir contexto masivamente si un retrieval dirigido o un `resume_packet` resuelven la misma necesidad con trazabilidad suficiente.
-37. La revision semanal es un control recurrente canonico separado de `M3/M4`; no autoriza implementar ni sustituye `F1-F10`.
+27. Durante la validacion real guiada no se toca codigo tras el primer fallo material, salvo bloqueo critico que impida continuar el barrido.
+
+Reglas 28-37 son especificas del orquestador y viven en el repo Orquestador.
 
 ## 4.1) Apertura durable de M4
 
 - `handoff.md` no puede nacer en `M0`; en `M0` no se crean artefactos.
-- Tras la transición `M0 -> M4`, y antes de `F1`, puede crearse
+- Tras la transicion `M0 -> M4`, y antes de `F1`, puede crearse
   `dev/records/initiatives/<initiative_id>/handoff.md`.
-- `handoff.md` es el artefacto primogénito opcional para conservar análisis y
-  planificación previa cuando la conversación o el modo del producto generen
-  contenido valioso antes de `F1`.
 - `handoff.md` no sustituye `ask.md` ni `plan.md` y no redefine el pipeline
   `F1-F10`.
 - Si existe `handoff.md`, `F1` debe derivar el `ask.md` desde ese artefacto.
@@ -92,42 +81,35 @@ Reglas de activación:
 
 ## 5) Pipeline F1-F10
 
-| Fase | Propósito |
+| Fase | Proposito |
 | ---- | --------- |
 | `F1` | Ask propuesto |
-| `F2` | Validación de ask por usuario + designación de `motor_auditor` |
-| `F3` | Auditoría y congelado de ask |
+| `F2` | Validacion de ask por usuario + designacion de `motor_auditor` |
+| `F3` | Auditoria y congelado de ask |
 | `F4` | Plan propuesto |
-| `F5` | Auditoría y congelado de plan |
-| `F6` | Implementación |
-| `F7` | Post-auditoría / debug |
-| `F8` | Validación real guiada |
+| `F5` | Auditoria y congelado de plan |
+| `F6` | Implementacion |
+| `F7` | Post-auditoria / debug |
+| `F8` | Validacion real guiada |
 | `F9` | Docs + cierre |
 | `F10` | Lecciones finales y feedback de gobernanza |
 
 Reglas:
 
-- En `F3`, `F5` y `F7` solo el `motor_auditor` emite la auditoría formal.
+- En `F3`, `F5` y `F7` solo el `motor_auditor` emite la auditoria formal.
 - Si el resultado es `FAIL`, no se avanza de fase.
-- Si falta precondición, el estado correcto es `BLOQUEADO`.
-- Si existe `handoff.md`, se usa como fuente canónica de apertura de `M4`, pero
+- Si falta precondicion, el estado correcto es `BLOQUEADO`.
+- Si existe `handoff.md`, se usa como fuente canonica de apertura de `M4`, pero
   la ejecutabilidad formal sigue dependiendo de `ask.md` y `plan.md`.
 - `F8` es obligatoria cuando la iniciativa toca comportamiento observable del
   producto; si no aplica, debe trazarse como `NO_APLICA`.
 
-## 5.0) Revisión semanal canónica
+## 5.0) Revision semanal canonica
 
-- la revision semanal es un control recurrente del repo separado de `M0-M4`
-- no sustituye el pipeline `F1-F10`
-- no autoriza cambios de codigo ni cierre de iniciativas por si misma
-- sus hallazgos deben convertirse despues en trabajo gobernado propio cuando
-  exista impacto material
-- la primera corrida valida debe declararse como `BASELINE_INICIAL_MIT`
-- las corridas posteriores deben declararse como `DELTA_SEMANAL_MIT`
-- su policy operativa de referencia es:
-  - `dev/policies/weekly_review_policy.md`
+La revision semanal es un control recurrente separado de `M0-M4`.
+Policy operativa: `dev/policies/weekly_review_policy.md`
 
-## 5.2) Propiedad de artefactos y continuidad operativa
+## 5.2) Propiedad de artefactos
 
 - `F1`: `ask.md` lo escribe solo el `motor_activo`.
 - `F3`: `ask_audit.md` lo escribe solo el `motor_auditor`.
@@ -135,123 +117,44 @@ Reglas:
 - `F5`: `plan_audit.md` lo escribe solo el `motor_auditor`.
 - `F6`: `execution.md` lo escribe y mantiene solo el `motor_activo`.
 - `F7`: `post_audit.md` lo escribe solo el `motor_auditor`.
-- `F8`: `real_validation.md` lo escribe quien guía o ejecuta la validación real.
-- el orquestador no sustituye la autoría de los motores; coordina fases,
-  gates, intentos, excepciones, tickets y contexto operativo
-- toda entrada o reentrada de un motor debe llevar:
-  - `phase_ticket`: autorización y límites vigentes de la fase
-  - `resume_packet`: estado operativo resumido, hallazgos abiertos, último
-    punto aceptado y siguiente paso permitido
+- `F8`: `real_validation.md` lo escribe quien guia o ejecuta la validacion real.
+- el orquestador no sustituye la autoria de los motores; coordina fases,
+  gates, intentos, excepciones, tickets y contexto operativo.
+- detalle operativo del orquestador:
+  `dev/policies/orchestrator_execution_policy.md`
 
-## 5.2.1) Gobernanza ejecutiva del orquestador
+## 5.1) F8 — Validacion real guiada
 
-- el orquestador es la capa ejecutiva del sistema de gobernanza
-- coordina:
-  - sesiones
-  - fase efectiva
-  - precondiciones
-  - tickets de fase
-  - rehidratación
-  - intentos
-  - excepciones
-  - receipts
-  - checkpoints
-- no redacta artefactos sustantivos de motor
-- no sustituye el juicio técnico del `motor_auditor`
-- no inventa validación observable
-- su contrato operativo de referencia es:
-  - `dev/policies/orchestrator_execution_policy.md`
-
-## 5.3) F6 — Ejecución supervisada
-
-- `F6` puede ejecutarse en modo estándar para cambios cortos y acotados
-- `F6` debe pasar a modo supervisado por commit cuando:
-  - el plan sea multi-commit no trivial
-  - exista capability transversal
-  - exista riesgo de legacy/canónico
-  - el usuario o el orquestador lo exijan por riesgo operativo
-- en `F6` supervisada:
-  - el orquestador libera solo el siguiente commit o tramo autorizado
-  - el `motor_activo` implementa ese tramo y actualiza `execution.md`
-  - el orquestador verifica disciplina mecánica y coherencia mínima
-  - el `motor_auditor` puede emitir `execution_checkpoint.md` lateral
-  - solo después puede liberarse el siguiente tramo
-- `execution.md` no se reconstruye desde fuera; debe reflejar lo que hizo el
-  `motor_activo` con evidencia real de validación y desvíos
-
-## 5.1) F8 — Validación real guiada
-
-`F8` formaliza el barrido real en Kiminion o superficie equivalente antes del
-cierre documental.
+`F8` formaliza el barrido real antes del cierre documental.
 
 Reglas:
 
-- no es una auditoría formal nueva
+- no es una auditoria formal nueva
 - su salida obligatoria es `real_validation.md` cuando aplica
 - debe ejecutar el barrido real completo antes de decidir fixes
 - si aparecen fallos materiales, corresponde reabrir `F6`
 - si se reabre `F6`, deben repetirse `F7` y `F8` antes de `F9`
 - solo puede avanzar a `F9` cuando `real_validation.md` declare
-  `Decisión final: APTA_PARA_F9`
-- `F8` se ejecuta en modo guiado en vivo:
-  - el motor no replantea `F1-F5`
-  - guía al usuario caso por caso
-  - registra expected, observed y evidencia viva
-  - usa `trace on`, terminal y chat del producto como evidencia de primer nivel
-  - se detiene en el primer fallo material salvo bloqueo crítico de entorno
+  `Decision final: APTA_PARA_F9`
 
-## 6) Precedencia técnica
+## 6) Precedencia tecnica
 
 1. MIT Concept-Sync para macroarquitectura.
-2. Clean Code para microimplementación.
+2. Clean Code para microimplementacion.
 3. Krug para UI, CLI, DX y respuestas orientadas a usuario.
 4. Rendimiento puede excepcionar Clean Code solo en hot paths con evidencia.
-5. Validación determina aceptabilidad final.
+5. Validacion determina aceptabilidad final.
 
 ## 7) Corpus de contexto
 
-## 7.1) Stack canónico de contexto
+Toda consulta debe usar la capa canonica minima que la responda.
+La memoria del chat no es fuente valida de continuidad.
 
-El sistema opera sobre cinco capas:
+Routing de detalle: `dev/policies/context_routing_policy.md`
 
-1. `gobernanza normativa`
-   - reglas, workflow, guarantees, policies, templates y adapters
-2. `gobernanza ejecutiva del orquestador`
-   - fase vigente, tickets, reentrada, checkpoints, intentos y excepciones
-3. `código vivo local`
-   - lectura fina de símbolos y bloques concretos
-4. `memoria estructural persistente`
-   - wiring global, impacto, legacy y arquitectura estructural
-5. `evidencia runtime real`
-   - comportamiento observable, trazas, terminal y resultados visibles
+### Gobernanza recuperable
 
-La memoria conversacional no forma parte del stack canónico.
-La policy operativa de referencia es:
-
-- `dev/policies/context_stack_policy.md`
-- `dev/policies/repo_capabilities_policy.md`
-- `dev/policies/context_routing_policy.md`
-- `dev/policies/token_budget_policy.md`
-- `dev/policies/structural_memory_policy.md`
-- `dev/policies/weekly_review_policy.md`
-- `dev/policies/weekly_briefing_policy.md`
-- `dev/policies/weekly_review_outputs_policy.md`
-- `dev/policies/findings_register_policy.md`
-- `dev/policies/findings_routing_policy.md`
-- `dev/policies/remediation_clustering_policy.md`
-- `dev/policies/remediation_handoff_policy.md`
-- `dev/policies/symdex_semantic_policy.md`
-
-### Capa estática siempre presente
-
-- reglas duras no negociables
-- resumen del workflow
-- precedencia técnica
-- instrucciones de recuperación de contexto
-
-### Gobernanza dinámica bajo demanda
-
-Corpus canónico:
+Corpus canonico:
 
 - `dev/policies/`
 - `dev/guarantees/`
@@ -263,146 +166,59 @@ Corpus canónico:
 
 Exclusiones duras:
 
-- `dev/records/`
-- `dev/records/legacy/`
-- `.roo/` como corpus de retrieval
+- `dev/records/` como historico
 - `.claude/` y `CLAUDE.md` como corpus de retrieval
-- histórico, bitácoras y salidas generadas
 
-La recuperación de gobernanza debe ser híbrida:
+La recuperacion de gobernanza debe ser hibrida:
 
 - filtro determinista por fase, tipo de documento y motor
-- ranking semántico dentro del subconjunto
-- fallback al documento canónico completo si hay ambigüedad
+- ranking semantico dentro del subconjunto
+- fallback al documento canonico completo si hay ambiguedad
 - herramienta operativa: `governance_search`
-- routing obligatorio:
-  - consulta de gobernanza -> `governance_search` y luego lectura canónica
-  - consulta de estado operativo -> runtime del orquestador y sus artefactos
-  - consulta de código -> `semantic_search` y luego `get_symbol` (via symdex_code)
-  - consulta de wiring/legacy/impacto estructural -> `codebase-memory-mcp`
-    cuando esté disponible; si no, fallback explícito
-  - consulta de validación observable -> evidencia runtime real
-  - policy de detalle:
-    `dev/policies/context_routing_policy.md`
-- `Glob`, `Globpattern`, `Grep`, `find`, `rg` o lecturas directas no cuentan
-  como vía principal si el MCP correspondiente está disponible
-- herramientas internas solo como fallback si el MCP falla, no está expuesto o
-  para lectura final puntual del archivo ya localizado
 
 ### SymDex
 
-`SymDex` se usa solo para código vivo del producto.
+`SymDex` se usa solo para codigo vivo del producto.
 
-Incluir:
+Excluir: `node_modules`, `.venv`, `__pycache__`, caches, logs, `state`,
+`sessions`, `content`, gobernanza y artefactos historicos.
 
-- `core/`
-- `integrations/MCP-Microsoft-Office/src/`
-- `scripts/`
-- `tests/`
-- `manifests/`
+Herramientas operativas (via symdex_code):
+- `semantic_search`, `search_symbols`, `search_text`
+- `get_symbol`, `get_file_outline`, `get_symbols`
 
-Excluir:
-
-- `node_modules`
-- `.venv`
-- `__pycache__`
-- caches
-- logs
-- `state`
-- `sessions`
-- `content`
-- gobernanza y artefactos históricos
-- herramientas operativas (via symdex_code):
-  - `semantic_search`, `search_symbols`, `search_text`
-  - `get_symbol`, `get_file_outline`, `get_symbols`
-- `semantic_search` solo cuenta como capacidad real de búsqueda conceptual si
-  el backend semántico está validado en el perfil del repo
-- en respuestas técnicas se debe declarar herramienta usada y fuente canónica
-  usada
+`semantic_search` solo cuenta como capacidad real de busqueda conceptual si
+el backend semantico esta validado en el perfil del repo.
 
 ### Memoria estructural persistente
 
-La capa estructural canónica del sistema se reserva para:
+Reservada para: call paths reales, blast radius, legacy y dead code,
+arquitectura estructural, contraste entre wiring esperado y wiring real.
 
-- call paths reales
-- blast radius
-- legacy y dead code
-- arquitectura estructural
-- contraste entre wiring esperado y wiring real
-
-Mientras no esté instalada, su uso degrada a `SymDex` más lectura canónica del
-repo.
-Cuando exista, no puede convivir como vía lateral con otra capa estructural
-primaria.
-La policy operativa de referencia es:
-
-- `dev/policies/structural_memory_policy.md`
-
-### Evidencia runtime real
-
-La validación observable del producto se apoya en:
-
-- chat del producto
-- `trace on`
-- terminal de la superficie validada
-- logs y resultados visibles en runtime real
-
-Si esta evidencia falta donde aplica, el estado correcto es `BLOQUEADO`.
+Cuando no este instalada, degrada a `SymDex` mas lectura canonica del repo.
+Policy: `dev/policies/structural_memory_policy.md`
 
 ## 8) Motores
 
-- `Codex`, `Claude`, `Gemini` y `Roo` pueden actuar como `motor_activo` o `motor_auditor` si el usuario los designa explícitamente.
-- `Roo` debe comportarse como motor general bajo el mismo contrato.
-- Los modos nativos de Roo son solo una capa de producto; no redefinen `M0-M4` ni `F1-F10`.
-- Los únicos roles operativos de la gobernanza son `motor_activo` y `motor_auditor`.
+- `Codex`, `Claude` y `Gemini` pueden actuar como `motor_activo` o `motor_auditor` si el usuario los designa explicitamente.
+- Los unicos roles operativos de la gobernanza son `motor_activo` y `motor_auditor`.
 
-## 9) Rutas canónicas
+## 9) Rutas canonicas
 
 - Gobernanza activa: `dev/`
-- Guía breve de invocación humana del orquestador:
-  `dev/policies/orchestrator_human_quickstart.md`
-- Policy de capacidades por repo:
-  `dev/policies/repo_capabilities_policy.md`
-- Policy de routing de contexto:
-  `dev/policies/context_routing_policy.md`
-- Policy de review semanal:
-  `dev/policies/weekly_review_policy.md`
-- Plantilla de perfil local de capacidades:
-  `dev/templates/governance/repo_governance_profile.md`
-- Perfil local instalado en cada repo consumidor:
-  `dev/repo_governance_profile.md`
 - Iniciativas: `dev/records/initiatives/<initiative_id>/`
-- Handoff de apertura M4 pre-F1:
-  `dev/records/initiatives/<initiative_id>/handoff.md`
-- Validación real guiada F8:
-  `dev/records/initiatives/<initiative_id>/real_validation.md`
-- Runtime local del orquestador:
-  `.orchestrator_local/`
-- Bitácora diaria: `dev/records/bitacora/`
-- Script oficial de bitácora: `scripts/ops/bitacora_append.py`
+- Bitacora diaria: `dev/records/bitacora/`
+- Script oficial de bitacora: `scripts/ops/bitacora_append.py`
 - Validadores de cierre:
   - `scripts/dev/check_naming_compliance.py`
   - `scripts/dev/check_state0.py`
-
-## 9.1) Runtime operativo del orquestador
-
-El runtime del orquestador no forma parte de la iniciativa ni del baseline
-exportable. Vive fuera de los artefactos sustantivos y puede incluir:
-
-- `sessions/`
-- `prompts_rendered/`
-- `phase_tickets/`
-- `resume_packets/`
-- `checkpoints/`
-- `receipts/`
-
-Su propósito es mantener continuidad, trazabilidad operativa y telemetría sin
-invadir la autoría de los motores.
+- Perfil local de capacidades:
+  `dev/repo_governance_profile.md`
 
 ## 10) Contrato de bloqueo
 
-Si falta contexto, evidencia o precondición, la IA debe:
+Si falta contexto, evidencia o precondicion, la IA debe:
 
 1. Parar.
 2. Declarar bloqueo con evidencia.
-3. Proponer el siguiente paso mínimo seguro.
+3. Proponer el siguiente paso minimo seguro.

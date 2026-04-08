@@ -40,8 +40,8 @@ Carpeta:
 
 Patrón de archivo:
 - `YYYY-MM-DD_<ia>.md`
-- `<ia>` permitido: `codex`, `claude`, `gemini`, `roo`
-- regex: `^\d{4}-\d{2}-\d{2}_(codex|claude|gemini|roo)\.md$`
+- `<ia>` permitido: `codex`, `claude`, `gemini`
+- regex: `^\d{4}-\d{2}-\d{2}_(codex|claude|gemini)\.md$`
 
 ## 3) Templates de iniciativa
 
@@ -72,7 +72,6 @@ Archivos esperados:
 - `codex.md`
 - `claude.md`
 - `gemini.md`
-- `roo.md`
 
 ## 5) Validación obligatoria
 

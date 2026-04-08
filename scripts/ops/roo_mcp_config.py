@@ -43,24 +43,6 @@ def upsert_mcp_server(
     print(f"WROTE: {config_path} -> {server_name}")
 
 
-def upsert_roo_server(
-    *,
-    repo_root: Path,
-    server_name: str,
-    server_config: dict,
-    force: bool,
-    dry_run: bool,
-) -> None:
-    upsert_mcp_server(
-        repo_root=repo_root,
-        config_relative_path=".roo/mcp.json",
-        server_name=server_name,
-        server_config=server_config,
-        force=force,
-        dry_run=dry_run,
-    )
-
-
 def upsert_root_server(
     *,
     repo_root: Path,

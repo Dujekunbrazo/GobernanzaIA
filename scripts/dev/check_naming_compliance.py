@@ -5,7 +5,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 INITIATIVE_ID_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}_[a-z0-9_]+$")
-BITACORA_FILE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}_(codex|claude|gemini|roo)\.md$")
+BITACORA_FILE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}_(codex|claude|gemini)\.md$")
 
 INITIATIVE_ALLOWED_FILES = {
     "ask.md",
@@ -34,7 +34,7 @@ TEMPLATE_REQUIRED_FILES = {
     "lessons_learned.md",
 }
 
-ADAPTER_REQUIRED_FILES = {"codex.md", "claude.md", "gemini.md", "roo.md"}
+ADAPTER_REQUIRED_FILES = {"codex.md", "claude.md", "gemini.md"}
 
 
 def check_initiatives(errors, warnings):

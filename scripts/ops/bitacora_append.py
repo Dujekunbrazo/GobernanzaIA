@@ -115,7 +115,7 @@ def parse_args(argv):
         description="Append one conversation turn to the daily AI bitacora file."
     )
     parser.add_argument("--stdin-json", action="store_true", help="Read payload from stdin JSON")
-    parser.add_argument("--ia", help="AI name. Example: codex, claude, gemini, roo")
+    parser.add_argument("--ia", help="AI name. Example: codex, claude, gemini")
     parser.add_argument("--pregunta", help="User question")
     parser.add_argument("--pregunta-file", default="", help="Read user question from file")
     parser.add_argument("--respuesta", help="AI response")

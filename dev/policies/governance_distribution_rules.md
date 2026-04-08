@@ -19,8 +19,8 @@ entre el repositorio canónico de baseline y los repositorios consumidores.
   `GobernanzaIA` antes de consolidarse como baseline.
 - Cambios de runtime o de dominio de un producto se quedan en el repo
   consumidor.
-- Adaptadores de producto (`.roo/`, `.claude/`, `CLAUDE.md`) son opcionales y
-  no sustituyen la fuente normativa canónica.
+- Adaptadores de producto (`.claude/`, `CLAUDE.md`) son opcionales y no
+  sustituyen la fuente normativa canónica.
 
 ## 3) Mecanismo de sincronización
 
@@ -52,8 +52,6 @@ entre el repositorio canónico de baseline y los repositorios consumidores.
 - `governance_search` se distribuye como tooling local reusable del baseline.
 - `codebase-memory-mcp` se integrará como capacidad estructural canónica; su
   disponibilidad real debe declararse en `dev/repo_governance_profile.md`.
-- El wiring MCP de `Roo` debe resolverse mediante merge canónico de
-  `.roo/mcp.json`; queda prohibido sobrescribir servidores hermanos por pack.
 
 ## 5) Flujo recomendado
 

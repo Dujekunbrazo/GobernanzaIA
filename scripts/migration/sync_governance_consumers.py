@@ -36,7 +36,7 @@ KNOWN_CONSUMERS: dict[str, ConsumerProfile] = {
     "kiminion": ConsumerProfile(
         key="kiminion",
         repo_dir="Kiminion",
-        installed_ias=("codex", "claude", "roo"),
+        installed_ias=("codex", "claude"),
         preferred_working_ia="codex",
         preferred_auditor_ia="claude",
         include_packs=("governance_search", "symdex", "codebase_memory"),
@@ -47,6 +47,14 @@ KNOWN_CONSUMERS: dict[str, ConsumerProfile] = {
         installed_ias=("codex", "claude"),
         preferred_working_ia="codex",
         preferred_auditor_ia="claude",
+        include_packs=("governance_search", "symdex", "codebase_memory"),
+    ),
+    "orquestador": ConsumerProfile(
+        key="orquestador",
+        repo_dir="Orquestador",
+        installed_ias=("claude", "codex"),
+        preferred_working_ia="claude",
+        preferred_auditor_ia="codex",
         include_packs=("governance_search", "symdex", "codebase_memory"),
     ),
 }
@@ -91,7 +99,7 @@ def effective_profile(profile: ConsumerProfile, target_root: Path) -> ConsumerPr
     packs = tuple(
         pack
         for pack in (manifest.get("packs") or [])
-        if pack not in {"core", "claude", "codex", "gemini", "roo"}
+        if pack not in {"core", "claude", "codex", "gemini"}
     )
     installed_ias = tuple(installation_profile.get("installed_ias") or profile.installed_ias)
     preferred_working_ia = installation_profile.get("preferred_working_ia") or profile.preferred_working_ia

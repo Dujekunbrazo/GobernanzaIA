@@ -37,13 +37,10 @@ Su contrato ejecutivo vive en:
 Ruta canónica:
 - `scripts/ops/bitacora_append.py`
 
-Wrapper de compatibilidad:
-- `scripts/bitacora_append.py`
-
 Uso:
 
 ```bash
-python scripts/bitacora_append.py --ia codex --pregunta "..." --respuesta "..."
+python scripts/ops/bitacora_append.py --ia codex --pregunta "..." --respuesta "..."
 ```
 
 Con metadatos de workflow:
@@ -207,14 +204,13 @@ Reglas:
   por fase y un único cierre conjunto `F9/F10`.
 - `claude` instala solo `CLAUDE.md`; no instala `.claude/settings.local.json`.
 - `codex` y `gemini` existen como packs explícitos de perfil multi-IA, aunque hoy no añaden superficie raíz adicional porque su capa normativa ya viaja en `core` dentro de `dev/ai/adapters/`.
-- `roo` instala solo reglas Markdown reusables; no instala `.roo/mcp.json`.
-- `governance_search` instala el MCP local de retrieval de gobernanza, ejecuta instalación `npm` en `scripts/ops/context_mcp` y escribe `governance_retrieval` en `.mcp.json`. Si también se instala `roo`, añade además el mismo servidor a `.roo/mcp.json`.
-- `symdex` no copia código desde un repo consumidor: instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera `.symdexignore`, prepara `.symdex/`, asegura dependencias de `scripts/ops/context_mcp/` y escribe `symdex_code` en `.mcp.json` usando `scripts/ops/context_mcp/symdex_code_server.mjs`. Si también se instala `roo`, añade además el mismo servidor a `.roo/mcp.json`.
+- `governance_search` instala el MCP local de retrieval de gobernanza, ejecuta instalación `npm` en `scripts/ops/context_mcp` y escribe `governance_retrieval` en `.mcp.json`.
+- `symdex` no copia código desde un repo consumidor: instala `SymDex` desde `https://github.com/husnainpk/SymDex`, genera `.symdexignore`, prepara `.symdex/`, asegura dependencias de `scripts/ops/context_mcp/` y escribe `symdex_code` en `.mcp.json` usando `scripts/ops/context_mcp/symdex_code_server.mjs`.
 - el baseline canónico de `symdex` usa backend semántico `local` por defecto.
 - una tool `semantic_search` expuesta no cuenta como validación suficiente; el
   instalador debe dejar trazado si el backend semántico quedó realmente
   validado.
-- `codebase_memory` instala o reutiliza `codebase-memory-mcp` con el setup oficial del proyecto upstream y escribe `codebase-memory-mcp` en `.mcp.json`. Si también se instala `roo`, añade además el mismo servidor a `.roo/mcp.json`.
+- `codebase_memory` instala o reutiliza `codebase-memory-mcp` con el setup oficial del proyecto upstream y escribe `codebase-memory-mcp` en `.mcp.json`.
 - el wrapper de `symdex` prioriza un binario local `symdex` y solo cae a `uvx --from <source> ...` si hace falta.
 - El instalador exige un perfil de al menos dos IAs y una preferencia separada para trabajo y auditoría.
 - Ese perfil se guarda en `dev/governance_baseline.json` como metadata de instalación; no asigna `motor_activo` ni `motor_auditor` por defecto.
@@ -241,12 +237,6 @@ Con wiring MCP raíz:
 python scripts/ops/install_governance_mcp.py --repo-root <ruta_repo_destino> --write-root-mcp
 ```
 
-Con wiring Roo:
-
-```bash
-python scripts/ops/install_governance_mcp.py --repo-root <ruta_repo_destino> --write-roo-mcp
-```
-
 ### Instalador canónico de SymDex
 
 Ruta:
@@ -264,12 +254,6 @@ Con wiring MCP raíz:
 python scripts/ops/install_symdex.py --repo-root <ruta_repo_destino> --write-root-mcp
 ```
 
-Con wiring Roo:
-
-```bash
-python scripts/ops/install_symdex.py --repo-root <ruta_repo_destino> --write-roo-mcp
-```
-
 ### Instalador canónico de codebase-memory-mcp
 
 Ruta:
@@ -285,12 +269,6 @@ Con wiring MCP raíz:
 
 ```bash
 python scripts/ops/install_codebase_memory_mcp.py --repo-root <ruta_repo_destino> --write-root-mcp
-```
-
-Con wiring Roo:
-
-```bash
-python scripts/ops/install_codebase_memory_mcp.py --repo-root <ruta_repo_destino> --write-roo-mcp
 ```
 
 ### Sync desde `GobernanzaIA` hacia consumidores conocidos
@@ -331,7 +309,7 @@ python scripts/migration/sync_governance_consumers.py --force
 o bien:
 
 ```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_consumidor> --force --with-ia codex --with-ia claude --with-ia roo --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search --include-pack symdex
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_consumidor> --force --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search --include-pack symdex
 ```
 
 3. Revisar el diff en el repo consumidor y validar sus gates locales.

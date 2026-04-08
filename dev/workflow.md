@@ -27,11 +27,11 @@ Guia corta de invocacion humana del orquestador:
 
 - `motor_activo`: propone, planifica e implementa.
 - `motor_auditor`: audita y decide `PASS` o `FAIL`.
-- `orquestador`: coordina estado, gates, continuidad, esfuerzo, checkpoints y
-  excepciones; no sustituye la autoría sustantiva de los motores.
+- `orquestador`: coordina estado y gates; detalle en
+  `dev/policies/orchestrator_execution_policy.md`
 
 No hay motores por defecto.
-El usuario designa el motor según disponibilidad y contexto.
+El usuario designa el motor segun disponibilidad y contexto.
 
 ## Modos operativos
 
@@ -110,41 +110,11 @@ Reglas:
 
 Runtime local del orquestador:
 
-- `.orchestrator_local/`
-
-Contenido típico:
-
-- `sessions/`
-- `phase_tickets/`
-- `resume_packets/`
-- `checkpoints/`
-- `receipts/`
-
-Ese runtime no forma parte de la iniciativa ni del baseline exportable.
+- detalle operativo en `dev/policies/orchestrator_execution_policy.md`
 
 ## Gobernanza ejecutiva del orquestador
 
-El orquestador es la capa ejecutiva del sistema.
-
-Responsabilidades:
-
-- abrir y retomar sesiones
-- determinar fase efectiva y siguiente paso permitido
-- verificar precondiciones mecánicas
-- emitir `phase_ticket` y `resume_packet`
-- registrar intents, receipts, errores y checkpoints
-- preparar `F8` y la continuidad operativa entre chats
-
-Límites:
-
-- no redacta artefactos sustantivos de fase
-- no sustituye auditoría formal
-- no reinterpreta alcance por su cuenta
-- no convierte ausencia de evidencia en validación implícita
-
-Referencia:
-
-- `dev/policies/orchestrator_execution_policy.md`
+Referencia: `dev/policies/orchestrator_execution_policy.md`
 
 ## Stack canónico de contexto
 
@@ -423,18 +393,7 @@ Referencia:
 
 ## Reglas no negociables
 
-1. En `M4`, no planificar sin `ASK CONGELADO`.
-2. En `M4`, no implementar sin `PLAN CONGELADO`.
-3. Un cambio lógico por commit.
-4. README solo incremental.
-5. No inventar rutas/comandos/features.
-6. Si falta precondición, bloquear avance con evidencia.
-7. En `M0/M1/M2`, no se modifica código.
-8. No se permite cerrar una fase con hallazgos pendientes.
-9. En auditorías formales no se permiten observaciones como categoría aparte; todo punto operativo debe quedar absorbido en hallazgos o eliminarse.
-10. `Roo` no define workflow propio por encima del contrato canónico.
-11. En `M3` y `M4`, toda capability transversal debe cerrar con wiring canónico completo, sin convivencia legacy/canónico y sin branching oportunista.
-12. En toda nueva iniciativa está prohibido cerrar con archivos brillantes, cableado mediocre o legacy vivo; el cierre visible debe coincidir con el wiring real y con el retiro efectivo de caminos paralelos e integraciones huérfanas.
+Ver `AGENTS.md` §4 para el listado completo de reglas duras.
 
 ## Contexto y recuperación
 
@@ -461,7 +420,6 @@ Usar recuperación híbrida sobre:
 Excluir:
 
 - `dev/records/`
-- `.roo/`
 - legacy y salidas generadas
 
 Uso operativo:

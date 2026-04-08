@@ -51,7 +51,7 @@ Adoptar una arquitectura de contexto con tres piezas:
 Además:
 - el modo por defecto pasa de `M1` a `M0`
 - no existen motores por defecto
-- `Codex`, `Claude`, `Gemini` y `Roo` pueden actuar como `motor_activo` o
+- `Codex`, `Claude` y `Gemini` pueden actuar como `motor_activo` o
   `motor_auditor` si el usuario los designa
 - las auditorías formales separan `hallazgos` bloqueantes de `observaciones`
   no bloqueantes
@@ -61,7 +61,7 @@ Reducir tokens, separar proceso de sustancia técnica, mantener auditabilidad
 real y evitar que detalles editoriales bloqueen fases formales.
 
 **Impacto**
-`AGENTS.md`, `dev/workflow.md`, adaptadores de motor, compatibilidad `.roo/`,
+`AGENTS.md`, `dev/workflow.md`, adaptadores de motor,
 prompts/templates de auditoría y documentación de arquitectura del baseline.
 
 **Riesgos asumidos**
@@ -85,7 +85,7 @@ otros proyectos.
 **Decisión**
 Consolidar `GobernanzaIA` como baseline reusable con:
 - `core` obligatorio
-- packs opcionales `claude`, `codex`, `gemini`, `roo`
+- packs opcionales `claude`, `codex`, `gemini`
 - packs operativos opcionales `governance_search` y `symdex`
 - perfil multi-IA obligatorio con mínimo dos IAs y preferencia separada de
   trabajo y auditoría como metadata de instalación

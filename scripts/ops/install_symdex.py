@@ -4,7 +4,6 @@ Install SymDex from its official GitHub repository and prepare optional local wi
 Usage:
     python scripts/ops/install_symdex.py --repo-root <path>
     python scripts/ops/install_symdex.py --repo-root <path> --write-root-mcp
-    python scripts/ops/install_symdex.py --repo-root <path> --write-roo-mcp
 """
 
 from __future__ import annotations
@@ -17,7 +16,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from roo_mcp_config import upsert_root_server, upsert_roo_server
+from roo_mcp_config import upsert_root_server
 
 
 DEFAULT_SOURCE = "git+https://github.com/husnainpk/SymDex.git"
@@ -75,11 +74,6 @@ def parse_args() -> argparse.Namespace:
         "--write-root-mcp",
         action="store_true",
         help="Generate .mcp.json wired to SymDex over uvx.",
-    )
-    parser.add_argument(
-        "--write-roo-mcp",
-        action="store_true",
-        help="Generate .roo/mcp.json wired to SymDex over uvx.",
     )
     parser.add_argument(
         "--force",
@@ -473,21 +467,6 @@ def ensure_root_mcp(
     )
 
 
-def ensure_roo_mcp(
-    repo_root: Path, source: str, semantic_backend: str, force: bool, dry_run: bool
-) -> None:
-    if not dry_run and shutil.which("node") is None:
-        raise RuntimeError("Roo wiring for SymDex requires node in PATH.")
-
-    upsert_roo_server(
-        repo_root=repo_root,
-        server_name="symdex_code",
-        server_config=symdex_server_config(repo_root, source, semantic_backend),
-        force=force,
-        dry_run=dry_run,
-    )
-
-
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo_root).expanduser().resolve()
@@ -528,15 +507,6 @@ def main() -> int:
             dry_run=args.dry_run,
         )
 
-    if args.write_roo_mcp:
-        ensure_roo_mcp(
-            repo_root=repo_root,
-            source=args.source,
-            semantic_backend=args.semantic_backend,
-            force=args.force,
-            dry_run=args.dry_run,
-        )
-
     print("SymDex bootstrap summary")
     print("------------------------")
     print(f"Repo root: {repo_root}")
@@ -546,7 +516,6 @@ def main() -> int:
     print(f"Semantic validation: {semantic_validation}")
     print(f"Context MCP installer: {chosen_context_installer}")
     print(f"Root MCP wiring: {'yes' if args.write_root_mcp else 'no'}")
-    print(f"Roo MCP wiring: {'yes' if args.write_roo_mcp else 'no'}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")
     return 0
 

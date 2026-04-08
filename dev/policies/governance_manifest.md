@@ -68,8 +68,7 @@ Propósito:
 
 ## 4) Superficies nativas de producto
 
-- `.claude/`, `CLAUDE.md`, `.roo/` y equivalentes son superficies nativas de
-  producto.
+- `.claude/`, `CLAUDE.md` y equivalentes son superficies nativas de producto.
 - No son fuente de verdad normativa.
 - Deben comportarse como adaptadores o compatibilidad local.
 - Si difieren de `AGENTS.md` o `dev/`, prevalece la gobernanza canónica.

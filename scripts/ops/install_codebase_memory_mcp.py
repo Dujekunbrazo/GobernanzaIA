@@ -4,7 +4,6 @@ Install codebase-memory-mcp and prepare optional local MCP wiring.
 Usage:
     python scripts/ops/install_codebase_memory_mcp.py --repo-root <path>
     python scripts/ops/install_codebase_memory_mcp.py --repo-root <path> --write-root-mcp
-    python scripts/ops/install_codebase_memory_mcp.py --repo-root <path> --write-roo-mcp
 """
 
 from __future__ import annotations
@@ -17,9 +16,9 @@ from pathlib import Path
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from roo_mcp_config import upsert_root_server, upsert_roo_server
+    from roo_mcp_config import upsert_root_server
 else:
-    from .roo_mcp_config import upsert_root_server, upsert_roo_server
+    from .roo_mcp_config import upsert_root_server
 
 
 DEFAULT_COMMAND = "codebase-memory-mcp"
@@ -67,11 +66,6 @@ def parse_args() -> argparse.Namespace:
         "--write-root-mcp",
         action="store_true",
         help="Generate or merge .mcp.json with codebase-memory-mcp wiring.",
-    )
-    parser.add_argument(
-        "--write-roo-mcp",
-        action="store_true",
-        help="Generate or merge .roo/mcp.json with codebase-memory-mcp wiring.",
     )
     parser.add_argument(
         "--force",
@@ -157,16 +151,6 @@ def ensure_root_mcp(repo_root: Path, binary_command: str, force: bool, dry_run: 
     )
 
 
-def ensure_roo_mcp(repo_root: Path, binary_command: str, force: bool, dry_run: bool) -> None:
-    upsert_roo_server(
-        repo_root=repo_root,
-        server_name="codebase-memory-mcp",
-        server_config=codebase_memory_server_config(binary_command),
-        force=force,
-        dry_run=dry_run,
-    )
-
-
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo_root).expanduser().resolve()
@@ -185,21 +169,12 @@ def main() -> int:
             dry_run=args.dry_run,
         )
 
-    if args.write_roo_mcp:
-        ensure_roo_mcp(
-            repo_root=repo_root,
-            binary_command=resolved_binary_command,
-            force=args.force,
-            dry_run=args.dry_run,
-        )
-
     print("codebase-memory-mcp bootstrap summary")
     print("-------------------------------------")
     print(f"Repo root: {repo_root}")
     print(f"Installer: {chosen_installer}")
     print(f"Binary command: {resolved_binary_command}")
     print(f"Root MCP wiring: {'yes' if args.write_root_mcp else 'no'}")
-    print(f"Roo MCP wiring: {'yes' if args.write_roo_mcp else 'no'}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")
     return 0
 

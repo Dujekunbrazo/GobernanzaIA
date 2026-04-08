@@ -42,7 +42,6 @@ Exclusiones duras:
 
 - `dev/records/`
 - `dev/records/legacy/`
-- `.roo/`
 - bitácoras
 - histórico
 - artefactos generados
@@ -114,7 +113,4 @@ La arquitectura es neutral por motor.
 
 - el usuario designa `motor_activo`
 - el usuario designa `motor_auditor` en `F2`
-- `Codex`, `Claude`, `Gemini` y `Roo` pueden actuar bajo el mismo contrato
-
-`Roo` no define un workflow paralelo.
-Sus modos nativos son capa de producto, no fuente de verdad.
+- `Codex`, `Claude` y `Gemini` pueden actuar bajo el mismo contrato

@@ -4,7 +4,7 @@ Bootstrap governance files into a target repository.
 Usage:
     python scripts/migration/bootstrap_governance.py --target <path>
     python scripts/migration/bootstrap_governance.py --target <path> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude
-    python scripts/migration/bootstrap_governance.py --target <path> --with-ia codex --with-ia roo --preferred-working-ia codex --preferred-auditor-ia roo --include-pack symdex
+    python scripts/migration/bootstrap_governance.py --target <path> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude --include-pack symdex
     python scripts/migration/bootstrap_governance.py --target <path> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search
 """
 
@@ -23,18 +23,20 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PACKS = ("core",)
 DEFAULT_SYMDEX_SOURCE = "git+https://github.com/husnainpk/SymDex.git"
-IA_CHOICES = ("claude", "codex", "gemini", "roo")
+IA_CHOICES = ("claude", "codex", "gemini")
 IA_PACKS = {
     "claude": "claude",
     "codex": "codex",
     "gemini": "gemini",
-    "roo": "roo",
 }
 MANIFEST_PATH = Path("dev/governance_baseline.json")
 REPO_PROFILE_TEMPLATE_PATH = Path("dev/templates/governance/repo_governance_profile.md")
 REPO_PROFILE_DESTINATION = Path("dev/repo_governance_profile.md")
 PRESERVE_IF_EXISTS = {
     Path(".gitignore"),
+    Path("AGENTS.md"),
+    Path("CLAUDE.md"),
+    Path("README.md"),
     Path("dev/logs/decisions.md"),
     Path("dev/repo_governance_profile.md"),
 }
@@ -85,7 +87,7 @@ PACKS: dict[str, PackSpec] = {
             Path("doc/governance_prompts/README.md"),
             Path("scripts/README.md"),
             Path("scripts/ops/bitacora_append.py"),
-            Path("scripts/ops/roo_mcp_config.py"),
+            Path("scripts/ops/roo_mcp_config.py"),  # kept: shared MCP config helper
             Path("scripts/dev/README.md"),
             Path("scripts/dev/check_bitacora_compliance.py"),
             Path("scripts/dev/check_capability_closure.py"),
@@ -96,7 +98,6 @@ PACKS: dict[str, PackSpec] = {
             Path("scripts/dev/governance_ping_pong_launcher.bat"),
             Path("scripts/dev/governance_orchestrator.py"),
             Path("scripts/dev/initiative_preflight.py"),
-            Path("scripts/bitacora_append.py"),
             Path("scripts/migration/bootstrap_governance.py"),
             Path("scripts/migration/sync_governance_consumers.py"),
         ),
@@ -132,13 +133,6 @@ PACKS: dict[str, PackSpec] = {
             " dev/ai/adapters/gemini.md."
         ),
     ),
-    "roo": PackSpec(
-        description=(
-            "Superficie opcional de Roo. Incluye reglas reusables; excluye"
-            " configuraciones locales de MCP."
-        ),
-        globs=((Path(".roo"), "*.md", True),),
-    ),
     "symdex": PackSpec(
         description=(
             "Instala SymDex desde su GitHub oficial y prepara .symdexignore "
@@ -154,8 +148,7 @@ PACKS: dict[str, PackSpec] = {
     ),
     "governance_search": PackSpec(
         description=(
-            "Instala el MCP local de governance_search y prepara wiring MCP "
-            "opcional para Roo."
+            "Instala el MCP local de governance_search y prepara wiring MCP."
         ),
         files=(
             Path("scripts/ops/install_governance_mcp.py"),
@@ -596,8 +589,6 @@ def run_post_copy_actions(
             symdex_semantic_backend,
             "--write-root-mcp",
         ]
-        if "roo" in selected_packs:
-            command.append("--write-roo-mcp")
         if force:
             command.append("--force")
         if dry_run:
@@ -618,8 +609,6 @@ def run_post_copy_actions(
             governance_mcp_installer,
             "--write-root-mcp",
         ]
-        if "roo" in selected_packs:
-            command.append("--write-roo-mcp")
         if force:
             command.append("--force")
         if dry_run:
@@ -642,8 +631,6 @@ def run_post_copy_actions(
         codebase_memory_command,
         "--write-root-mcp",
     ]
-    if "roo" in selected_packs:
-        command.append("--write-roo-mcp")
     if force:
         command.append("--force")
     if dry_run:

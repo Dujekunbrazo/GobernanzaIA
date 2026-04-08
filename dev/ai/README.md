@@ -8,7 +8,7 @@ Para cualquier trabajo asistido por IA en este repo:
 - Gates de proceso: `dev/guarantees/`
 - Policy de ingeniería (lectura base): `dev/policies/ai_engineering_governance.md`
 - Dossier largo de ingeniería (lectura condicional): `doc/architecture/ai_engineering_dossier.md`
-- Adaptadores por motor (Codex/Claude/Gemini/Roo): `dev/ai/adapters/`
+- Adaptadores por motor (Codex/Claude/Gemini): `dev/ai/adapters/`
 - Bitácora diaria por IA: `dev/records/bitacora/` (script: `scripts/ops/bitacora_append.py`)
 
 Regla dura:

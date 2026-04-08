@@ -8,7 +8,6 @@ Aplica a interacciones de trabajo con:
 - Codex
 - Claude
 - Gemini
-- Roo
 
 No aplica al runtime de Kiminion.
 
@@ -20,7 +19,6 @@ Archivo por IA y día:
 - `YYYY-MM-DD_codex.md`
 - `YYYY-MM-DD_claude.md`
 - `YYYY-MM-DD_gemini.md`
-- `YYYY-MM-DD_roo.md`
 
 ## 3) Creación automática
 
@@ -35,9 +33,6 @@ Archivo por IA y día:
 
 Script canónico:
 - `scripts/ops/bitacora_append.py`
-
-Wrapper compatibilidad:
-- `scripts/bitacora_append.py`
 
 ## 5) Campos mínimos por turno
 

@@ -2,15 +2,18 @@
 
 Baseline canonico de gobernanza multi-IA para repositorios de software.
 
-`GobernanzaIA` no es una app de negocio. Es la fuente de verdad que define
-como se trabaja, como se distribuye la gobernanza a otros repos y como se
-opera con varias IAs sin depender de memoria de chat, prompts sueltos ni
-runtime local mezclado con producto.
+`GobernanzaIA` es el baseline canonico de norma compartida. Define como se
+trabaja, como se distribuye la gobernanza a otros repos y que reglas aplican
+a cualquier repo consumidor.
+
+No es el orquestador. El runtime ejecutivo (state machine, sesiones,
+checkpoints, phase tickets) vive en el repo
+[Orquestador](https://github.com/Dujekunbrazo/Orquestador).
 
 ![Version](https://img.shields.io/badge/version-baseline--dev-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.10+-blue?logo=python)
-![Motores](https://img.shields.io/badge/ias-codex%20%7C%20claude%20%7C%20gemini%20%7C%20roo-informational)
+![Motores](https://img.shields.io/badge/ias-codex%20%7C%20claude%20%7C%20gemini-informational)
 
 ## Tabla de contenidos
 
@@ -69,8 +72,8 @@ En particular:
 
 - `SymDex` es una dependencia externa instalada desde su proyecto upstream:
   `https://github.com/husnainpk/SymDex`
-- `codebase-memory-mcp` es una dependencia externa instalada desde su proyecto
-  upstream oficial
+- `codebase-memory-mcp` es una dependencia externa instalada desde su proyecto 
+  upstream oficial  `https://github.com/DeusData/codebase-memory-mcp/`
 
 Lo que vive en este repo es:
 
@@ -84,17 +87,10 @@ No vive aqui la autoria del motor semantico ni de la memoria estructural.
 
 Nota operativa sobre `SymDex`:
 
-- el baseline canónico puede seguir usando backend semántico `local` por
-  defecto
+- el baseline canónico usa backend semántico `local` por defecto
 - `voyage` es opcional
-- la gobernanza distingue ahora entre:
-  - backend por defecto del baseline
-  - backend realmente validado en el repo
-  - backend de mejor calidad empírica observada en un repo concreto
 - que la tool `semantic_search` exista no basta; la búsqueda semántica solo se
   considera disponible cuando backend e indexado quedan validados de verdad
-- un backend observado como mejor en un repo concreto no sustituye por sí solo
-  al backend por defecto del canon
 
 ---
 
@@ -114,13 +110,6 @@ El estado real ahora incluye:
 - presupuesto de contexto/tokens
 - baseline exportable + overlay local minima
 - soporte canonico para `codebase-memory-mcp`
-- routing canonico por tipo de pregunta y por capa primaria
-- protocolo de analisis estructural serio con declaracion obligatoria de
-  limites metodologicos
-- autochequeo dual `symdex_code` + `codebase-memory-mcp` antes de analisis
-  profundos
-- perfil local de repo capaz de declarar backend por defecto, backend
-  validado, calidad observada y limites conocidos
 - review semanal MIT con baseline inicial, delta semanal, findings register,
   candidatas de remediacion y handoff supervisado
 
@@ -165,15 +154,6 @@ Routing oficial:
 - codigo vivo local -> `symdex_code`
 - wiring, impacto, legacy, dead code -> `codebase-memory-mcp`
 - validacion observable -> chat del producto, `trace on`, terminal y evidencia real
-
-Frontera operativa resumida:
-
-- `symdex_code` responde: `que dice el codigo`
-- `codebase-memory-mcp` responde: `que se conecta con que`
-- ninguna capa sustituye a la otra
-- si la pregunta es `que endpoint HTTP usa esto` y el grafo no conecta rutas
-  reales, la fuente primaria pasa a ser la lectura canonica de `manifests` u
-  `openapi.yaml`
 
 La memoria conversacional no cuenta como continuidad valida.
 
@@ -264,36 +244,12 @@ No se abre `M4` automaticamente sin aprobacion humana explicita.
 
 ## Orquestador canonico
 
-El orquestador ya no es un helper lateral. Es la capa ejecutiva del sistema.
+El runtime ejecutivo del sistema vive en un repo separado:
+[Orquestador](https://github.com/Dujekunbrazo/Orquestador)
 
-Responsabilidades:
-
-- abrir y retomar sesiones
-- calcular fase efectiva
-- verificar precondiciones mecanicas
-- emitir `phase_ticket` y `resume_packet`
-- persistir receipts y estado operativo
-- preparar `F8`
-- lanzar checkpoints laterales de `F6`
-- ejecutar la review semanal canonica
-- preparar remediaciones supervisadas
-
-No puede:
-
-- redactar artefactos sustantivos de motor
-- sustituir la auditoria formal
-- inventar validacion observable
-- abrir `M4` sin aprobacion humana
-
-Ruta:
-
-- [governance_orchestrator.py](/c:/Users/Jorge%20Ferrer/Documents/GobernanzaIA/scripts/dev/governance_orchestrator.py)
-
-Guia humana:
-
-- [orchestrator_human_quickstart.md](/c:/Users/Jorge%20Ferrer/Documents/GobernanzaIA/dev/policies/orchestrator_human_quickstart.md)
-- [context_routing_policy.md](/c:/Users/Jorge%20Ferrer/Documents/GobernanzaIA/dev/policies/context_routing_policy.md)
-- [structural_analysis_execution_policy.md](/c:/Users/Jorge%20Ferrer/Documents/GobernanzaIA/dev/policies/structural_analysis_execution_policy.md)
+El Orquestador es un consumidor privilegiado de este baseline: recibe la norma
+compartida y anade su propia capa ejecutiva (state machine, sesiones,
+checkpoints, phase tickets, resume packets).
 
 ---
 
@@ -403,32 +359,6 @@ REVIEW SEMANAL | repo=<repo> | fecha=<yyyy-mm-dd> | motor_activo=claude
 APRUEBA REMEDIACION | repo=<repo> | fecha=<yyyy-mm-dd> | candidate_id=<id> | initiative_id=<initiative_id> | modo=M4 | motor_activo=<motor>
 ```
 
-### Autochequeo dual MCP antes de analisis serio
-
-Cuando un repo declare `symdex_code` o `codebase-memory-mcp` como
-`DISPONIBLE`, la comprobacion minima ya no es unilateral.
-
-La frase recomendada es:
-
-```text
-Haz un autochequeo de MCP local y estructural en esta sesión y confirma:
-1. tools expuestas
-2. si SymDex tiene semantic_search real, un símbolo ambiguo como classify y un símbolo único como _build_rules
-3. si codebase-memory-mcp responde list_projects, index_status y trace_path sobre un nodo real
-4. qué limitación metodológica visible existe en cada capa
-5. termina con ESTADO: OK o ESTADO: FALTA ...
-```
-
-Para una comparativa dura entre ambas capas:
-
-```text
-ANALISIS COMPARATIVO MCP LOCAL + ESTRUCTURAL
-Usa symdex_code y codebase-memory-mcp de forma conjunta.
-Primero haz autocheck dual de ambas capas.
-Después compara qué responde mejor cada una, qué no responde bien ninguna,
-y termina con una recomendación de routing canónico basada en evidencia.
-```
-
 ---
 
 ## Instalacion en un repo nuevo
@@ -460,7 +390,6 @@ python scripts/migration/sync_governance_consumers.py --dry-run
 | `governance_search` | retrieval canonico de gobernanza |
 | `symdex` | lectura fina de codigo vivo local y búsqueda semántica local cuando esté validada |
 | `codebase_memory` | memoria estructural persistente (`codebase-memory-mcp`) |
-| `roo` | superficie reusable de Roo |
 | `claude` | `CLAUDE.md` reusable |
 
 Ejemplo con memoria estructural:
