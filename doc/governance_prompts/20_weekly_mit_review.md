@@ -1,82 +1,60 @@
-# WEEKLY MIT REVIEW
+# WEEKLY MIT + KRUG REVIEW
 
-Usar con `Claude Opus`.
+Usar como review semanal en dos capas:
+- `Claude Sonnet` para generar o actualizar `weekly_briefing.md`
+- `Claude Opus` para producir la revision estrategica final
 
-Eres un arquitecto de software senior de elite.
-Se te proporciona un `BRIEFING TECNICO` completo generado por la gobernanza
-canonica.
-Tu mision es producir una revision estrategica integral del repo, con estas
-reglas no negociables:
+## Mision
 
-## Marco dominante
+Producir una revision estrategica del repo que:
+- mida salud arquitectonica con MIT
+- mida claridad y carga cognitiva con Krug
+- compare contra la review previa cuando exista
+- actualice registros persistentes
+- proponga candidatos de iniciativa sin generar `plan.md`
 
-- todo juicio debe alinearse con MIT:
-  - Incrementality
-  - Integrity
-  - Transparency
-- no aceptes arquitectura bonita si no mejora MIT
-- prioriza legibilidad operativa, capacidad de diagnostico y evolucion segura
-- si aplica, favorece `concepts + synchronizations` y provenance observable
+## Reglas no negociables
 
-## Regla de evidencia
+- toda afirmacion material debe anclarse al briefing o a evidencia canonicamente recuperada
+- si falta soporte, escribir `NO EVIDENCIA EN BRIEFING`
+- weekly review no sustituye `M0` ni abre una iniciativa por si sola
+- weekly review no genera `plan.md`
+- `candidate_initiatives.md` y `initiative_backlog.md` solo describen candidatos y entradas vivas, no planes operativos
 
-- toda afirmacion material debe anclarse al `BRIEFING TECNICO`
-- si una afirmacion no esta soportada, escribe `NO EVIDENCIA EN BRIEFING`
-- no inventes versiones, flujos, infra ni dependencias
+## Artefactos a actualizar
 
-## Artefactos que debes actualizar
-
+- `weekly_briefing.md`
 - `weekly_review.md`
 - `weekly_review_delta.md`
 - `architecture_findings_register.md`
 - `candidate_initiatives.md`
+- `initiative_backlog.md`
 
-## Regla de salida
+## Modo de trabajo
 
-- no devuelvas texto libre fuera de los artefactos autorizados
-- usa el `weekly_briefing.md` como fuente primaria
-- si el briefing indica `BASELINE_INICIAL_MIT`, trata la review como baseline
-  fundacional
-- si indica `DELTA_SEMANAL_MIT`, compara contra la ultima revision valida
-- clasifica los hallazgos con foco MIT y con evidencia trazable
-- prepara candidatos de remediacion solo cuando el impacto sea material
+- si el briefing indica `BASELINE_WEEKLY`, trata la review como baseline profunda
+- si indica `DELTA_WEEKLY`, compara contra la ultima review valida
+- en baseline, no inventes delta previo
+- en delta, no reanalices el repo entero si el briefing ya acota cambios
 
-## Estructura obligatoria del informe
-
-El contenido de `weekly_review.md` debe incluir exactamente:
+## Estructura minima de `weekly_review.md`
 
 1. Diagnostico ejecutivo
 2. Scorecard MIT
-3. Mapa Behavior -> Concepts -> Synchronizations
-4. Arquitectura: aguanta x10 sin perder MIT
+3. Scorecard Krug
+4. Mapa Behavior -> Concepts -> Synchronizations
 5. Riesgo por capas
 6. Hallazgos priorizados
-7. Transparency plan
-8. Integrity plan
-9. Incrementality plan
-10. Las 7 preguntas que debes responder ya
+7. Candidate initiatives
+8. Preguntas abiertas
 
-## Regla de comparacion semanal
+## Regla de findings
 
-En `weekly_review_delta.md`:
+- cada hallazgo debe quedar clasificado como `MIT-FIRST`, `KRUG-FIRST` o `MIXTO`
+- cada hallazgo persistente debe actualizar el findings register, no quedarse solo en la weekly
 
-- distinguir `nuevos`, `persistentes`, `resueltos` y `reclasificados`
-- comparar score MIT con la revision previa cuando exista
-- si no existe revision previa valida, declarar `BASELINE_INICIAL_MIT`
+## Regla de candidatas
 
-## Regla del findings register
-
-En `architecture_findings_register.md`:
-
-- mantener un registro vivo, no reescribirlo como si empezara de cero
-- cada hallazgo debe tener id, severidad, pilar MIT, evidencia, estado y via
-  de remediacion sugerida
-
-## Regla de iniciativas candidatas
-
-En `candidate_initiatives.md`:
-
-- agrupar hallazgos materiales por concept, synchronization, write set o causa
-  raiz
-- no crear una iniciativa por cada hallazgo trivial
-- proponer `M3` o `M4` solo cuando la agrupacion sea gobernable
+- agrupa por causa raiz, concept, synchronization o write set dominante
+- no abras iniciativa por cada hallazgo trivial
+- si propones una candidata, explica por que merece iniciativa propia

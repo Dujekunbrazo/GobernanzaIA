@@ -9,53 +9,59 @@ anclado al repo, la debe leer desde `CLAUDE.md`, `AGENTS.md`,
 La idea es simple:
 
 - tú hablas normal
-- el prompt solo marca el momento del proceso
-- la gobernanza traduce eso a artefactos, fases y restricciones
+- Codex te ayuda a aterrizar la idea en `M0`
+- cuando ya está madura, conviertes la conversación en `input de planificación`
+- Claude produce `plan.md`
+- Codex audita el plan
+- Claude ejecuta, valida y cierra
 - no tienes que sustituir placeholders manualmente
 
-## Orden de uso
+## Flujo de iniciativa
 
-1. `00_abrir_m4_y_handoff.md`
-2. `01_f1_ask.md`
-3. `02_f2_validacion_ask.md`
-4. `03_f3_auditoria_ask.md`
-5. `04_f4_plan.md`
-6. `05_f5_auditoria_plan.md`
-7. `06_f6_ejecucion.md`
-8. `07_f7_post_auditoria.md`
-9. `08_f8_validacion_real_guiada.md`
-10. `09_f9_f10_cierre_y_lecciones.md`
+1. Habla con Codex en `M0`
+2. Usa `97 idea codex.md` para pedir a Codex el `input de planificación`
+3. Pega ese bloque en Claude con `98 idea codex to claude plan.md`
+4. Audita el `plan.md` con `99 prompt plan a codex.md`
+5. Si el plan falla, usa `15_f4_remediacion_plan.md`
+6. Ejecuta con Claude sobre `plan.md` usando `06_f6_implementacion.md`
+7. Audita implementación con `07_f7_post_auditoria.md`
+8. Cierra con `09_f9_f10_cierre_y_lecciones.md`
 
-## Prompts especiales
+## Flujo weekly review
 
-- `96 handoff codex audit.md`
+1. Usa `20_weekly_mit_review.md`
+2. El weekly produce hallazgos, candidatos y backlog
+3. Si eliges un candidato, vuelve al flujo de iniciativa
+
+## Prompts activos
+
 - `97 idea codex.md`
 - `98 idea codex to claude plan.md`
 - `99 prompt plan a codex.md`
-
-## Prompts de remediacion
-
-- `13_f1_remediacion_ask.md`
+- `04_f4_plan.md`
+- `05_f5_auditoria_plan.md`
+- `06_f6_implementacion.md`
+- `07_f7_post_auditoria.md`
+- `09_f9_f10_cierre_y_lecciones.md`
 - `15_f4_remediacion_plan.md`
-- `17_f6_remediacion_ejecucion.md`
-
-## Prompts de review recurrente
-
 - `20_weekly_mit_review.md`
+
+## Qué ya no existe
+
+- artefactos intermedios de apertura previos
+- prompts de apertura basados en el flujo anterior
 
 ## Regla rápida
 
-- al abrir `M4`, antes de `F1`: `handoff.md`
-- `F1`: `ask.md`
-- `F4`: `plan.md`
-- `F6`: `execution.md`
-- `F7`: `post_audit.md`
-- `F8`: `real_validation.md` cuando aplica
-- `F9/F10`: `closeout.md` + `lessons_learned.md`
+- conversación `M0` -> `input de planificación` -> `plan.md`
+- `plan.md` es el primer artefacto formal de iniciativa
+- weekly review no genera `plan.md`
+- el backlog no sustituye el plan
+- cierre: `closeout.md` + `lessons_learned.md`
 
 ## Regla operativa
 
-- al abrir una iniciativa `M4`, Claude debe crear él mismo un `initiative_id`
+- al abrir una iniciativa formal, Claude debe crear él mismo un `initiative_id`
   canónico
 - si la iniciativa ya existe, Claude debe detectar la iniciativa activa por
   contexto y por los artefactos del repo
