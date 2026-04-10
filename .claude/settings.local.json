@@ -12,12 +12,14 @@
       "WebSearch",
       "mcp__symdex_code__*",
       "mcp__governance_retrieval__*",
+      "mcp__codebase_memory_mcp__*",
       "mcp__ms365__*"
     ]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "symdex_code",
-    "governance_retrieval"
+    "governance_retrieval",
+    "codebase-memory-mcp"
   ]
 }

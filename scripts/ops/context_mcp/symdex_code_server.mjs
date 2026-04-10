@@ -10,6 +10,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 const DEFAULT_STATE_DIR = path.join(REPO_ROOT, ".symdex");
 const DEFAULT_SOURCE = "git+https://github.com/husnainpk/SymDex.git";
+const LOCAL_PACKAGE = "symdex[local]";
+const VOYAGE_PACKAGE = "symdex[voyage]";
 
 function parseArgs(argv) {
   const parsed = {};
@@ -33,6 +35,20 @@ function parseArgs(argv) {
 const argv = parseArgs(process.argv.slice(2));
 const STATE_DIR = path.resolve(argv["state-dir"] || DEFAULT_STATE_DIR);
 const SYMDEX_SOURCE = argv["symdex-source"] || DEFAULT_SOURCE;
+const SEMANTIC_BACKEND = argv["semantic-backend"] || "local";
+
+function resolveInstallTarget() {
+  if (SEMANTIC_BACKEND === "none") {
+    return SYMDEX_SOURCE;
+  }
+  if (SEMANTIC_BACKEND === "local") {
+    return LOCAL_PACKAGE;
+  }
+  if (SEMANTIC_BACKEND === "voyage") {
+    return VOYAGE_PACKAGE;
+  }
+  return SYMDEX_SOURCE;
+}
 
 function uniqueAttempts(values) {
   const attempts = [];
@@ -53,12 +69,13 @@ function uniqueAttempts(values) {
 function commandAttempts(args) {
   const symdexBin = argv["symdex-bin"] || process.env.SYMDEX_BIN || "symdex";
   const uvxBin = argv["uvx-bin"] || process.env.UVX_BIN || "uvx";
+  const installTarget = resolveInstallTarget();
   return uniqueAttempts([
     { command: symdexBin, args },
     { command: "symdex", args },
     {
       command: uvxBin,
-      args: ["--from", SYMDEX_SOURCE, "symdex", ...args],
+      args: ["--from", installTarget, "symdex", ...args],
     },
   ]);
 }
@@ -162,6 +179,29 @@ function isNoResult(message) {
   return normalized.includes("no symbols found") || normalized.includes("no callers found") || normalized.includes("no callees found");
 }
 
+function classifyFailure(message) {
+  const normalized = String(message || "").toLowerCase();
+  if (!normalized) {
+    return "UNKNOWN";
+  }
+  if (normalized.includes("unexpected extra arguments")) {
+    return "ARGUMENT_SHAPE";
+  }
+  if (normalized.includes("timed out")) {
+    return "TIMEOUT";
+  }
+  if (normalized.includes("invalid json")) {
+    return "INVALID_JSON";
+  }
+  if (normalized.includes("no semantic embeddings")) {
+    return "NO_EMBEDDINGS";
+  }
+  if (normalized.includes("repo not indexed") || normalized.includes("no indexed repos")) {
+    return "NOT_INDEXED";
+  }
+  return "COMMAND_FAILED";
+}
+
 let cachedRepoName = null;
 
 function selectRepo(entries) {
@@ -248,10 +288,41 @@ function render(payload) {
   };
 }
 
+function statusPayload({ repo = null, repoError = null } = {}) {
+  return {
+    repoRoot: REPO_ROOT,
+    stateDir: STATE_DIR,
+    symdexSource: SYMDEX_SOURCE,
+    semanticBackend: SEMANTIC_BACKEND,
+    installTarget: resolveInstallTarget(),
+    resolvedRepo: repo,
+    repoResolution: repo ? "AVAILABLE" : "DEGRADED",
+    repoError,
+  };
+}
+
 const server = new McpServer({
   name: "symdex-code",
   version: "1.0.0",
 });
+
+server.tool(
+  "symdex_status",
+  {},
+  async () => {
+    try {
+      const repo = resolveRepoName();
+      return render(statusPayload({ repo }));
+    } catch (error) {
+      return render(
+        statusPayload({
+          repo: null,
+          repoError: String(error?.message || error),
+        })
+      );
+    }
+  }
+);
 
 server.tool(
   "search_symbols",
@@ -313,9 +384,10 @@ server.tool(
 
     if (response.ok) {
       return render({
+        ...statusPayload({ repo }),
         query,
-        repo,
         mode: "semantic",
+        capability_status: "DISPONIBLE",
         results: response.data.results || response.data.symbols || [],
         roi: response.data.roi || null,
         roi_summary: response.data.roi_summary || null,
@@ -337,10 +409,13 @@ server.tool(
       { allowFailure: true }
     );
     return render({
+      ...statusPayload({ repo }),
       query,
-      repo,
       mode: "fallback_search_symbols",
       warning: response.message,
+      capability_status: "DEGRADADO",
+      degradation_reason: classifyFailure(response.message),
+      fallback: "search_symbols",
       results: fallback.ok ? fallback.data.symbols || [] : [],
     });
   }
@@ -361,9 +436,16 @@ server.tool(
     }
     const response = runJson(args, { allowFailure: true });
     return render({
+      ...statusPayload({ repo }),
       query,
-      repo,
       pathPattern: path_pattern || null,
+      capability_status: response.ok ? "DISPONIBLE" : "DEGRADADO",
+      degradation_reason: response.ok ? null : classifyFailure(response.message),
+      suggested_fallback: response.ok
+        ? null
+        : path_pattern
+          ? "usar search_symbols/get_symbol o reintentar sin path_pattern"
+          : "usar search_symbols/get_symbol",
       warning: response.ok || isNoResult(response.message) ? null : response.message,
       results: response.ok ? (response.data.matches || []).slice(0, limit) : [],
       roi: response.ok ? response.data.roi || null : null,
