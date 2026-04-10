@@ -21,6 +21,8 @@ entre el repositorio canonico de baseline y los repositorios consumidores.
   consumidor
 - adaptadores de producto (`.claude/`, `CLAUDE.md` y equivalentes) son
   opcionales y no sustituyen la fuente normativa canonica
+- el baseline exporta el workflow activo; queda prohibido convivir con un
+  workflow viejo y otro nuevo en paralelo
 
 ## 3) Mecanismo de sincronizacion
 
@@ -40,6 +42,11 @@ entre el repositorio canonico de baseline y los repositorios consumidores.
   - `dev/repo_governance_profile.md`
 - el perfil local no redefine el canon; declara capacidades reales del repo
 - la overlay local debe preservarse en actualizaciones del baseline
+- la memoria operativa viva del consumidor se mantiene local y no se sobrescribe
+  por reimportacion:
+  - `dev/records/reviews/initiative_backlog.md`
+  - `dev/records/reviews/architecture_findings_register.md`
+  - `dev/records/reviews/initiative_architecture_backlog.md`
 
 ## 5) Capabilities operativas opcionales
 
@@ -52,9 +59,21 @@ entre el repositorio canonico de baseline y los repositorios consumidores.
 - el wiring MCP de superficies nativas debe resolverse mediante merge canonico;
   queda prohibido sobrescribir servidores hermanos por pack
 
-## 6) Flujo recomendado
+## 6) Distribucion de responsabilidades documentales
+
+- el baseline reusable debe exportar un workflow `plan-first`
+- el baseline reusable no debe exportar artefactos intermedios del workflow
+  anterior como parte del canon activo
+- el primer artefacto formal de iniciativa del consumidor es `plan.md`
+- el `input de planificacion` es transitorio y no forma parte del baseline
+- el weekly del baseline descubre y prioriza; no genera planes de iniciativa
+- el backlog del consumidor conserva ideas y candidatos vivos entre weeklies e
+  iniciativas
+
+## 7) Flujo recomendado
 
 1. trabajar la mejora reusable en `GobernanzaIA`
 2. validar y versionar el baseline en `GobernanzaIA`
 3. reimportar en el repo consumidor con `bootstrap_governance.py --force`
 4. revisar el diff del consumidor y validar sus gates locales
+5. confirmar que no queda ningun workflow paralelo activo tras la reimportacion

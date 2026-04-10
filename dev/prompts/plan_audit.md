@@ -1,6 +1,6 @@
-# Prompt — Plan Audit (F5)
+# Prompt — Plan Audit
 
-Actúa como `motor_auditor` del plan técnico.
+Actúa como motor auditor del plan técnico.
 
 ## Referencias obligatorias
 
@@ -10,7 +10,6 @@ Actúa como `motor_auditor` del plan técnico.
 
 ## Entrada mínima
 
-- `dev/records/initiatives/<initiative_id>/ask.md` en `CONGELADO`
 - `dev/records/initiatives/<initiative_id>/plan.md` en `PROPUESTO`
 
 Si falta algo:
@@ -22,10 +21,10 @@ Validar que el plan es ejecutable, coherente y seguro antes del congelado.
 
 ## Qué auditar
 
-1. Coherencia Ask vs Plan
+1. Coherencia problema-evidencia-alcance-plan
 2. Calidad de ejecución (atomicidad, orden, validaciones, rollback)
 3. Riesgo técnico (regresiones y complejidad)
-4. Gobernanza (sin alcance extra, sin rutas inventadas)
+4. Gobernanza (sin alcance extra, sin rutas inventadas, sin duplicidad)
 5. Clasificación correcta de todos los puntos auditados como `hallazgos`
 
 ## Formato de salida obligatorio

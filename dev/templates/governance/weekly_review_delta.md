@@ -2,7 +2,7 @@
 
 - Repo:
 - Fecha:
-- Review mode: BASELINE_INICIAL_MIT | DELTA_SEMANAL_MIT
+- Review mode: BASELINE_WEEKLY | DELTA_WEEKLY
 - Compara contra:
 - Estado: PROPUESTO | COMPLETADO | NO_APLICA
 
@@ -11,6 +11,14 @@
 - Incrementality:
 - Integrity:
 - Transparency:
+- Global:
+
+## Tendencia Krug
+
+- Clarity:
+- Cognitive load:
+- Feedback:
+- Recoverability:
 - Global:
 
 ## Hallazgos nuevos
@@ -26,3 +34,7 @@
 ## Riesgos que suben
 
 ## Riesgos que bajan
+
+## Decision de baseline
+
+- Si no aplica delta, declarar `NO_APLICA` y justificar:

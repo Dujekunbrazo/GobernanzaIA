@@ -1,7 +1,7 @@
 # AI Engineering Governance (Hard)
 
 Esta policy define reglas técnicas de ingeniería para cambios de código y
-producto. No define fases del workflow (`F1-F10`), gates ni convergencia de
+producto. No define fases del workflow de iniciativa, gates ni convergencia de
 auditorías; eso vive en `AGENTS.md` y `dev/workflow.md`.
 
 ## 1) Alcance y precedencia técnica
@@ -104,4 +104,4 @@ Dosier largo de apoyo:
 ## 10) Terminología activa
 
 - En gobernanza activa no usar nombres de roles heredados del esquema previo.
-- Los roles válidos son `motor_activo` y `motor_auditor`.
+- Los roles válidos son motor activo y motor auditor.

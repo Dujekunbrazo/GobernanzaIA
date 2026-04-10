@@ -10,9 +10,11 @@ Propósito:
 
 Antes de analizar, debe verificarse:
 
+- `list_projects` ejecutado en la sesion actual
 - proyecto correcto identificado en la capa estructural
 - indexado persistido y estado listo para consulta
 - modo de indexación conocido (`fast`, `moderate` o `full`)
+- esquema real conocido si va a usarse `query_graph`
 
 Si alguna de estas precondiciones falla:
 
@@ -25,6 +27,7 @@ Un análisis estructural serio debe dejar trazado, como mínimo:
 
 - el proyecto o índice usado
 - el modo de indexación usado
+- la subtool estructural primaria elegida para arrancar
 - al menos `1` traza crítica real
 - al menos `1` hub o punto de acoplamiento relevante
 - al menos `1` limitación metodológica observada
@@ -34,6 +37,19 @@ No es aceptable cerrar un análisis con:
 - solo hubs
 - solo recuentos de nodos o edges
 - solo intuiciones sobre arquitectura
+- Cypher pesado sin reducción previa del espacio de búsqueda
+
+Protocolo operativo mínimo:
+
+- `search_graph` para discovery estructural inicial
+- `trace_path` para callers, callees, data flow y blast radius real
+- `query_graph` solo para última milla cuando las dos herramientas anteriores
+  no basten
+- si se usa `query_graph`, la query debe llevar:
+  - `LIMIT`
+  - labels explícitos
+  - propiedades verificadas antes con `get_graph_schema` o evidencia previa del
+    grafo
 
 ## 3) Expected outputs
 
@@ -68,6 +84,10 @@ Cuando aparezcan, deben declararse explícitamente:
 - prohibido cerrar un análisis estructural sin declarar sus límites
 - prohibido usar `cross_service` como si fuera apto cuando el boundary
   Python -> HTTP dinámico no esté realmente conectado
+- prohibido arrancar por `query_graph` cuando `search_graph` o `trace_path`
+  responden la misma pregunta con menor peso
+- prohibido lanzar Cypher global sobre `Function`, `Method` o `Class` sin scope
+  previo, `LIMIT` y justificación metodológica
 
 ## 6) Acceptability criteria
 
@@ -75,6 +95,7 @@ El análisis estructural se considera aceptable cuando:
 
 - parte de un proyecto/indexado verificado
 - declara el modo de indexación
+- declara la subtool con la que arrancó y por qué
 - incluye una traza crítica real
 - incluye un hub real
 - incluye una limitación metodológica real

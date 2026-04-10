@@ -2,7 +2,7 @@
 
 - Repo:
 - Fecha:
-- Review mode: BASELINE_INICIAL_MIT | DELTA_SEMANAL_MIT
+- Review mode: BASELINE_WEEKLY | DELTA_WEEKLY
 - Generado por:
 - Fuente de verdad:
 
@@ -17,6 +17,7 @@
 - Desde:
 - Hasta:
 - Motivo del rango:
+- Si es baseline, declarar `NO_APLICA` en `Desde` y justificar:
 
 ## Delta semanal
 
@@ -24,10 +25,16 @@
 - Superficies tocadas:
 - Si no hay delta tecnico, explicar:
 
+## Regla de baseline
+
+- Baseline profunda: yes | no
+- Cobertura del repo completo: yes | no
+- Revision previa valida: yes | no
+- Motivo si no existe revision previa valida:
+
 ## Capas de contexto y evidencia usada
 
 - Gobernanza normativa:
-- Runtime del orquestador:
 - Codigo vivo local:
 - Memoria estructural persistente:
 - Evidencia runtime real:

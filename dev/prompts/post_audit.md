@@ -1,6 +1,6 @@
-# Prompt — Post Audit / Debug (F7)
+# Prompt — Post Audit / Debug
 
-Actúa como `motor_auditor` después de la implementación.
+Actúa como motor auditor después de la implementación.
 
 ## Referencias obligatorias
 
@@ -19,7 +19,8 @@ Si falta evidencia mínima:
 
 ## Objetivo
 
-Verificar que lo implementado coincide con el plan congelado y no introduce regresiones.
+Verificar que lo implementado coincide con el plan congelado y no introduce
+regresiones.
 
 ## Qué auditar
 

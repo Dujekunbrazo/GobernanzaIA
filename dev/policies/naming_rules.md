@@ -16,18 +16,16 @@ Cabecera mínima esperada en artefactos principales:
 - `Modo`
 - `Estado`
 - `Fecha`
-- `motor_activo`
-- `motor_auditor` (obligatorio en `M4`)
+- `Motor activo`
+- `Motor auditor` (obligatorio en `M4`)
 - `Rama`
-- `baseline_mit`
 
 Set mínimo por modo:
-- `M3`: `ask.md`, `execution.md`, `closeout.md`, `lessons_learned.md`
-- `M4`: `ask.md`, `ask_audit.md`, `plan.md`, `plan_audit.md`, `execution.md`,
-  `post_audit.md`, `closeout.md`, `lessons_learned.md`
+- `M3`: `plan.md`, `execution.md`, `closeout.md`, `lessons_learned.md`
+- `M4`: `plan.md`, `plan_audit.md`, `execution.md`, `post_audit.md`,
+  `closeout.md`, `lessons_learned.md`
 
 Archivos opcionales permitidos:
-- `handoff.md` (`PRE-F1`, artefacto primogénito para conservar planificación previa)
 - `baseline_freeze.md`
 - `capability_closure.md`
 - `exception_record.md`
@@ -49,8 +47,6 @@ Carpeta:
 - `dev/templates/initiative/`
 
 Archivos requeridos:
-- `ask.md`
-- `ask_audit.md`
 - `plan.md`
 - `plan_audit.md`
 - `execution.md`

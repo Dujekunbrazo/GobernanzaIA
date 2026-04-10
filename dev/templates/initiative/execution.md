@@ -3,22 +3,26 @@
 - Initiative ID:
 - Modo:
 - Fecha:
-- motor_activo:
+- Motor activo: Claude
 - Rama:
 
 ## Referencia al plan congelado
 
-## Estado operativo de F6
+## Estado operativo
 
 - Ultimo tramo o commit completado:
 - Siguiente tramo autorizado:
 - Estado general:
 
-## Commits ejecutados
+## Tramos o commits ejecutados
 
-1.
+1. Tramo o commit:
+   - Objetivo:
+   - Cambios realizados:
+   - Validacion ejecutada:
+   - Resultado:
 
-## Validaciones
+## Evidencia de validacion
 
 ## Riesgos detectados
 

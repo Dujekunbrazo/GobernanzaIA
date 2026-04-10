@@ -32,6 +32,9 @@ Archivo por IA y día:
 Script canónico:
 - `scripts/ops/bitacora_append.py`
 
+Wrapper compatibilidad:
+- `scripts/bitacora_append.py`
+
 ## 5) Campos mínimos por turno
 
 - `Usuario`
@@ -45,7 +48,7 @@ Script canónico:
 
 ## 7) Enforcements
 
-- La IA debe registrar turno tras cada respuesta final usando el script oficial.
+- Cada adapter de IA debe registrar turno tras cada respuesta final.
 - Cierre de iniciativa requiere evidencia de bitácora del periodo trabajado.
 - En cierre `F9/F10`, el append de bitácora del cierre debe ejecutarse antes del
   commit formal final para evitar commits/push extra por trazabilidad tardía.

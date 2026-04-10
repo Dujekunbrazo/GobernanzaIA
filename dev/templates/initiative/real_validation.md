@@ -4,12 +4,11 @@
 - Modo:
 - Estado:
 - Fecha:
-- motor_activo:
-- motor_auditor:
+- Motor activo: Claude
+- Motor auditor: Codex
 - Rama:
-- baseline_mit:
 
-## Objetivo de validación
+## Objetivo de validacion
 
 ## Entorno y alcance probado
 
@@ -32,6 +31,6 @@
 
 ## Riesgos remanentes
 
-## Decisión final
+## Decision final
 
-- `APTA_PARA_F9` | `REABRIR_F6` | `NO_APLICA`
+- `APTA_PARA_F6` | `REABRIR_F3` | `NO_APLICA`

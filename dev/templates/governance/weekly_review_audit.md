@@ -4,6 +4,7 @@
 - Fecha:
 - Auditor:
 - Veredicto: PASS | FAIL
+- Alcance: MIT | Krug | Mixto
 
 ## Hallazgos
 

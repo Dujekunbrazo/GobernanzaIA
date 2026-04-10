@@ -7,20 +7,20 @@ Propósito: validar ejecución real antes del cierre documental.
 - Initiative ID:
 - Ruta: `dev/records/initiatives/<initiative_id>/`
 - Modo:
-- motor_activo:
-- motor_auditor:
 - Fecha:
+- Motor activo: `Claude`
+- Motor auditor: `Codex`
 
 ## Prerequisitos
 
 - [ ] `plan.md` existe y está en `CONGELADO`
 - [ ] `plan_audit.md` existe con resultado `PASS`
 
-## Checklist F6 (Implementación)
+## Checklist de implementación
 
 - [ ] Existe `execution.md`
-- [ ] `execution.md` lista commits ejecutados
-- [ ] Cada commit corresponde a un cambio lógico
+- [ ] `execution.md` lista commits o tramos ejecutados
+- [ ] Cada commit o tramo corresponde a un cambio lógico
 - [ ] No hay cambios fuera del plan congelado
 - [ ] Se registraron comandos de validación y resultados
 - [ ] Si la implementación toca una capability transversal, usa la abstracción canónica y el owner arquitectónico definidos en el plan
@@ -28,36 +28,34 @@ Propósito: validar ejecución real antes del cierre documental.
 - [ ] No introduce branching por `tool`/`path`/`channel`/`filter` para resolver la capability
 - [ ] No deja coverage vertical aislada, wiring parcial ni integraciones huérfanas para la misma capability
 - [ ] No mantiene paths paralelos ni fallback legacy conviviendo con el camino canónico
-- [ ] No maquilla el cierre con archivos brillantes ni documentación pulida si persisten cableado mediocre, wiring incompleto o legacy vivo
-- [ ] `planner`, `generator`, `router` y `execute` consumen el mecanismo común; no absorbieron lógica específica por herramienta fuera del owner arquitectónico
 - [ ] Existe evidencia end-to-end de activación real y evidencia estructural de no-branching y no-convivencia cuando aplique
 
-## Checklist F7 (Post-auditoría / Debug)
+## Checklist de post-auditoría
 
 - [ ] Existe `post_audit.md`
 - [ ] Resultado `PASS`
 - [ ] No hay hallazgos abiertos
 - [ ] Riesgos remanentes documentados
 - [ ] La post-auditoría verificó ausencia de branching oportunista, wiring parcial, paths paralelos y fallback legacy en las capabilities transversales tocadas
-- [ ] La post-auditoría verificó ausencia de cierre cosmético con archivos brillantes que oculten cableado mediocre o legacy vivo
 
-## Checklist F8 (Validación real guiada)
+## Checklist de validación real
 
 - [ ] Si la iniciativa toca comportamiento observable del producto, existe `real_validation.md`
-- [ ] Si la iniciativa no toca comportamiento observable, `F8` quedó trazada como `NO_APLICA`
+- [ ] Si la iniciativa no toca comportamiento observable, la validación real quedó trazada como `NO_APLICA`
 - [ ] `real_validation.md` registra script o matriz completa de pruebas reales
 - [ ] Cada caso registra esperado, observado, resultado y evidencia
 - [ ] El barrido real se completó antes de decidir fixes generales
-- [ ] No se tocó código tras el primer fallo material salvo bloqueo crítico documentado
-- [ ] `real_validation.md` declara `Decisión final: APTA_PARA_F9`, `REABRIR_F6` o `NO_APLICA`
-- [ ] Si la decisión fue `REABRIR_F6`, no se avanzó a `F9`
+- [ ] `real_validation.md` declara `Decisión final: APTA_PARA_F6`, `REABRIR_F3` o `NO_APLICA`
+- [ ] Si la decisión fue `REABRIR_F3`, no se avanzó a cierre
 
-## Condición para F9
+## Condición para cierre documental
 
 - [ ] Implementación apta para cierre documental
 
 ## Regla de bloqueo
 
 Si este gate no está en verde:
-- no se puede avanzar a `F9`.
-- una implementación que resuelva la capability con `ifs`, bypass, hacks path-specific, wiring incompleto o caminos paralelos no es apta para `F9` aunque el caso puntual funcione.
+- no se puede avanzar a cierre.
+- una implementación que resuelva la capability con `ifs`, bypass, hacks
+  path-specific, wiring incompleto o caminos paralelos no es apta para cierre
+  aunque el caso puntual funcione.

@@ -1,12 +1,12 @@
 # Repo Capabilities Policy (Hard)
 
-Propósito:
-- definir cómo declara un repo consumidor sus capacidades reales sin reescribir
-  el canon.
+Proposito:
+- definir como declara un repo consumidor sus capacidades reales sin reescribir
+  el canon
 
-## 1) Perfil canónico por repo
+## 1) Perfil canonico por repo
 
-Cada repo consumidor debe declarar un único perfil local de capacidades.
+Cada repo consumidor debe declarar un unico perfil local de capacidades.
 
 Ese perfil:
 
@@ -17,19 +17,19 @@ Ese perfil:
 
 ## 2) Responsabilidades del perfil
 
-El perfil declara, como mínimo:
+El perfil declara, como minimo:
 
 - capacidades de retrieval de gobernanza
-- capacidades de lectura de código vivo
-- estado real de búsqueda semántica de `SymDex`
+- capacidades de lectura de codigo vivo
+- estado real de busqueda semantica de `SymDex`
 - capacidades de memoria estructural
-- superficies disponibles para validación real
+- superficies disponibles para validacion real
 - señales runtime observables
 - restricciones locales relevantes para `F8`
 
-## 3) Ubicación
+## 3) Ubicacion
 
-El baseline distribuye una plantilla canónica.
+El baseline distribuye una plantilla canonica.
 
 El repo consumidor mantiene su instancia local en:
 
@@ -42,19 +42,32 @@ La plantilla fuente vive en:
 ## 4) Regla de verdad
 
 - el perfil describe disponibilidad real, no deseos ni roadmap
-- si una capacidad no está instalada o validada, debe declararse como ausente
-- el orquestador debe degradar según el perfil, no asumir capacidades
+- si una capacidad no esta instalada o validada, debe declararse como ausente
+- el motor debe degradar segun el perfil, no asumir capacidades
 - el routing de cada consulta se rige por
   `dev/policies/context_routing_policy.md`
 
-## 5) Capacidades mínimas a declarar
+Estados aceptables de declaracion:
+
+- `DISPONIBLE`
+  - capacidad instalada, accesible y funcional en uso real
+- `DEGRADADO`
+  - capacidad expuesta pero con limites materiales observados
+- `NO_DISPONIBLE`
+  - capacidad ausente, no expuesta o no funcional
+
+## 5) Capacidades minimas a declarar
 
 - `governance_search`
 - `symdex_code`
 - `symdex_semantic_search`
 - `symdex_embedding_backend`
+- `symdex_lookup_mode`
+- `symdex_search_text_path_pattern`
 - `codebase-memory-mcp`
-- validación real observable
+- `codebase_memory_project_resolution`
+- `codebase_memory_query_graph`
+- validacion real observable
 - `trace on`
 - terminal o logs legibles
 - el detalle de uso de la capacidad estructural se rige por
@@ -62,9 +75,13 @@ La plantilla fuente vive en:
 
 ## 6) Prohibiciones
 
-- prohibido declarar una capacidad como disponible si no está operativa
+- prohibido declarar una capacidad como disponible si no esta operativa
 - prohibido declarar `symdex_semantic_search: DISPONIBLE` si solo existe la
-  tool expuesta pero no embeddings válidos
+  tool expuesta pero no embeddings validos
+- prohibido declarar `search_text(path_pattern=...)` como `DISPONIBLE` si el
+  wrapper local o el CLI real muestran fallos reproducibles
+- prohibido declarar `codebase-memory-mcp: DISPONIBLE` como si eso implicara
+  automaticamente proyecto efectivo, esquema valido y `query_graph` estable
 - prohibido usar el perfil para introducir workflow alternativo
 - prohibido duplicar el perfil en varias rutas locales
 - prohibido esconder diferencias materiales entre repos bajo metadata informal
@@ -73,7 +90,8 @@ La plantilla fuente vive en:
 
 Un perfil de repo es aceptable cuando:
 
-- está en la ruta canónica
+- esta en la ruta canonica
 - refleja el estado real del entorno
-- permite al orquestador decidir routing y fallback
+- permite al motor decidir routing y fallback
+- distingue entre capacidad expuesta y capacidad realmente usable
 - no redefine el canon ni crea rutas paralelas

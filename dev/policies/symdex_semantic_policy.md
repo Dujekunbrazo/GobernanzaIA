@@ -20,6 +20,16 @@ Propósito:
 
 Queda prohibido tratar ambos niveles como equivalentes.
 
+Reglas adicionales:
+
+- dentro de `lookup puntual`, el orden preferente es:
+  - `search_symbols`
+  - `get_symbol`
+  - `get_file_outline` o `get_symbols`
+  - `search_text` solo como apoyo textual
+- `search_text(path_pattern=...)` no se considera happy path por defecto mientras
+  el wrapper local o el CLI real no lo soporten de forma estable en el repo
+
 ## 2) Estados de backend
 
 Backends admitidos:
@@ -57,6 +67,10 @@ Reglas canónicas:
   configurado y validación funcional real
 - si no hay embeddings válidos, `symdex_code` debe declararse como disponible
   solo para lookup puntual
+- si `semantic_search` está expuesto pero devuelve fallback, warning o ausencia
+  de embeddings, el estado correcto es `DEGRADADO`, no `DISPONIBLE`
+- si `search_text(path_pattern=...)` falla en el wrapper o en el CLI real, ese
+  patrón de uso debe declararse como `DEGRADADO`
 
 ## 4) Routing operativo
 
@@ -65,8 +79,12 @@ Reglas canónicas:
 - preguntas conceptuales locales sobre código vivo:
   - `semantic_search` solo si la capacidad semántica está validada
 - si no hay backend semántico validado:
-  - degradar a `search_symbols` + `search_text` + `get_symbol`
+  - degradar a `search_symbols` + `get_symbol`
+  - usar `search_text` solo como apoyo textual cuando aporte señal real
   - no simular búsqueda por concepto
+- si `search_text(path_pattern=...)` falla:
+  - degradar a lookup puntual y lectura exacta del archivo ya localizado
+  - no insistir con patrones amplios como si fueran el camino canónico
 
 ## 5) Validación mínima
 
@@ -81,6 +99,8 @@ Una instalación semántica de `SymDex` es aceptable cuando:
 - el autochequeo humano distingue:
   - tool expuesta
   - backend semántico real
+  - capacidad realmente usable de `search_text(path_pattern=...)` si se pretende
+    tratarla como operativa
 
 ## 6) Prohibiciones
 
@@ -91,6 +111,8 @@ Una instalación semántica de `SymDex` es aceptable cuando:
 - prohibido asumir `voyage` como backend canónico o gratuito
 - prohibido promover un `observed best backend` a verdad canónica sin decisión
   explícita sobre el baseline
+- prohibido tratar `search_text(path_pattern=...)` como estable por defecto si
+  el comportamiento observado del wrapper o del CLI real no lo confirma
 
 ## 7) Referencias
 

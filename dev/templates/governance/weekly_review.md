@@ -2,9 +2,10 @@
 
 - Repo:
 - Fecha:
-- Review mode: BASELINE_INICIAL_MIT | DELTA_SEMANAL_MIT
+- Review mode: BASELINE_WEEKLY | DELTA_WEEKLY
 - Motor revisor:
 - Estado: PROPUESTO | COMPLETADO
+- Review previa valida: yes | no
 
 ## [1] Diagnostico ejecutivo
 
@@ -18,10 +19,6 @@
 
 ## [6] Hallazgos priorizados
 
-## [7] Transparency plan
+## [7] Candidate initiatives
 
-## [8] Integrity plan
-
-## [9] Incrementality plan
-
-## [10] Las 7 preguntas que debes responder ya
+## [8] Preguntas abiertas

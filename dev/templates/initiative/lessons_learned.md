@@ -3,8 +3,8 @@
 - Initiative ID:
 - Modo:
 - Fecha:
-- motor_activo:
-- motor_auditor:
+- Motor activo: Claude
+- Motor auditor: Codex
 
 ## Resumen de la iniciativa
 

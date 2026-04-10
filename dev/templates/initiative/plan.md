@@ -1,31 +1,68 @@
 # PLAN
 
 - Initiative ID:
-- Modo:
-- Estado: PROPUESTO
+- Modo: M4
+- Estado: PROPUESTO | CONGELADO
 - Fecha:
-- motor_activo:
-- motor_auditor:
+- Motor activo: Claude
+- Motor auditor: Codex
 - Rama:
-- baseline_mit:
-- Etiqueta: PENDIENTE DE AUDITORIA DEL MOTOR_AUDITOR
+- Origen: conversacion | weekly | backlog | closeout
+- Etiqueta: PENDIENTE_DE_AUDITORIA | CONGELADO
 
 ## Objetivo
+
+## Problema real
+
+## Resultado esperado
+
+## Evidencia base
+
+1.
+
+## Contexto tecnico relevante
 
 ## Alcance
 
 ## No-alcance
 
-## Impacto técnico
+## Restricciones
 
-## Owners y wiring canónico
+## Supuestos
 
-## Riesgos (Top 3)
-
-## Plan por commits
+## Riesgos principales
 
 1.
 
-## Rollback global
+## Superficies y modulos afectados
+
+1.
+
+## Decisiones ya tomadas
+
+1.
+
+## Dudas abiertas
+
+1.
+
+## Estrategia de implementacion
+
+## Plan por tramos
+
+1. Tramo:
+   - Objetivo:
+   - Archivos o modulos esperados:
+   - Validacion del tramo:
+
+## Validacion global prevista
+
+## Rollback
 
 ## Definition of Done
+
+## Referencias
+
+- Weekly origen:
+- Candidate ID:
+- Issues o decisiones relacionadas:

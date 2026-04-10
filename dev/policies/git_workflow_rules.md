@@ -64,13 +64,13 @@ Ejemplo:
 - Initiative: `2026-02-26_kiminion_recovery`
 - Rama: `initiative/2026-02-26_kiminion-recovery`
 
-## 7) Límite de contexto y handoff de sesión
+## 7) Limite de contexto y resumen de sesion
 
 Si una sesión supera:
 - 10 archivos modificados, o
 - 15 commits
 
-Se debe iniciar nueva sesión con handoff mínimo:
+Se debe iniciar nueva sesión con resumen mínimo:
 - rama activa
 - último commit completado
 - próximo commit pendiente
@@ -83,7 +83,7 @@ Al finalizar una rama:
 2. Merge por PR o estrategia aprobada de squash merge.
 3. Borrar rama local/remota cuando el merge esté confirmado.
 4. Registrar resultado en artefactos de iniciativa (`closeout.md` y `lessons_learned.md`).
-5. Generar commit formal de cierre al terminar `F10`, incluyendo como mínimo:
+5. Generar commit formal de cierre al terminar el flujo de iniciativa, incluyendo como mínimo:
    - `closeout.md`
    - `lessons_learned.md`
 
@@ -91,7 +91,7 @@ Al finalizar una rama:
 
 - Prohibido abrir una nueva iniciativa formal (`M3` o `M4`) sobre working tree
   con cambios sin commit pertenecientes a otra iniciativa.
-- Si existe restricción técnica real, registrar excepción explícita en el `ask.md`
+- Si existe restricción técnica real, registrar excepción explícita en el `plan.md`
   y luego en `execution.md` o `closeout.md` con justificación.
 
 ## 10) Excepciones
@@ -100,7 +100,7 @@ Si no hay remoto disponible o hay restricción de permisos:
 - registrar la excepción en `execution.md` o `closeout.md`
 - no inventar comandos no ejecutados
 
-## 11) Protocolo anti-bucle para cierre Git (`F9/F10`)
+## 11) Protocolo anti-bucle para cierre Git
 
 Objetivo:
 - evitar iteraciones largas de `git add/commit/push` en entornos con ACL

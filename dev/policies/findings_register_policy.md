@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Mantener un backlog vivo y trazable de hallazgos arquitectonicos del repo.
+Mantener un registro vivo y trazable de hallazgos arquitectonicos del repo.
 
 ## Reglas
 
@@ -10,6 +10,8 @@ Mantener un backlog vivo y trazable de hallazgos arquitectonicos del repo.
 - el registro persiste entre semanas
 - un hallazgo no debe reaparecer como si fuera nuevo si ya existe
 - cada hallazgo debe tener estado y via de remediacion sugerida
+- un hallazgo material no puede vivir solo en `weekly_review.md`
+- cuando una iniciativa cierre un hallazgo, el registro debe actualizarse
 
 ## Estados minimos
 
@@ -30,3 +32,4 @@ El registro es valido cuando:
 
 - evita redescubrir el mismo problema cada semana
 - permite decidir que debe corregirse y que solo debe observarse
+- permite trazabilidad desde weekly hasta iniciativa o watchlist

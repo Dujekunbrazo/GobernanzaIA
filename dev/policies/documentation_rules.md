@@ -22,9 +22,9 @@ Estas reglas son obligatorias para cualquier IA y cualquier contribución humana
 ## 4) Estado documental por iniciativa
 
 Cada iniciativa debe cerrar con:
-- `closeout.md` (cierre de ejecución/documentación en `F9`)
-- `lessons_learned.md` (lecciones finales en `F10`)
-- estado de fases F1-F10
+- `closeout.md`
+- `lessons_learned.md`
+- estado del flujo de iniciativa trazado
 - evidencia de gates en verde o bloqueos aceptados explícitamente
 
 ## 5) Runbooks heredados
@@ -38,6 +38,8 @@ Cada iniciativa debe cerrar con:
 - Fechas en formato ISO (`YYYY-MM-DD`).
 - Decisiones con contexto, motivo e impacto.
 - Evitar duplicación si ya existe una fuente canónica.
+- `plan.md` es la única fuente de planificación de iniciativa.
+- Weekly, backlog y closeout solo deben registrar delta, estado o resultado.
 
 ## 7) Regla de bloqueo
 

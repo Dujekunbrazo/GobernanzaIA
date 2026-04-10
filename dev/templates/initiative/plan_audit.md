@@ -1,7 +1,7 @@
 # PLAN AUDIT
 
 - Initiative ID:
-- Fase: F5
+- Fase: F2
 - Auditor:
 - Fecha:
 - Veredicto: PASS | FAIL
@@ -26,4 +26,7 @@
 - `Esfuerzo sugerido:` `medium` | `high` | `max` | `n/a`
 - `Motivo:`
 
-## Condición para F5
+## Condicion para implementacion
+
+- `PASS`: `plan.md` queda `CONGELADO` y apto para implementacion.
+- `FAIL`: remediar el mismo `plan.md` y repetir auditoria antes de ejecutar.

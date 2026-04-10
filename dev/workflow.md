@@ -1,4 +1,4 @@
-# Dev Workflow - Motor Directo
+# Dev Workflow - Claude + Codex
 
 Este documento define la referencia operativa corta para trabajar en este repo
 sin logica ejecutiva externa.
@@ -18,6 +18,10 @@ Si una capa difiere, se corrige en el mismo cambio.
 - `AGENTS.md` es la capa estatica siempre presente.
 - `dev/workflow.md` se carga bajo demanda como referencia compacta.
 - Las policies y guarantees se localizan primero con `governance_search`.
+- `M0` puede terminar en un `input de planificacion` transitorio para
+  `Claude`.
+- Ese input no es artefacto formal de iniciativa y no se persiste en
+  `dev/records/initiatives/`.
 
 ## Modos
 
@@ -31,31 +35,16 @@ Reglas:
 
 - `M0`, `M1` y `M2` no autorizan cambios de codigo
 - `M3` exige alcance acotado y trazable
-- `M4` exige el pipeline `F1-F10`
+- `M4` usa `plan.md` como artefacto primario de planificacion
 
-## M3 - Secuencia minima
+## Carriles de trabajo
 
-Artefactos minimos:
+### Carril iniciativa
 
-- `ask.md`
-- `execution.md`
-- `closeout.md`
-- `lessons_learned.md`
-
-Secuencia:
-
-1. definir alcance, no alcance, evidencia y criterio de aceptacion
-2. implementar el cambio acotado
-3. registrar validacion en `execution.md`
-4. verificar `dev/guarantees/m3_delivery_gate.md`
-5. cerrar en `closeout.md` y `lessons_learned.md`
-
-## M4 - Referencia compacta
+Usado para cambios concretos que van a ejecucion.
 
 Artefactos sustantivos habituales:
 
-- `ask.md`
-- `ask_audit.md`
 - `plan.md`
 - `plan_audit.md`
 - `execution.md`
@@ -64,33 +53,69 @@ Artefactos sustantivos habituales:
 - `closeout.md`
 - `lessons_learned.md`
 
-Pipeline:
+Secuencia:
 
-1. `F1` Ask propuesto
-2. `F2` Validacion de ask por usuario
-3. `F3` Auditoria y congelado de ask
-4. `F4` Plan propuesto
-5. `F5` Auditoria y congelado de plan
-6. `F6` Implementacion
-7. `F7` Post-auditoria / debug
-8. `F8` Validacion real guiada
-9. `F9` Docs + cierre
-10. `F10` Lecciones finales
-
-## Reglas de auditoria formal
-
-Aplica a `F3`, `F5` y `F7`.
+1. trabajar la idea en `M0` con lectura de codigo y aterrizaje tecnico
+2. convertir la conversacion en `input de planificacion` para `Claude`
+3. generar `plan.md`
+4. auditar y congelar el plan
+5. implementar
+6. post-auditar
+7. ejecutar validacion real cuando aplique
+8. cerrar y extraer lecciones
 
 Reglas:
 
-- solo el `motor_auditor` emite auditoria formal
+- el primer artefacto formal es `plan.md`
+- `plan.md` es el unico artefacto de planificacion de iniciativa
+- `execution.md` solo registra delta de ejecucion y evidencia
+- `post_audit.md` solo registra hallazgos, veredicto y remediacion
+- `closeout.md` y `lessons_learned.md` no deben recrear el plan
+- `closeout.md` debe declarar explicitamente si el cierre deja backlog vivo o
+  si `SIN_CAMBIOS`
+
+### Carril weekly review
+
+Usado para revision estrategica recurrente del repo.
+
+Salidas esperadas:
+
+- `weekly_briefing.md`
+- `weekly_review.md`
+- `weekly_review_delta.md` cuando exista weekly anterior
+- `candidate_initiatives.md`
+- actualizacion de findings y backlog
+
+Secuencia:
+
+1. briefing factual
+2. review estrategica
+3. actualizacion de findings y backlog
+4. promocion opcional de candidatos a iniciativa
+
+Reglas:
+
+- el weekly no genera `plan.md`
+- el weekly no propone commits de implementacion
+- el weekly descubre, prioriza y propone candidatos
+- el trabajo real de iniciativa se abre despues en `M0`
+- el primer weekly de un repo o de una gobernanza recien implantada se ejecuta
+  como `BASELINE`, sin delta previo y con profundidad alta
+
+## Reglas de auditoria formal
+
+Aplica a la auditoria de plan y a la post-auditoria.
+
+Reglas:
+
+- solo `Codex` emite auditoria formal
 - la decision formal solo puede ser `PASS` o `FAIL`
 - no se permite `PASS` con hallazgos pendientes
 - si el resultado es `FAIL`, no se avanza
 
-## F8 - Validacion real guiada
+## Validacion real guiada
 
-`F8` aplica cuando cambia comportamiento observable del producto.
+La validacion real aplica cuando cambia comportamiento observable del producto.
 
 Reglas:
 
@@ -101,8 +126,8 @@ Reglas:
   - `trace on`
   - terminal o logs
   - resultados visibles en runtime real
-- si aparece un fallo material, corresponde reabrir `F6`
-- si se reabre `F6`, deben repetirse `F7` y `F8`
+- si aparece un fallo material, corresponde reabrir implementacion y repetir
+  post-auditoria y validacion real
 
 ## Routing de contexto
 
@@ -110,6 +135,21 @@ Reglas:
 - codigo vivo -> `symdex_code`
 - estructura e impacto -> `codebase-memory-mcp`
 - validacion observable -> evidencia runtime real
+
+## Memoria operativa viva
+
+- `dev/records/reviews/architecture_findings_register.md`:
+  hallazgos persistentes del weekly
+- `dev/records/reviews/initiative_backlog.md`:
+  ideas y candidatos surgidos en conversacion, weekly o closeout
+- `dev/records/reviews/initiative_architecture_backlog.md`:
+  remanentes y follow-ups nacidos en `closeout.md` y `lessons_learned.md`
+
+Reglas:
+
+- no mezclar backlog de ideas con hallazgos persistentes
+- no dejar deuda residual solo enterrada en artefactos de iniciativa
+- promocionar un candidato del backlog a iniciativa requiere volver a `M0`
 
 ## Carga minima recomendada
 

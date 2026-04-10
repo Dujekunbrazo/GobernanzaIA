@@ -1,4 +1,4 @@
-# Directrices Maestras Multi-IA
+# Directrices Maestras Claude-Codex
 
 ## 1) Fuente de verdad
 
@@ -16,24 +16,29 @@ Si hay conflicto, prevalece la capa superior.
 
 ## 2) Objetivo operativo
 
-Trabajar en cada repo con un proceso simple, repetible y auditable para motores
-directos.
+Trabajar en este repo con un proceso simple, repetible y auditable para:
+
+- convertir conversaciones tecnicas en planes ejecutables de alta calidad
+- ejecutar iniciativas con un unico plan formal y sin duplicidad documental
+- revisar el repo periodicamente con un carril weekly separado
+- mantener memoria operativa viva sin depender del chat
 
 La gobernanza define como se procede.
 El codigo define sobre que se trabaja.
 
 ## 3) Motores directos
 
-- `Claude` y `Codex` deben trabajar con la misma gobernanza sustantiva.
+- El sistema canonico opera con `Claude` y `Codex`.
+- `Claude` actua como motor activo.
+- `Codex` actua como motor auditor formal y apoyo tecnico en `M0`.
 - `AGENTS.md` es el contrato compartido real para ambos.
 - Los adapters por motor solo pueden afinar detalles de producto; no deben
   crear workflow ni routing paralelos.
-- No existe motor por defecto.
-- El usuario designa `motor_activo` y, cuando aplique, `motor_auditor`.
 
 ## 4) Modos M0-M4
 
-- `M0 CONVERSACION`: ideacion, aclaraciones y discusion tecnica sin ejecucion.
+- `M0 CONVERSACION`: ideacion, lectura de codigo y aterrizaje tecnico sin
+  ejecucion.
 - `M1 ANALISIS`: diagnostico tecnico sin cambios de codigo.
 - `M2 DEBUG`: reproduccion y aislamiento de fallos sin implementar fix.
 - `M3 IMPLEMENTACION_MENOR`: cambio acotado de bajo riesgo.
@@ -46,12 +51,14 @@ Reglas:
 - toda transicion se registra como:
   `TRANSICION: Mx -> My | motivo | impacto | decision`
 - en `M0`, `M1` y `M2` no se modifica codigo
+- `M0` puede producir un `input de planificacion` transitorio para `Claude`
+- ese input no forma parte del expediente formal de la iniciativa
 
 ## 5) Reglas duras no negociables
 
 1. En `M3` solo se permite cambio acotado y trazable.
-2. En `M4` aplica el pipeline `F1-F10`.
-3. En `M4` no se planifica sin `ASK CONGELADO`.
+2. En `M4` el artefacto primario y unico de planificacion es `plan.md`.
+3. El primer artefacto formal de una iniciativa es `plan.md`.
 4. En `M4` no se implementa sin `PLAN CONGELADO`.
 5. Las auditorias formales solo admiten `PASS` o `FAIL`.
 6. No se permite `PASS` mientras exista cualquier hallazgo pendiente.
@@ -75,43 +82,69 @@ Reglas:
 19. Si una iniciativa modifica comportamiento observable del producto, no puede
     cerrar sin validacion real completada.
 20. La gobernanza debe optimizar coste total por tarea usando retrieval
-    dirigido, no expansion masiva de contexto.
+    dirigido, tooling eficiente y no expansion masiva de contexto.
+21. El weekly review descubre y prioriza; no genera planes de iniciativa.
+22. Un hecho sustantivo debe escribirse una sola vez; los artefactos
+    posteriores solo anaden delta, veredicto o evidencia.
 
-## 6) Pipeline F1-F10
+## 6) Carriles canonicos
+
+El sistema opera sobre dos carriles principales:
+
+### Carril iniciativa
+
+Usado para cambios concretos que van a ejecucion.
 
 | Fase | Proposito |
 | ---- | --------- |
-| `F1` | Ask propuesto |
-| `F2` | Validacion de ask por usuario |
-| `F3` | Auditoria y congelado de ask |
-| `F4` | Plan propuesto |
-| `F5` | Auditoria y congelado de plan |
-| `F6` | Implementacion |
-| `F7` | Post-auditoria / debug |
-| `F8` | Validacion real guiada |
-| `F9` | Docs + cierre |
-| `F10` | Lecciones finales |
+| `F1` | `plan.md` propuesto |
+| `F2` | auditoria y congelado de plan |
+| `F3` | implementacion |
+| `F4` | post-auditoria |
+| `F5` | validacion real guiada cuando aplique |
+| `F6` | docs + cierre |
+| `F7` | lecciones finales |
 
 Reglas:
 
-- en `F3`, `F5` y `F7` solo el `motor_auditor` emite la auditoria formal
-- si el resultado es `FAIL`, no se avanza de fase
+- `F1` puede nacer desde `M0` usando un `input de planificacion` transitorio
+- en `F2` y `F4` solo `Codex` emite auditoria formal
+- si el resultado es `FAIL`, no se avanza
 - si falta precondicion, el estado correcto es `BLOQUEADO`
-- `F8` es obligatoria cuando la iniciativa toca comportamiento observable del
+- `F5` es obligatoria cuando la iniciativa toca comportamiento observable del
   producto; si no aplica, debe trazarse como `NO_APLICA`
 
-## 7) Validacion real F8
+### Carril weekly review
 
-`F8` formaliza el barrido real antes del cierre documental.
+Usado para revision estrategica recurrente del repo.
+
+| Fase | Proposito |
+| ---- | --------- |
+| `W1` | briefing factual |
+| `W2` | review estrategica |
+| `W3` | actualizacion de findings y backlog |
+| `W4` | promocion opcional a iniciativa |
+
+Reglas:
+
+- `W1` extrae hechos; no propone planes de implementacion
+- `W2` prioriza usando MIT y Krug
+- `W4` solo promociona candidatos; la iniciativa formal nace despues en `M0`
+- el primer weekly de un repo o de una gobernanza recien implantada se ejecuta
+  como `BASELINE`, sin delta previo y con profundidad alta
+
+## 7) Validacion real F5
+
+`F5` formaliza el barrido real antes del cierre documental cuando aplica.
 
 Reglas:
 
 - su salida obligatoria es `real_validation.md` cuando aplica
 - debe ejecutar el barrido real completo antes de decidir fixes
-- si aparecen fallos materiales, corresponde reabrir `F6`
-- si se reabre `F6`, deben repetirse `F7` y `F8` antes de `F9`
-- `F9` solo puede empezar cuando `real_validation.md` declare
-  `Decision final: APTA_PARA_F9`
+- si aparecen fallos materiales, corresponde reabrir `F3`
+- si se reabre `F3`, deben repetirse `F4` y `F5` antes de `F6`
+- `F6` solo puede empezar cuando `real_validation.md` declare
+  `Decisión final: APTA_PARA_F6`
 - la evidencia de primer nivel incluye:
   - chat del producto
   - `trace on`
@@ -190,14 +223,38 @@ Reglas:
 
 - usar `semantic_search` solo si la capacidad semantica de `SymDex` esta
   validada en el repo
-- si no lo esta, degradar a `search_symbols` y `search_text`
+- si no lo esta, degradar a `search_symbols` y `get_symbol`; `search_text`
+  queda solo como apoyo textual
+- en memoria estructural, verificar primero el proyecto efectivo con
+  `list_projects`
+- usar `search_graph` y `trace_path` como camino primario de analisis
+  estructural; reservar `query_graph` para ultima milla y solo con queries
+  acotadas
 - usar `codebase-memory-mcp` para localizar relaciones y volver a
   `symdex_code` para leer fino el codigo exacto
 - `Glob`, `Grep`, `find`, `rg`, `Read` o `Bash` solo se permiten como fallback
   si el MCP correspondiente falla o no esta disponible, o para lectura final
   puntual del archivo ya localizado
 
-## 11) Perfil local de capacidades
+## 11) Memoria operativa viva
+
+La memoria operativa persistente se reparte asi:
+
+- `dev/records/reviews/initiative_backlog.md`
+  - ideas vivas y candidatos nacidos en conversacion, weekly o closeout
+- `dev/records/reviews/architecture_findings_register.md`
+  - hallazgos estructurales persistentes con evidencia
+- `dev/records/reviews/initiative_architecture_backlog.md`
+  - remanentes y follow-ups de iniciativas cerradas
+
+Reglas:
+
+- una idea no validada no se eleva a findings register
+- un hallazgo weekly persistente no debe vivir solo dentro del weekly
+- un remanente de iniciativa no debe quedar enterrado solo en `closeout.md` o
+  `lessons_learned.md`
+
+## 12) Perfil local de capacidades
 
 Cada repo consumidor debe mantener un unico perfil local en:
 
@@ -211,18 +268,22 @@ Ese perfil:
 - fija degradaciones aceptables
 - no redefine el canon
 
-## 12) Rutas canonicas
+## 13) Rutas canonicas
 
 - gobernanza activa: `dev/`
 - workflow de referencia: `dev/workflow.md`
 - perfil local: `dev/repo_governance_profile.md`
 - iniciativas: `dev/records/initiatives/<initiative_id>/`
 - validacion real guiada: `dev/records/initiatives/<initiative_id>/real_validation.md`
+- memoria operativa viva:
+  - `dev/records/reviews/initiative_backlog.md`
+  - `dev/records/reviews/architecture_findings_register.md`
+  - `dev/records/reviews/initiative_architecture_backlog.md`
 - validadores de cierre:
   - `scripts/dev/check_naming_compliance.py`
   - `scripts/dev/check_state0.py`
 
-## 13) Contrato de bloqueo
+## 14) Contrato de bloqueo
 
 Si falta contexto, evidencia o precondicion, la IA debe:
 

@@ -6,6 +6,17 @@
 - Propósito: <dominio_del_repo>
 - Superficie principal: <producto_cli_backend_ui_etc>
 
+## Motores y modelos canonicos
+
+- Motor activo: Claude
+- Motor auditor: Codex
+- Planificacion de iniciativa: Claude Opus, medium
+- Implementacion: Claude Sonnet, medium
+- Validacion real, cierre y lecciones: Claude Sonnet, low
+- Weekly factual: Claude Sonnet
+- Weekly estrategico: Claude Opus
+- Baseline weekly profundo: Claude Sonnet + Claude Opus
+
 ## Capacidades de gobernanza
 
 - governance_search: DISPONIBLE | NO_DISPONIBLE
@@ -38,7 +49,8 @@
 
 ## Validación real
 
-- F8 observable: SI | NO
+- Validacion observable de iniciativa: SI | NO
+- Weekly baseline profundo: SI | NO
 - Superficies reales de validación:
   - <superficie_1>
   - <superficie_2>
@@ -73,4 +85,5 @@
   límites reales del repo.
 - `symdex_default_backend` expresa el backend recomendado por el baseline.
 - `symdex_embedding_backend` expresa el backend realmente validado en el repo.
+- weekly review debe poder operar con MIT y Krug.
 - No redefine el workflow canónico ni la gobernanza normativa.

@@ -1,7 +1,7 @@
 # POST AUDIT
 
 - Initiative ID:
-- Fase: F7
+- Fase: F4
 - Auditor:
 - Fecha:
 - Veredicto: PASS | FAIL
@@ -26,4 +26,7 @@
 - `Esfuerzo sugerido:` `medium` | `high` | `max` | `n/a`
 - `Motivo:`
 
-## Condición para F7
+## Condicion para validacion real o cierre
+
+- `PASS`: implementacion apta para validacion real o cierre.
+- `FAIL`: remediar implementacion y repetir post-auditoria antes de avanzar.

@@ -3,6 +3,7 @@
 Proposito:
 - definir que capa canonica responde cada tipo de consulta
 - fijar la degradacion aceptable cuando una capa no esta disponible
+- canonizar el routing eficiente por carril, tooling y modelo
 
 ## 1) Regla general
 
@@ -10,6 +11,8 @@ Proposito:
 - el fallback solo se usa si la capa primaria no esta disponible o no puede
   responder con evidencia suficiente
 - queda prohibido combinar dos capas primarias como si fueran equivalentes
+- el coste operativo se optimiza eligiendo la capa con mayor senal y menor
+  expansion de contexto
 
 ## 2) Routing por tipo de consulta
 
@@ -38,6 +41,7 @@ Preguntas tipicas:
 - templates
 - prompts
 - adapters
+- backlogs y registros canonicos
 
 Capa primaria:
 
@@ -46,6 +50,13 @@ Capa primaria:
 Fallback:
 
 - lectura canonica directa del documento exacto ya localizado
+
+Escalera operativa:
+
+- `governance_search` con query breve y concreta
+- aplicar `document_type`, `phase` o `motor` cuando reduzca el espacio
+- leer solo el documento canonico exacto ya localizado
+- no cargar corpus amplio de gobernanza salvo ambiguedad material
 
 ### Codigo vivo local
 
@@ -75,6 +86,16 @@ Reglas adicionales:
   - leer codigo exacto
   - obtener outline de archivo
   - responder que hace un simbolo
+- `search_symbols` es la via primaria cuando existe nombre aproximado de
+  simbolo
+- `get_symbol` es la via primaria cuando ya existe simbolo o archivo candidato
+- `get_file_outline` y `get_symbols` son la via primaria para anatomia de
+  archivo
+- `search_text` es una via textual auxiliar y no debe ser el primer recurso si
+  existe lookup puntual suficiente
+- `search_text` con `path_pattern` no debe tratarse como happy path por defecto;
+  solo procede con patrones estrechos y cuando el wrapper local lo soporte de
+  forma estable
 
 ### Memoria estructural persistente
 
@@ -113,6 +134,19 @@ Reglas adicionales:
   - docstrings y detalle fino de simbolo
   - lectura canonica de `manifests` y `openapi.yaml` cuando el grafo no
     conecta rutas HTTP
+- antes de un analisis estructural serio debe verificarse el proyecto efectivo
+  con `list_projects`
+- si va a usarse `query_graph`, antes debe verificarse el esquema real con
+  `get_graph_schema`
+- el orden primario aceptable es:
+  - `search_graph` para discovery estructural inicial
+  - `trace_path` para callers, callees, data flow e impacto real
+  - `query_graph` solo para ultima milla, con `LIMIT`, labels explicitos y
+    propiedades verificadas en el esquema
+- `search_graph` en modo BM25 no constituye por si solo evidencia estructural
+  suficiente para concluir wiring, dead code o legacy
+- queda prohibido arrancar un analisis estructural general con `query_graph`
+  global o con Cypher no acotado
 
 ### Evidencia runtime real
 
@@ -122,7 +156,7 @@ Preguntas tipicas:
 - trazas reales
 - logs reales
 - efectos visibles en producto
-- validacion `F8`
+- validacion real
 
 Capa primaria:
 
@@ -133,28 +167,78 @@ Fallback:
 - ninguno cosmetico
 - si no hay evidencia observable suficiente, el estado correcto es `BLOQUEADO`
 
-## 3) Routing por fase
+## 3) Routing por carril
 
-- `F1-F5`:
-  - prioridad a gobernanza normativa y codigo vivo
-- `F6`:
+### Carril iniciativa
+
+- `M0`:
+  - gobernanza -> `governance_search`
+  - codigo vivo -> `symdex_code`
+  - wiring/impacto -> `codebase-memory-mcp`
+  - salida esperada: conversacion aterrizada + `input de planificacion`
+- `plan.md`:
+  - se produce desde retrieval dirigido y contexto estructurado
+  - queda prohibido construirlo a base de lectura masiva o chat sin anclaje
+- auditoria de plan:
+  - prioridad a `plan.md`, codigo vivo y memoria estructural
+- implementacion:
   - prioridad a codigo vivo y memoria estructural
-- `F7`:
-  - prioridad a plan congelado, diffs reales, codigo vivo y memoria estructural
-- `F8`:
-  - prioridad a evidencia runtime real y, cuando aporte contraste, memoria
+- post-auditoria:
+  - prioridad a `plan.md`, `execution.md`, diffs reales, codigo vivo y memoria
     estructural
+- validacion real:
+  - prioridad a evidencia runtime real
 
-## 4) Prohibiciones
+### Carril weekly review
+
+- briefing factual:
+  - usa `governance_search`, `symdex_code` y `codebase-memory-mcp`
+  - no propone solucion estrategica ni plan operativo
+- review estrategica:
+  - consume el briefing factual
+  - no relee codigo bruto salvo ausencia material de evidencia
+- actualizacion de findings y backlog:
+  - usa weekly review, registros persistentes y delta previo cuando exista
+- baseline weekly:
+  - mismo routing, pero con alcance repo completo y profundidad alta
+
+## 4) Routing por modelo
+
+- `Claude Sonnet`
+  - briefing factual del weekly
+  - implementacion
+  - validacion real
+  - cierre y lecciones
+- `Claude Opus`
+  - `plan.md`
+  - review estrategica del weekly
+- `Codex`
+  - auditoria formal
+  - aterrizaje tecnico en `M0`
+
+Reglas:
+
+- `Opus` no se usa para leer codigo bruto por rutina
+- `Sonnet` no sustituye la sintesis estrategica cuando el trabajo requiere
+  planificacion compleja
+- `Codex` no sustituye a `Claude` como motor activo de produccion
+
+## 5) Prohibiciones
 
 - prohibido usar el chat como fuente primaria de continuidad
 - prohibido resolver wiring estructural con busqueda textual como via principal
   cuando exista `codebase-memory-mcp`
 - prohibido usar `symdex_code` para sustituir evidencia runtime
+- prohibido tratar `semantic_search` como si siempre fuera semantica validada
+- prohibido usar `search_text(path_pattern=...)` como primer recurso por
+  defecto
+- prohibido usar `query_graph` como primer paso de discovery estructural
 - prohibido usar `Glob`, `Grep`, `find`, `rg`, `Read` o `Bash` como via
   principal si existe el MCP correcto
+- prohibido usar `Opus` para tareas factuales que puede resolver `Sonnet`
+- prohibido convertir el weekly en via paralela de planificacion de iniciativa
 
-## 5) Criterio de aceptabilidad
+## 6) Criterio de aceptabilidad
 
 El routing es aceptable cuando:
 
@@ -162,3 +246,4 @@ El routing es aceptable cuando:
 - no existen solapes primarios
 - la degradacion queda trazada y no inventa evidencia
 - el routing evita contexto bruto innecesario cuando existe retrieval dirigido
+- el modelo usado es proporcional al tipo de trabajo

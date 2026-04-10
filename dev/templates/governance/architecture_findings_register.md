@@ -9,6 +9,7 @@
 - este registro es persistente
 - no se reinicia en cada revision semanal
 - cada hallazgo debe conservar trazabilidad entre semanas
+- cada hallazgo material debe enlazar a watchlist, backlog o iniciativa
 
 ## Hallazgos
 
@@ -22,5 +23,8 @@
 - Area / concept:
 - Synchronization afectada:
 - Via de remediacion sugerida: M3 | M4 | WATCHLIST
+- Candidate ID:
+- Backlog ID:
+- Initiative ID si se materializa:
 - Ultima revision:
 - Notas:

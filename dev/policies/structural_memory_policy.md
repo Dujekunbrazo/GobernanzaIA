@@ -27,6 +27,13 @@ Propósito:
   - outline de archivo
 - la búsqueda textual queda solo como fallback de último nivel
 
+Preflight obligatorio:
+
+- verificar el proyecto efectivo con `list_projects`
+- verificar el esquema con `get_graph_schema` si se prevé usar Cypher
+- declarar limitación metodológica si el proyecto, el esquema o la indexación no
+  permiten responder con evidencia suficiente
+
 ## 3) Cuándo debe usarse
 
 Debe priorizarse en:
@@ -52,6 +59,12 @@ Usar `codebase-memory-mcp` como capa primaria cuando la pregunta sea:
 - "¿cuáles son los hubs?"
 - "¿dónde hay acoplamiento o legacy?"
 
+Orden operativo preferente:
+
+- `search_graph` para discovery
+- `trace_path` para relaciones reales
+- `query_graph` solo para preguntas finales ya acotadas
+
 ## 5) Fallback permitido
 
 Si la capacidad no está disponible o no está validada localmente:
@@ -59,6 +72,8 @@ Si la capacidad no está disponible o no está validada localmente:
 - degradar a `symdex_code` más lectura canónica del repo
 - dejar trazado en el perfil local del repo
 - no simular que la capacidad existe
+- si la capacidad está expuesta pero `query_graph` no es estable para la
+  consulta, degradar a `search_graph` o `trace_path` antes de caer a `symdex`
 
 ## 6) Límites conocidos del grafo
 
@@ -80,6 +95,9 @@ el boundary Python -> HTTP no esté conectado realmente en el grafo.
   esté validado
 - prohibido mantener dos vías estructurales primarias en paralelo
 - prohibido declararlo como disponible si no está realmente operativo
+- prohibido tratar `search_graph` BM25 como evidencia estructural suficiente por
+  sí sola
+- prohibido usar `query_graph` como primer paso de discovery estructural
 
 ## 8) Criterio de aceptabilidad
 

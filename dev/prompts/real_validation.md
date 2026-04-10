@@ -1,6 +1,6 @@
 # Prompt — Real Validation
 
-Actúa como `motor_activo` para ejecutar `F8` de validación real guiada.
+Actúa como motor activo para ejecutar la validación real guiada.
 
 Sigue estrictamente:
 
@@ -10,8 +10,8 @@ Sigue estrictamente:
 
 ## Objetivo
 
-Preparar y conducir un barrido real de pruebas en Kiminion antes del cierre
-documental `F9`, consolidando todos los resultados en `real_validation.md`.
+Preparar y conducir un barrido real de pruebas antes del cierre
+documental, consolidando todos los resultados en `real_validation.md`.
 
 ## Entradas obligatorias
 
@@ -36,9 +36,10 @@ Si falta una entrada obligatoria:
   - observado
   - resultado `PASS` / `FAIL` / `BLOQUEADO`
   - evidencia de logs, traces o salida visible
-- Si hay fallos materiales, la decisión final debe ser `REABRIR_F6`.
-- Si el barrido queda limpio, la decisión final debe ser `APTA_PARA_F9`.
-- Si `F8` no aplica, debe declararse `NO_APLICA` con justificación explícita.
+- Si hay fallos materiales, la decisión final debe ser `REABRIR_F3`.
+- Si el barrido queda limpio, la decisión final debe ser `APTA_PARA_F6`.
+- Si la validación real no aplica, debe declararse `NO_APLICA` con
+  justificación explícita.
 
 ## Salida obligatoria
 

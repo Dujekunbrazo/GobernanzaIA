@@ -2,12 +2,13 @@
 
 ## Objetivo
 
-Definir como un hallazgo semanal pasa a `WATCHLIST`, `M3` o `M4`.
+Definir como un hallazgo semanal o persistente pasa a `WATCHLIST`, `M3` o `M4`.
 
 ## Regla principal
 
 La review semanal detecta y enruta.
 No implementa correcciones por si misma.
+La promocion a iniciativa ocurre despues, via backlog o apertura explicita.
 
 ## Routing minimo
 
@@ -33,6 +34,7 @@ No implementa correcciones por si misma.
 - un hallazgo `PERSISTENTE` no puede permanecer indefinidamente sin decision
   explicita
 - si una `WATCHLIST` escala de riesgo, debe reclasificarse
+- si una candidata es promovida, debe quedar enlazada al backlog de iniciativas
 
 ## Criterio de aceptabilidad
 
@@ -41,3 +43,4 @@ El routing es correcto cuando:
 - cada hallazgo tiene una via clara
 - no quedan observaciones materiales flotando
 - el paso a remediacion es gobernable y no ambiguo
+- la transicion weekly -> backlog -> iniciativa queda trazada

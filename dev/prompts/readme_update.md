@@ -1,6 +1,6 @@
 # Prompt — README Update (Incremental)
 
-Actúa como `motor_activo` en actualización documental incremental.
+Actúa como motor activo en actualización documental incremental.
 
 Tu tarea es actualizar `README.md` según cambios reales implementados.
 
@@ -17,6 +17,7 @@ Se proporciona:
 - lista de archivos modificados
 - resumen de cambios
 - validación realizada
+- referencia a `plan.md` y `closeout.md` si aplica
 
 ## Salida
 
