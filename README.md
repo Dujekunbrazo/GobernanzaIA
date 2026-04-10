@@ -45,7 +45,8 @@ Su objetivo es que cualquier repo consumidor pueda heredar:
 
 - reglas duras
 - workflow `M0-M4`
-- pipeline `F1-F10`
+- carril de iniciativa `F1-F7`
+- carril de weekly review `W1-W4`
 - templates y prompts
 - baseline + overlay local
 - tooling MCP canonicamente integrado
@@ -94,16 +95,17 @@ Nota operativa sobre `SymDex`:
 
 El estado real incluye:
 
-- gobernanza normativa consolidada para motores directos
-- `AGENTS.md` como contrato compartido entre Claude y Codex
+- gobernanza normativa consolidada para motores directos (`Claude` y `Codex`)
+- `AGENTS.md` como contrato compartido con 22 reglas duras no negociables
+- carril de iniciativa `F1-F7` con `plan.md` como primer artefacto formal
+- carril de weekly review `W1-W4` separado de la iniciativa
+- memoria operativa viva (`initiative_backlog.md`, `architecture_findings_register.md`, `initiative_architecture_backlog.md`)
 - stack de 4 capas de contexto con routing MCP canonico
-- `F8` live con evidencia runtime real
+- validacion real guiada con evidencia runtime real
 - perfil local de capacidades por repo
 - presupuesto de contexto/tokens
 - baseline exportable + overlay local minima
 - soporte canonico para `codebase-memory-mcp`
-- review semanal MIT con baseline inicial, delta semanal, findings register,
-  candidatas de remediacion y handoff supervisado
 
 El runtime ejecutivo del orquestador vive en su propio repo:
 [Orquestador](https://github.com/Dujekunbrazo/Orquestador)
@@ -116,11 +118,13 @@ El runtime ejecutivo del orquestador vive en su propio repo:
 | --- | --- |
 | `AGENTS.md` | contrato maestro, reglas duras y routing MCP |
 | `dev/workflow.md` | referencia operativa compacta para motores directos |
+| `dev/governance_guide.md` | guia operativa completa del sistema |
 | `dev/guarantees/` | gates y criterios de paso |
 | `dev/policies/` | restricciones transversales y contratos operativos |
+| `dev/prompts/` | prompts de fase canonicos |
 | `dev/templates/initiative/` | artefactos de `M3/M4` |
-| `dev/templates/governance/` | perfiles, weekly review y remediacion |
-| `doc/governance_prompts/` | prompts de fase y prompts recurrentes |
+| `dev/templates/governance/` | perfiles, weekly review, backlogs y remediacion |
+| `dev/runbooks/` | runbooks operativos y registro de estado |
 | `scripts/dev/` | validadores y enforcement |
 | `scripts/migration/` | bootstrap y sync de consumidores |
 | `scripts/ops/` | instaladores MCP y soporte operativo |
@@ -165,28 +169,40 @@ Reglas clave:
 - el usuario designa `motor_activo`
 - en `M4`, el usuario designa `motor_auditor` en `F2`
 
-### Pipeline `F1-F10`
+### Carril iniciativa `F1-F7`
 
 | Fase | Salida principal |
 | --- | --- |
-| `F1` | `ask.md` |
-| `F2` | validacion humana del ask |
-| `F3` | `ask_audit.md` |
-| `F4` | `plan.md` |
-| `F5` | `plan_audit.md` |
-| `F6` | `execution.md` |
-| `F7` | `post_audit.md` |
-| `F8` | `real_validation.md` |
-| `F9` | `closeout.md` |
-| `F10` | `lessons_learned.md` |
+| `F1` | `plan.md` propuesto |
+| `F2` | `plan_audit.md` y congelado de plan |
+| `F3` | `execution.md` |
+| `F4` | `post_audit.md` |
+| `F5` | `real_validation.md` cuando aplique |
+| `F6` | `closeout.md` |
+| `F7` | `lessons_learned.md` |
 
 Reglas fuertes:
 
-- no se planifica sin `ASK CONGELADO`
+- el primer artefacto formal es `plan.md` (no hay fases ASK)
 - no se implementa sin `PLAN CONGELADO`
 - las auditorias formales son solo `PASS` o `FAIL`
-- `F8` es obligatoria cuando hay comportamiento observable
+- `F5` es obligatoria cuando hay comportamiento observable
 - no se cierra con wiring parcial, legacy vivo o paths paralelos
+
+### Carril weekly review `W1-W4`
+
+| Fase | Proposito |
+| --- | --- |
+| `W1` | briefing factual |
+| `W2` | review estrategica |
+| `W3` | actualizacion de findings y backlog |
+| `W4` | promocion opcional a iniciativa |
+
+Reglas fuertes:
+
+- el weekly no genera `plan.md`
+- el weekly descubre y prioriza; la iniciativa formal nace en `M0`
+- el primer weekly de un repo nuevo se ejecuta como `BASELINE`
 
 ---
 
@@ -215,15 +231,19 @@ Sirve para detectar, clasificar y preparar trabajo gobernable.
 - `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_review_delta.md`
 - `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_review_audit.md`
 - `dev/records/reviews/weekly/<yyyy-mm-dd>/candidate_initiatives.md`
-- `dev/records/reviews/architecture_findings_register.md`
+
+### Memoria operativa viva
+
+- `dev/records/reviews/architecture_findings_register.md` — hallazgos persistentes
+- `dev/records/reviews/initiative_backlog.md` — ideas y candidatas accionables
+- `dev/records/reviews/initiative_architecture_backlog.md` — remanentes de iniciativas cerradas
 
 ### Flujo de remediacion
 
 1. la review detecta hallazgos
 2. el findings register los mantiene vivos
 3. se agrupan en `candidate_initiatives.md`
-4. el usuario aprueba la remediacion
-5. se abre una iniciativa `M3` o `M4` formal
+4. el usuario aprueba y se abre una iniciativa `M3` o `M4` en `M0`
 
 No se abre `M4` automaticamente sin aprobacion humana explicita.
 
@@ -274,12 +294,15 @@ GobernanzaIA/
 ├─ README.md
 ├─ dev/
 │  ├─ workflow.md
+│  ├─ governance_guide.md
 │  ├─ repo_governance_profile.md
 │  ├─ ai/
 │  │  └─ adapters/
+│  ├─ checklists/
 │  ├─ guarantees/
 │  ├─ policies/
 │  ├─ prompts/
+│  ├─ runbooks/
 │  ├─ templates/
 │  │  ├─ initiative/
 │  │  └─ governance/
@@ -288,8 +311,7 @@ GobernanzaIA/
 │     ├─ initiatives/
 │     └─ reviews/
 ├─ doc/
-│  ├─ architecture/
-│  └─ governance_prompts/
+│  └─ architecture/
 ├─ scripts/
 │  ├─ dev/
 │  ├─ migration/
@@ -303,18 +325,21 @@ GobernanzaIA/
 
 ### Abrir una iniciativa `M4`
 
-Usa los prompts de `doc/governance_prompts/`:
-
-1. `00_abrir_m4_y_handoff.md` — abrir M4 y crear handoff
-2. `01_f1_ask.md` — generar ask
-3. `02_f2_validacion_ask.md` — validar ask
-4. `03_f3_auditoria_ask.md` — auditar ask
-5. (y asi sucesivamente hasta `09_f9_f10_cierre_y_lecciones.md`)
+1. Trabajar la idea en `M0` con Codex (lectura de codigo y aterrizaje tecnico)
+2. Generar un `input de planificacion` transitorio
+3. Usar `dev/prompts/plan_create.md` para generar `plan.md`
+4. Auditar con `dev/prompts/plan_audit.md`
+5. Implementar con `dev/prompts/implementation_execute.md`
+6. Post-auditar con `dev/prompts/post_audit.md`
+7. Validar con `dev/prompts/real_validation.md` si aplica
+8. Cerrar con los templates de `dev/templates/initiative/`
 
 ### Lanzar review semanal
 
-Usa el prompt `doc/governance_prompts/20_weekly_mit_review.md` con un
-briefing tecnico generado previamente.
+1. Generar `weekly_briefing.md` con `Claude Sonnet`
+2. Ejecutar la review estrategica con `Claude Opus`
+3. Actualizar `architecture_findings_register.md` e `initiative_backlog.md`
+4. Opcional: promover candidatas a iniciativa via `M0`
 
 ---
 
