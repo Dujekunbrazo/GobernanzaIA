@@ -107,11 +107,6 @@ El estado real incluye:
 - baseline exportable + overlay local minima
 - soporte canonico para `codebase-memory-mcp`
 
-El runtime ejecutivo del orquestador vive en su propio repo:
-[Orquestador](https://github.com/Dujekunbrazo/Orquestador)
-
----
-
 ## Piezas principales
 
 | Pieza | Responsabilidad |

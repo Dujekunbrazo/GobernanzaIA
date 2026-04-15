@@ -49,14 +49,6 @@ KNOWN_CONSUMERS: dict[str, ConsumerProfile] = {
         preferred_auditor_ia="claude",
         include_packs=("governance_search", "symdex", "codebase_memory"),
     ),
-    "orquestador": ConsumerProfile(
-        key="orquestador",
-        repo_dir="Orquestador",
-        installed_ias=("claude", "codex"),
-        preferred_working_ia="claude",
-        preferred_auditor_ia="codex",
-        include_packs=("governance_search", "symdex", "codebase_memory"),
-    ),
 }
 
 
