@@ -14,7 +14,10 @@ Para cualquier trabajo asistido por IA en este repo:
 Regla dura:
 - No mezclar carpetas del proyecto Python con gobernanza IA.
 - Declarar modo operativo (`M0`..`M4`) al inicio.
-- `Claude` es el motor activo del repo.
-- `Codex` es el motor auditor del repo.
+- Los motores concretos (motor activo y motor auditor) se declaran en
+  `dev/governance_baseline.json` (`installation_profile.preferred_working_ia`
+  y `installation_profile.preferred_auditor_ia`).
+- Si el motor instalado no tiene adapter en `dev/ai/adapters/`, crear uno
+  desde `dev/templates/governance/adapter_template.md`.
 - Mantener carga condicional: usar el dosier largo solo cuando el tipo de tarea
   lo requiera.

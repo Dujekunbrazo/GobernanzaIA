@@ -204,15 +204,15 @@ Fallback:
 
 ## 4) Routing por modelo
 
-- `Claude Sonnet`
+- `motor activo Sonnet`
   - briefing factual del weekly
   - implementacion
   - validacion real
   - cierre y lecciones
-- `Claude Opus`
+- `motor activo Opus`
   - `plan.md`
   - review estrategica del weekly
-- `Codex`
+- `motor auditor`
   - auditoria formal
   - aterrizaje tecnico en `M0`
 
@@ -221,7 +221,7 @@ Reglas:
 - `Opus` no se usa para leer codigo bruto por rutina
 - `Sonnet` no sustituye la sintesis estrategica cuando el trabajo requiere
   planificacion compleja
-- `Codex` no sustituye a `Claude` como motor activo de produccion
+- `motor auditor` no sustituye a `motor activo` como motor activo de produccion
 
 ## 5) Prohibiciones
 

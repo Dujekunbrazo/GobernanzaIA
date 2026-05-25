@@ -5,8 +5,8 @@ Estas reglas definen la bitácora automática de trabajo con IAs para desarrollo
 ## 1) Alcance
 
 Aplica a interacciones de trabajo con:
-- Codex
-- Claude
+- motor auditor
+- motor activo
 
 No aplica al runtime de Kiminion.
 

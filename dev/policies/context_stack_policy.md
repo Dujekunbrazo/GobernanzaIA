@@ -33,7 +33,7 @@ La gobernanza opera sobre cuatro capas distintas:
 - el `input de planificacion` es un artefacto transitorio de trabajo
 - nace al cerrar `M0`
 - resume una conversacion tecnica ya anclada al stack canonico
-- sirve para alimentar a `Claude` en la generacion de `plan.md`
+- sirve para alimentar a `motor activo` en la generacion de `plan.md`
 - no forma parte del expediente formal de iniciativa
 - no crea una quinta capa de contexto
 
@@ -77,12 +77,12 @@ La gobernanza opera sobre cuatro capas distintas:
 ### En `M0`
 
 - se consulta el stack canonico para entender problema, alcance y riesgos
-- se aterriza la idea con apoyo de `Codex`
+- se aterriza la idea con apoyo de `motor auditor`
 - solo al final puede emitirse un `input de planificacion`
 
 ### En `plan.md`
 
-- `Claude` trabaja sobre el `input de planificacion`
+- `motor activo` trabaja sobre el `input de planificacion`
 - si el input no basta, debe volver al stack canonico y no inventar
 
 ### En weekly review

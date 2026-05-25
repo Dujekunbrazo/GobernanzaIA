@@ -56,7 +56,6 @@ PRESERVE_IF_EXISTS = {
     Path("AGENTS.md"),
     Path("CLAUDE.md"),
     Path("README.md"),
-    Path("dev/logs/decisions.md"),
     Path("dev/repo_governance_profile.md"),
 }
 REMOVE_ON_FORCE_IF_EXISTS = {
@@ -103,7 +102,6 @@ PACKS: dict[str, PackSpec] = {
             Path("dev/governance_guide.md"),
             Path("dev/ai/README.md"),
             Path("dev/checklists/state0.md"),
-            Path("dev/logs/decisions.md"),
             Path("dev/records/README.md"),
             Path("dev/records/bitacora/README.md"),
             Path("dev/records/bitacora/.gitkeep"),

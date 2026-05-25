@@ -76,17 +76,17 @@ Proposito:
 
 ## 5) Reglas de modelo
 
-- `Claude Opus`, `medium`:
+- `motor activo Opus`, `medium`:
   - crear o redisenar materialmente `plan.md`
   - realizar la review estrategica del weekly
-- `Claude Sonnet`, `medium`:
+- `motor activo Sonnet`, `medium`:
   - briefing factual del weekly
   - implementacion
-- `Claude Sonnet`, `low`:
+- `motor activo Sonnet`, `low`:
   - validacion real
   - cierre
   - lecciones
-- `Codex`:
+- `motor auditor`:
   - auditoria formal
   - aterrizaje tecnico en `M0`
 
