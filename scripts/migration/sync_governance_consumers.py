@@ -32,24 +32,22 @@ class ConsumerProfile:
     include_packs: tuple[str, ...]
 
 
-KNOWN_CONSUMERS: dict[str, ConsumerProfile] = {
-    "kiminion": ConsumerProfile(
-        key="kiminion",
-        repo_dir="Kiminion",
-        installed_ias=("codex", "claude"),
-        preferred_working_ia="codex",
-        preferred_auditor_ia="claude",
-        include_packs=("governance_search", "symdex", "codebase_memory"),
-    ),
-    "mcp_boletinesoficiales": ConsumerProfile(
-        key="mcp_boletinesoficiales",
-        repo_dir="MCP_Boletinesoficiales",
-        installed_ias=("codex", "claude"),
-        preferred_working_ia="codex",
-        preferred_auditor_ia="claude",
-        include_packs=("governance_search", "symdex", "codebase_memory"),
-    ),
-}
+# KNOWN_CONSUMERS esta vacio en el kit limpio. El consumidor del kit anade
+# aqui sus propios repos consumidores cuando quiera sincronizar baseline de
+# GobernanzaIA a varios destinos a la vez. Formato por entrada:
+#
+#   "mi_consumidor": ConsumerProfile(
+#       key="mi_consumidor",
+#       repo_dir="MiRepo",                              # nombre del directorio sibling a GobernanzaIA
+#       installed_ias=("codex", "claude"),              # tupla, minimo 2
+#       preferred_working_ia="claude",
+#       preferred_auditor_ia="codex",
+#       include_packs=("governance_search", "symdex", "codebase_memory"),
+#   ),
+#
+# Tambien puede invocarse el bootstrap directamente sin pasar por sync para
+# instalaciones puntuales (ver scripts/migration/bootstrap_governance.py).
+KNOWN_CONSUMERS: dict[str, ConsumerProfile] = {}
 
 
 def parse_args() -> argparse.Namespace:

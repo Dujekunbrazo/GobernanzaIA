@@ -23,14 +23,34 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PACKS = ("core",)
 DEFAULT_SYMDEX_SOURCE = "git+https://github.com/husnainpk/SymDex.git"
-IA_CHOICES = ("claude", "codex")
-IA_PACKS = {
-    "claude": "claude",
-    "codex": "codex",
+
+# Catalogo conocido de IAs. Extensible: anadir una entrada por motor que
+# quiera soportarse por defecto. El argparse acepta cualquier string;
+# si la IA elegida no esta en el catalogo, se emite un WARNING pero la
+# instalacion continua (el consumidor debera crear su adapter a mano).
+IA_CATALOG: dict[str, dict[str, str | bool]] = {
+    "claude":   {"vendor": "Anthropic",     "has_adapter_in_kit": True},
+    "codex":    {"vendor": "OpenAI",        "has_adapter_in_kit": True},
+    "gpt":      {"vendor": "OpenAI",        "has_adapter_in_kit": False},
+    "gemini":   {"vendor": "Google",        "has_adapter_in_kit": False},
+    "kimi":     {"vendor": "Moonshot",      "has_adapter_in_kit": False},
+    "grok":     {"vendor": "xAI",           "has_adapter_in_kit": False},
+    "deepseek": {"vendor": "DeepSeek",      "has_adapter_in_kit": False},
+    "qwen":     {"vendor": "Alibaba",       "has_adapter_in_kit": False},
+    "mistral":  {"vendor": "Mistral",       "has_adapter_in_kit": False},
+    "llama":    {"vendor": "Meta",          "has_adapter_in_kit": False},
 }
+
+# Cada IA elegida puede tener un pack opcional con artefactos especificos
+# (ej. `claude` copia CLAUDE.md raiz). Los packs vacios estan declarados
+# para que sea trivial anadirles contenido en futuras iteraciones.
+IA_PACKS = {name: name for name in IA_CATALOG}
+
 MANIFEST_PATH = Path("dev/governance_baseline.json")
 REPO_PROFILE_TEMPLATE_PATH = Path("dev/templates/governance/repo_governance_profile.md")
 REPO_PROFILE_DESTINATION = Path("dev/repo_governance_profile.md")
+ADAPTER_TEMPLATE_PATH = Path("dev/templates/governance/adapter_template.md")
+ADAPTERS_DIR = Path("dev/ai/adapters")
 PRESERVE_IF_EXISTS = {
     Path(".gitignore"),
     Path("AGENTS.md"),
@@ -49,6 +69,16 @@ REMOVE_ON_FORCE_IF_EXISTS = {
     Path("doc/governance_prompts/09_f9_lecciones.md"),
     Path("doc/governance_prompts/10_f10_lecciones.md"),
     Path("doc/governance_prompts/97 handoff codex audit.md"),
+    # F4-F10 legacy prompts purgados en v0.2.0 (esquema viejo, antes de F1-F7):
+    Path("doc/governance_prompts/04_f4_plan.md"),
+    Path("doc/governance_prompts/05_f5_auditoria_plan.md"),
+    Path("doc/governance_prompts/06_f6_implementacion.md"),
+    Path("doc/governance_prompts/07_f7_post_auditoria.md"),
+    Path("doc/governance_prompts/09_f9_f10_cierre_y_lecciones.md"),
+    Path("doc/governance_prompts/15_f4_remediacion_plan.md"),
+    Path("doc/governance_prompts/97 idea codex.md"),
+    Path("doc/governance_prompts/98 idea codex to claude plan.md"),
+    Path("doc/governance_prompts/99 prompt plan a codex.md"),
 }
 
 
@@ -70,6 +100,7 @@ PACKS: dict[str, PackSpec] = {
             Path(".gitignore"),
             Path("AGENTS.md"),
             Path("dev/workflow.md"),
+            Path("dev/governance_guide.md"),
             Path("dev/ai/README.md"),
             Path("dev/checklists/state0.md"),
             Path("dev/logs/decisions.md"),
@@ -79,6 +110,8 @@ PACKS: dict[str, PackSpec] = {
             Path("dev/records/initiatives/.gitkeep"),
             Path("dev/records/reviews/README.md"),
             Path("dev/records/reviews/weekly/.gitkeep"),
+            Path("dev/skills/REGISTRY.md"),
+            Path("dev/skills/SKILL_CONTRACT.md"),
             Path("dev/templates/orchestrator/execution_checkpoint.md"),
             Path("doc/architecture/ai_engineering_dossier.md"),
             Path("doc/architecture/context_retrieval_architecture.md"),
@@ -87,15 +120,22 @@ PACKS: dict[str, PackSpec] = {
             Path("scripts/README.md"),
             Path("scripts/ops/bitacora_append.py"),
             Path("scripts/ops/roo_mcp_config.py"),  # kept: shared MCP config helper
+            Path("scripts/ops/context_mcp/refresh_governance_index.mjs"),
             Path("scripts/dev/README.md"),
             Path("scripts/dev/check_bitacora_compliance.py"),
             Path("scripts/dev/check_capability_closure.py"),
+            Path("scripts/dev/check_clock_canon.py"),
             Path("scripts/dev/check_exception_record.py"),
             Path("scripts/dev/check_naming_compliance.py"),
             Path("scripts/dev/check_state0.py"),
+            Path("scripts/dev/check_structural_tooling_ready.py"),
             Path("scripts/dev/governance_ping_pong.py"),
             Path("scripts/dev/governance_ping_pong_launcher.bat"),
             Path("scripts/dev/initiative_preflight.py"),
+            Path("scripts/dev/memory_precheck.py"),
+            Path("scripts/dev/refresh_codebase_memory_index.ps1"),
+            Path("scripts/dev/refresh_governance_retrieval_index.ps1"),
+            Path("scripts/dev/refresh_symdex_index.ps1"),
             Path("scripts/migration/bootstrap_governance.py"),
             Path("scripts/migration/sync_governance_consumers.py"),
         ),
@@ -104,6 +144,7 @@ PACKS: dict[str, PackSpec] = {
             (Path("dev/policies"), "*.md", False),
             (Path("dev/prompts"), "*.md", False),
             (Path("dev/ai/adapters"), "*.md", False),
+            (Path("dev/skills"), "*.md", True),  # recursivo: SKILL.md anidados por capability
             (Path("dev/templates/initiative"), "*.md", False),
             (Path("dev/templates/governance"), "*.md", False),
             (Path("doc/governance_prompts"), "*.md", False),
@@ -121,6 +162,62 @@ PACKS: dict[str, PackSpec] = {
             "Perfil opcional de Codex para instalacion multi-IA. La capa"
             " normativa de Codex ya viaja dentro de core mediante"
             " dev/ai/adapters/codex.md."
+        ),
+    ),
+    "gpt": PackSpec(
+        description=(
+            "Perfil opcional de GPT (OpenAI). Pack vacio extensible:"
+            " usar dev/templates/governance/adapter_template.md para crear"
+            " dev/ai/adapters/gpt.md si no existe todavia."
+        ),
+    ),
+    "gemini": PackSpec(
+        description=(
+            "Perfil opcional de Gemini (Google). Pack vacio extensible:"
+            " usar dev/templates/governance/adapter_template.md para crear"
+            " dev/ai/adapters/gemini.md si no existe todavia."
+        ),
+    ),
+    "kimi": PackSpec(
+        description=(
+            "Perfil opcional de Kimi (Moonshot). Pack vacio extensible:"
+            " usar dev/templates/governance/adapter_template.md para crear"
+            " dev/ai/adapters/kimi.md si no existe todavia."
+        ),
+    ),
+    "grok": PackSpec(
+        description=(
+            "Perfil opcional de Grok (xAI). Pack vacio extensible:"
+            " usar dev/templates/governance/adapter_template.md para crear"
+            " dev/ai/adapters/grok.md si no existe todavia."
+        ),
+    ),
+    "deepseek": PackSpec(
+        description=(
+            "Perfil opcional de DeepSeek. Pack vacio extensible:"
+            " usar dev/templates/governance/adapter_template.md para crear"
+            " dev/ai/adapters/deepseek.md si no existe todavia."
+        ),
+    ),
+    "qwen": PackSpec(
+        description=(
+            "Perfil opcional de Qwen (Alibaba). Pack vacio extensible:"
+            " usar dev/templates/governance/adapter_template.md para crear"
+            " dev/ai/adapters/qwen.md si no existe todavia."
+        ),
+    ),
+    "mistral": PackSpec(
+        description=(
+            "Perfil opcional de Mistral. Pack vacio extensible:"
+            " usar dev/templates/governance/adapter_template.md para crear"
+            " dev/ai/adapters/mistral.md si no existe todavia."
+        ),
+    ),
+    "llama": PackSpec(
+        description=(
+            "Perfil opcional de Llama (Meta). Pack vacio extensible:"
+            " usar dev/templates/governance/adapter_template.md para crear"
+            " dev/ai/adapters/llama.md si no existe todavia."
         ),
     ),
     "symdex": PackSpec(
@@ -289,27 +386,41 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--with-ia",
         action="append",
-        choices=IA_CHOICES,
         default=[],
         help=(
             "IA to include in the installation profile. Repeat the flag to"
-            " include multiple IAs. Minimum two IAs are required."
+            " include multiple IAs. Minimum two distinct IAs are required."
+            " Accepts any string; if the IA is not in IA_CATALOG a warning is"
+            " emitted but the install continues. Known IAs: "
+            + ", ".join(sorted(IA_CATALOG))
+            + "."
         ),
     )
     parser.add_argument(
         "--preferred-working-ia",
-        choices=IA_CHOICES,
         help=(
             "Preferred IA for active work in the installation profile."
-            " This does not assign motor_activo automatically."
+            " Must be one of the --with-ia values."
         ),
     )
     parser.add_argument(
         "--preferred-auditor-ia",
-        choices=IA_CHOICES,
         help=(
             "Preferred IA for audit in the installation profile."
-            " This does not assign motor_auditor automatically."
+            " Must be one of the --with-ia values and distinct from"
+            " --preferred-working-ia."
+        ),
+    )
+    parser.add_argument(
+        "--generate-adapter-template-for",
+        action="append",
+        default=[],
+        dest="generate_adapter_template_for",
+        help=(
+            "IA name for which to generate an initial adapter from"
+            " dev/templates/governance/adapter_template.md at"
+            " dev/ai/adapters/<ia>.md if the file does not already exist."
+            " Repeat the flag to generate adapters for multiple IAs."
         ),
     )
     parser.add_argument(
@@ -398,14 +509,23 @@ def dedupe(values: list[str]) -> list[str]:
 def parse_ia_csv(raw_value: str) -> list[str]:
     raw_items = [item.strip().lower() for item in raw_value.split(",")]
     values = [item for item in raw_items if item]
-    invalid = [item for item in values if item not in IA_CHOICES]
-    if invalid:
-        valid_rendered = ", ".join(IA_CHOICES)
-        invalid_rendered = ", ".join(invalid)
-        raise ValueError(
-            f"Invalid IA values: {invalid_rendered}. Valid options: {valid_rendered}."
-        )
+    # Sin restriccion contra catalogo cerrado: cualquier IA es valida.
+    # Las IAs fuera del catalogo emiten WARN en warn_unknown_ias().
     return dedupe(values)
+
+
+def warn_unknown_ias(ias: list[str]) -> None:
+    unknown = [ia for ia in ias if ia not in IA_CATALOG]
+    if not unknown:
+        return
+    known = ", ".join(sorted(IA_CATALOG))
+    for ia in unknown:
+        print(
+            f"WARN: IA '{ia}' no esta en IA_CATALOG. Se aceptara pero deberas"
+            f" crear dev/ai/adapters/{ia}.md manualmente (puedes usar"
+            f" --generate-adapter-template-for {ia} para sembrarlo desde la"
+            f" plantilla). IAs conocidas: {known}."
+        )
 
 
 def prompt_text(message: str) -> str:
@@ -413,10 +533,11 @@ def prompt_text(message: str) -> str:
 
 
 def prompt_ias(current_values: list[str]) -> list[str]:
+    known = ", ".join(sorted(IA_CATALOG))
     prompt = (
-        "IAs para este repo (minimo 2, separadas por comas: "
-        + ", ".join(IA_CHOICES)
-        + ")"
+        "IAs para este repo (minimo 2, separadas por comas; cualquier nombre"
+        " es valido). Catalogo conocido: "
+        + known
     )
     if current_values:
         prompt += f" [{', '.join(current_values)}]"
@@ -432,7 +553,7 @@ def prompt_ias(current_values: list[str]) -> list[str]:
             print(exc)
             continue
         if len(values) < 2:
-            print("Se requieren al menos dos IAs para el perfil de instalacion.")
+            print("Se requieren al menos dos IAs distintas para el perfil de instalacion.")
             continue
         return values
 
@@ -514,12 +635,16 @@ def resolve_ia_profile(parser: argparse.ArgumentParser, args: argparse.Namespace
     args.preferred_working_ia = working_ia
     args.preferred_auditor_ia = auditor_ia
 
+    warn_unknown_ias(installed_ias)
+
 
 def resolve_selected_packs(args: argparse.Namespace) -> list[str]:
     selected = list(DEFAULT_PACKS)
     for ia_name in args.with_ia:
-        pack_name = IA_PACKS[ia_name]
-        if pack_name not in selected:
+        pack_name = IA_PACKS.get(ia_name)
+        # IAs fuera del catalogo no tienen pack en el kit; el adapter se
+        # genera con --generate-adapter-template-for o se crea a mano.
+        if pack_name and pack_name not in selected:
             selected.append(pack_name)
     for pack_name in args.include_pack:
         if pack_name not in selected:
@@ -529,6 +654,38 @@ def resolve_selected_packs(args: argparse.Namespace) -> list[str]:
         selected.remove("claude")
 
     return selected
+
+
+def ensure_adapter_templates(
+    target_root: Path,
+    ia_names: list[str],
+    dry_run: bool,
+) -> list[str]:
+    """Para cada IA en `ia_names`, copia adapter_template.md a
+    dev/ai/adapters/<ia>.md si ese adapter aun no existe en el destino.
+    Devuelve la lista de adapters efectivamente generados."""
+    source = REPO_ROOT / ADAPTER_TEMPLATE_PATH
+    if not source.exists():
+        print(f"WARN: plantilla {ADAPTER_TEMPLATE_PATH} no existe, omito generacion de adapters")
+        return []
+    generated: list[str] = []
+    for ia in ia_names:
+        ia_clean = ia.strip().lower()
+        if not ia_clean:
+            continue
+        dst = target_root / ADAPTERS_DIR / f"{ia_clean}.md"
+        if dst.exists():
+            print(f"SKIP adapter (exists): dev/ai/adapters/{ia_clean}.md")
+            continue
+        if dry_run:
+            print(f"WRITE adapter: dev/ai/adapters/{ia_clean}.md (from {ADAPTER_TEMPLATE_PATH})")
+            generated.append(ia_clean)
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, dst)
+        print(f"COPIED adapter: dev/ai/adapters/{ia_clean}.md")
+        generated.append(ia_clean)
+    return generated
 
 
 def git_value(*args: str) -> str | None:
@@ -706,6 +863,11 @@ def main() -> int:
         target_root=target_root,
         dry_run=args.dry_run,
     )
+    generated_adapters = ensure_adapter_templates(
+        target_root=target_root,
+        ia_names=args.generate_adapter_template_for,
+        dry_run=args.dry_run,
+    )
     run_post_copy_actions(
         selected_packs=selected_packs,
         target_root=target_root,
@@ -741,6 +903,8 @@ def main() -> int:
     print(f"Copied: {copied}")
     print(f"Skipped: {skipped}")
     print(f"Removed obsolete: {removed}")
+    if generated_adapters:
+        print(f"Generated adapters: {', '.join(generated_adapters)}")
     print(f"Mode: {'dry-run' if args.dry_run else 'write'}")
 
     return 0
