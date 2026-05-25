@@ -5,8 +5,9 @@ Baseline canonico de gobernanza multi-IA para repositorios de software.
 `GobernanzaIA` define como se trabaja, como se distribuye la gobernanza a
 otros repos y que reglas aplican a cualquier repo consumidor.
 
-Los motores directos (`Claude` y `Codex`) comparten la misma gobernanza
-sustantiva a traves de `AGENTS.md`.
+Los motores directos del repo destino (motor activo + motor auditor)
+comparten la misma gobernanza sustantiva a traves de `AGENTS.md`,
+independientemente de las IAs concretas que se elijan en la instalacion.
 
 ![Version](https://img.shields.io/badge/version-baseline--dev-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -95,10 +96,19 @@ Nota operativa sobre `SymDex`:
 
 El estado real incluye:
 
-- gobernanza normativa consolidada para motores directos (`Claude` y `Codex`)
-- `AGENTS.md` como contrato compartido con 22 reglas duras no negociables
+- gobernanza normativa canon **motor-agnostica**: el sistema habla de "motor
+  activo" y "motor auditor" como roles abstractos; los nombres concretos se
+  declaran durante la instalacion en `dev/governance_baseline.json`
+- `AGENTS.md` como contrato compartido con **32 reglas duras no negociables**
 - carril de iniciativa `F1-F7` con `plan.md` como primer artefacto formal
 - carril de weekly review `W1-W4` separado de la iniciativa
+- `dev/skills/` como capa operativa canonica con 9 Skills migradas
+  (`f1_plan_creation`, `f2_plan_audit`, `f2_auditor_autofix`,
+  `f3_implementation_execute`, `f4_post_audit`, `f5_real_validation`,
+  `f6_closeout`, `f7_lessons`, `skill_lifecycle_audit`) + `SKILL_CONTRACT.md`
+  y `REGISTRY.md`
+- Regla 32 operacionalizada via `scripts/dev/memory_precheck.py`: antes de
+  proponer canon nuevo, ejecutar precheck contra fuentes canonicas declaradas
 - memoria operativa viva (`initiative_backlog.md`, `architecture_findings_register.md`, `initiative_architecture_backlog.md`)
 - stack de 4 capas de contexto con routing MCP canonico
 - validacion real guiada con evidencia runtime real
@@ -111,17 +121,18 @@ El estado real incluye:
 
 | Pieza | Responsabilidad |
 | --- | --- |
-| `AGENTS.md` | contrato maestro, reglas duras y routing MCP |
-| `dev/workflow.md` | referencia operativa compacta para motores directos |
+| `AGENTS.md` | contrato maestro, 32 reglas duras y routing MCP |
+| `dev/workflow.md` | referencia operativa compacta multi-IA |
 | `dev/governance_guide.md` | guia operativa completa del sistema |
 | `dev/guarantees/` | gates y criterios de paso |
 | `dev/policies/` | restricciones transversales y contratos operativos |
-| `dev/prompts/` | prompts de fase canonicos |
+| `dev/skills/` | capacidades operativas canonicas migradas por fase |
+| `dev/prompts/` | prompts de fase canonicos (atajos manuales a Skills) |
+| `dev/ai/adapters/` | adapters por motor concreto (claude, codex, + extensible via plantilla) |
 | `dev/templates/initiative/` | artefactos de `M3/M4` |
-| `dev/templates/governance/` | perfiles, weekly review, backlogs y remediacion |
-| `dev/runbooks/` | runbooks operativos y registro de estado |
-| `scripts/dev/` | validadores y enforcement |
-| `scripts/migration/` | bootstrap y sync de consumidores |
+| `dev/templates/governance/` | perfiles, weekly review, backlogs, adapter template y remediacion |
+| `scripts/dev/` | validadores, enforcement y memory_precheck (Regla 32) |
+| `scripts/migration/` | bootstrap multi-IA y sync de consumidores |
 | `scripts/ops/` | instaladores MCP y soporte operativo |
 
 ---
@@ -292,15 +303,16 @@ GobernanzaIA/
 │  ├─ governance_guide.md
 │  ├─ repo_governance_profile.md
 │  ├─ ai/
-│  │  └─ adapters/
+│  │  └─ adapters/         # adapters por motor concreto (claude, codex, ...)
 │  ├─ checklists/
 │  ├─ guarantees/
 │  ├─ policies/
-│  ├─ prompts/
+│  ├─ prompts/             # atajos manuales a las Skills canonicas
 │  ├─ runbooks/
+│  ├─ skills/              # capacidades operativas canonicas por fase
 │  ├─ templates/
 │  │  ├─ initiative/
-│  │  └─ governance/
+│  │  └─ governance/       # incluye adapter_template.md
 │  └─ records/
 │     ├─ bitacora/
 │     ├─ initiatives/
@@ -320,19 +332,19 @@ GobernanzaIA/
 
 ### Abrir una iniciativa `M4`
 
-1. Trabajar la idea en `M0` con Codex (lectura de codigo y aterrizaje tecnico)
+1. Trabajar la idea en `M0` con el motor auditor (lectura de codigo y aterrizaje tecnico)
 2. Generar un `input de planificacion` transitorio
-3. Usar `dev/prompts/plan_create.md` para generar `plan.md`
-4. Auditar con `dev/prompts/plan_audit.md`
-5. Implementar con `dev/prompts/implementation_execute.md`
-6. Post-auditar con `dev/prompts/post_audit.md`
-7. Validar con `dev/prompts/real_validation.md` si aplica
-8. Cerrar con los templates de `dev/templates/initiative/`
+3. Usar `dev/skills/f1_plan_creation/SKILL.md` (o `dev/prompts/plan_create.md` como atajo) para generar `plan.md`
+4. Auditar con `dev/skills/f2_plan_audit/SKILL.md`
+5. Implementar con `dev/skills/f3_implementation_execute/SKILL.md`
+6. Post-auditar con `dev/skills/f4_post_audit/SKILL.md`
+7. Validar con `dev/skills/f5_real_validation/SKILL.md` si aplica
+8. Cerrar con `dev/skills/f6_closeout/SKILL.md` + `dev/skills/f7_lessons/SKILL.md`
 
 ### Lanzar review semanal
 
-1. Generar `weekly_briefing.md` con `Claude Sonnet`
-2. Ejecutar la review estrategica con `Claude Opus`
+1. Generar `weekly_briefing.md` con el motor activo (modelo de menor coste si aplica)
+2. Ejecutar la review estrategica con el motor activo (modelo de mayor capacidad si aplica)
 3. Actualizar `architecture_findings_register.md` e `initiative_backlog.md`
 4. Opcional: promover candidatas a iniciativa via `M0`
 
@@ -340,11 +352,32 @@ GobernanzaIA/
 
 ## Instalacion en un repo nuevo
 
-Bootstrap minimo:
+El bootstrap acepta **cualquier IA** como motor activo y auditor (no solo
+Claude+Codex). El catalogo conocido por defecto incluye 10 IAs: `claude`,
+`codex`, `gpt`, `gemini`, `kimi`, `grok`, `deepseek`, `qwen`, `mistral`,
+`llama`. Otras IAs se aceptan con un WARN pero el install continua.
+
+Bootstrap canonico (codex + claude):
 
 ```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> \
+  --with-ia codex --with-ia claude \
+  --preferred-working-ia claude --preferred-auditor-ia codex
 ```
+
+Bootstrap con IAs no canonicas (ej. codex + kimi):
+
+```bash
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> \
+  --with-ia codex --with-ia kimi \
+  --preferred-working-ia kimi --preferred-auditor-ia codex \
+  --generate-adapter-template-for kimi
+```
+
+El flag `--generate-adapter-template-for <ia>` (repetible) genera
+`dev/ai/adapters/<ia>.md` desde la plantilla
+`dev/templates/governance/adapter_template.md` para que el consumidor la
+rellene. Util cuando la IA elegida no tiene adapter en el kit.
 
 Dry run:
 
@@ -352,7 +385,8 @@ Dry run:
 python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --dry-run
 ```
 
-Sync de consumidores conocidos:
+Sync de consumidores (el dict `KNOWN_CONSUMERS` esta vacio por defecto;
+el consumidor del kit anade sus propios destinos):
 
 ```bash
 python scripts/migration/sync_governance_consumers.py --dry-run
@@ -367,12 +401,16 @@ python scripts/migration/sync_governance_consumers.py --dry-run
 | `governance_search` | retrieval canonico de gobernanza |
 | `symdex` | lectura fina de codigo vivo local y busqueda semantica local cuando este validada |
 | `codebase_memory` | memoria estructural persistente (`codebase-memory-mcp`) |
-| `claude` | `CLAUDE.md` reusable |
+| `claude` | `CLAUDE.md` reusable en la raiz del repo destino |
+| `codex`, `gpt`, `gemini`, `kimi`, `grok`, `deepseek`, `qwen`, `mistral`, `llama` | packs vacios extensibles por IA del catalogo (placeholder para futuras superficies nativas) |
 
-Ejemplo con todos los packs:
+Ejemplo con todos los MCPs:
 
 ```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --with-ia codex --with-ia claude --preferred-working-ia codex --preferred-auditor-ia claude --include-pack governance_search --include-pack symdex --include-pack codebase_memory
+python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> \
+  --with-ia codex --with-ia claude \
+  --preferred-working-ia claude --preferred-auditor-ia codex \
+  --include-pack governance_search --include-pack symdex --include-pack codebase_memory
 ```
 
 ---
