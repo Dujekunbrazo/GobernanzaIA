@@ -22,7 +22,7 @@ Formato:
 - `<prefijo>/<fecha>_<descripcion-corta>`
 
 Ejemplo:
-- `refactor/2026-02-26_kiminion-recovery`
+- `refactor/2026-mm-dd_descripcion-corta`
 
 ## 3) Commits atómicos y descriptivos
 
@@ -61,8 +61,8 @@ Si el trabajo está ligado a `dev/records/initiatives/<initiative_id>/`:
 - el slug de rama debe coincidir con la initiative (con separadores válidos)
 
 Ejemplo:
-- Initiative: `2026-02-26_kiminion_recovery`
-- Rama: `initiative/2026-02-26_kiminion-recovery`
+- Initiative: `2026-mm-dd_descripcion_corta`
+- Rama: `initiative/2026-mm-dd_descripcion-corta`
 
 ## 7) Limite de contexto y resumen de sesion
 
