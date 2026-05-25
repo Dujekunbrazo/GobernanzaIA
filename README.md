@@ -1,42 +1,52 @@
 # GobernanzaIA
 
-Baseline canonico de gobernanza multi-IA para repositorios de software.
+Baseline canónico de gobernanza **multi-IA** para repositorios de software.
+Define cómo se trabaja un repo con dos IAs colaborando (motor activo + motor
+auditor), cómo se distribuye la gobernanza a otros repos y qué reglas aplican
+a cualquier repo consumidor.
 
-`GobernanzaIA` define como se trabaja, como se distribuye la gobernanza a
-otros repos y que reglas aplican a cualquier repo consumidor.
+El canon es **agnóstico de motor**: los nombres concretos de las IAs (Claude,
+Codex, Kimi, Gemini, etc.) se eligen durante la instalación, no están
+hardcoded en la normativa.
 
-Los motores directos del repo destino (motor activo + motor auditor)
-comparten la misma gobernanza sustantiva a traves de `AGENTS.md`,
-independientemente de las IAs concretas que se elijan en la instalacion.
-
-![Version](https://img.shields.io/badge/version-baseline--dev-blue)
+![Version](https://img.shields.io/badge/version-v0.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.10+-blue?logo=python)
-![Motores](https://img.shields.io/badge/ias-codex%20%7C%20claude-informational)
+![Motores](https://img.shields.io/badge/IAs-multi--IA%20%7C%2010%2B%20cat%C3%A1logo-informational)
+![Tests](https://img.shields.io/badge/tests-21%20OK-brightgreen)
 
 ## Tabla de contenidos
 
-- [Que es](#que-es)
-- [Dependencias externas y atribucion](#dependencias-externas-y-atribucion)
-- [Estado actual del canon](#estado-actual-del-canon)
-- [Piezas principales](#piezas-principales)
-- [Stack canonico de contexto](#stack-canonico-de-contexto)
-- [Workflow canonico](#workflow-canonico)
-- [Review semanal MIT](#review-semanal-mit)
-- [Distribucion a repos consumidores](#distribucion-a-repos-consumidores)
+- [¿Qué es?](#qué-es)
+- [Novedades v0.2.0](#novedades-v020)
+- [Quickstart — Instalar en un repo nuevo](#quickstart--instalar-en-un-repo-nuevo)
 - [Estructura del repo](#estructura-del-repo)
-- [Quickstart](#quickstart)
-- [Instalacion en un repo nuevo](#instalacion-en-un-repo-nuevo)
+- [Workflow canónico](#workflow-canónico)
+  - [Modos M0-M4](#modos-m0-m4)
+  - [Carril iniciativa F1-F7](#carril-iniciativa-f1-f7)
+  - [Carril weekly review W1-W4](#carril-weekly-review-w1-w4)
+- [Capa de Skills (`dev/skills/`)](#capa-de-skills-devskills)
+- [Regla 32 — memory_precheck](#regla-32--memory_precheck)
+- [Stack canónico de contexto](#stack-canónico-de-contexto)
+- [Soporte multi-IA](#soporte-multi-ia)
+  - [Catálogo de IAs](#catálogo-de-ias)
+  - [Adapters por motor](#adapters-por-motor)
+  - [Añadir una IA nueva al catálogo](#añadir-una-ia-nueva-al-catálogo)
 - [Packs opcionales](#packs-opcionales)
-- [Validacion del baseline](#validacion-del-baseline)
+- [Distribución a repos consumidores](#distribución-a-repos-consumidores)
+- [Dependencias externas y atribución](#dependencias-externas-y-atribución)
+- [Validación del baseline](#validación-del-baseline)
+- [Tests](#tests)
+- [Changelog](#changelog)
+- [Licencia](#licencia)
 
 ---
 
-## Que es
+## ¿Qué es?
 
 `GobernanzaIA` concentra la parte que debe ser:
 
-- canonica
+- canónica
 - repetible
 - auditable
 - distribuible
@@ -44,250 +54,92 @@ independientemente de las IAs concretas que se elijan en la instalacion.
 
 Su objetivo es que cualquier repo consumidor pueda heredar:
 
-- reglas duras
-- workflow `M0-M4`
+- reglas duras (32 reglas en `AGENTS.md`)
+- workflow de modos `M0-M4`
 - carril de iniciativa `F1-F7`
 - carril de weekly review `W1-W4`
-- templates y prompts
-- baseline + overlay local
-- tooling MCP canonicamente integrado
+- 9 Skills operativas migradas en `dev/skills/`
+- templates, prompts y guarantees
+- baseline exportable + overlay local mínima
+- tooling MCP canónicamente integrado
 
 sin arrastrar:
 
-- iniciativas reales
-- historicos de producto
-- caches o runtime efimero
-- configuraciones locales acopladas a una maquina concreta
+- iniciativas reales del repo origen
+- históricos de producto
+- caches, logs o runtime efímero
+- configuraciones locales acopladas a una máquina concreta
 
 ---
 
-## Dependencias externas y atribucion
+## Novedades v0.2.0
 
-`GobernanzaIA` define el canon, el wiring y los instaladores.
-No reclama autoria sobre herramientas externas integradas por el baseline.
+Refresh sustantivo del kit publicado el 2026-05-25. Detalles completos en
+[`CHANGELOG.md`](./CHANGELOG.md).
 
-En particular:
-
-- `SymDex` es una dependencia externa instalada desde su proyecto upstream:
-  `https://github.com/husnainpk/SymDex`
-- `codebase-memory-mcp` es una dependencia externa instalada desde su proyecto
-  upstream oficial `https://github.com/DeusData/codebase-memory-mcp/`
-
-Lo que vive en este repo es:
-
-- la politica de uso
-- el routing canonico
-- los instaladores
-- el wiring MCP comun
-- la integracion operativa en repos consumidores
-
-No vive aqui la autoria del motor semantico ni de la memoria estructural.
-
-Nota operativa sobre `SymDex`:
-
-- el baseline canonico usa backend semantico `local` por defecto
-- `voyage` es opcional
-- que la tool `semantic_search` exista no basta; la busqueda semantica solo se
-  considera disponible cuando backend e indexado quedan validados de verdad
+- **Canon motor-agnóstico**: el sistema describe los roles como `motor activo`
+  y `motor auditor` en abstracto; los nombres concretos viven en
+  `dev/governance_baseline.json` durante la instalación.
+- **AGENTS.md: 22 → 32 reglas** duras no negociables.
+- **Capa nueva `dev/skills/`** con 9 Skills migradas (F1-F7 + autofix +
+  skill_lifecycle_audit), `SKILL_CONTRACT.md` y `REGISTRY.md`.
+- **Regla 32** operacionalizada vía `scripts/dev/memory_precheck.py`.
+- **IA libre en bootstrap**: catálogo de 10 IAs conocidas (Claude, Codex,
+  GPT, Gemini, Kimi, Grok, DeepSeek, Qwen, Mistral, Llama); cualquier otra
+  se acepta con WARN.
+- **Plantilla `adapter_template.md`** para crear adapters de IAs nuevas.
+- **Cadena de prompts F1-F7** + cadena `96.x` de M0 investigada multi-agente.
+- **8 policies nuevas** + 3 scripts nuevos (`memory_precheck`,
+  `check_clock_canon`, `check_structural_tooling_ready`) + 3 refresh `.ps1`.
 
 ---
 
-## Estado actual del canon
+## Quickstart — Instalar en un repo nuevo
 
-El estado real incluye:
+Clona este repo y ejecuta el bootstrap apuntando al repo destino.
 
-- gobernanza normativa canon **motor-agnostica**: el sistema habla de "motor
-  activo" y "motor auditor" como roles abstractos; los nombres concretos se
-  declaran durante la instalacion en `dev/governance_baseline.json`
-- `AGENTS.md` como contrato compartido con **32 reglas duras no negociables**
-- carril de iniciativa `F1-F7` con `plan.md` como primer artefacto formal
-- carril de weekly review `W1-W4` separado de la iniciativa
-- `dev/skills/` como capa operativa canonica con 9 Skills migradas
-  (`f1_plan_creation`, `f2_plan_audit`, `f2_auditor_autofix`,
-  `f3_implementation_execute`, `f4_post_audit`, `f5_real_validation`,
-  `f6_closeout`, `f7_lessons`, `skill_lifecycle_audit`) + `SKILL_CONTRACT.md`
-  y `REGISTRY.md`
-- Regla 32 operacionalizada via `scripts/dev/memory_precheck.py`: antes de
-  proponer canon nuevo, ejecutar precheck contra fuentes canonicas declaradas
-- memoria operativa viva (`initiative_backlog.md`, `architecture_findings_register.md`, `initiative_architecture_backlog.md`)
-- stack de 4 capas de contexto con routing MCP canonico
-- validacion real guiada con evidencia runtime real
-- perfil local de capacidades por repo
-- presupuesto de contexto/tokens
-- baseline exportable + overlay local minima
-- soporte canonico para `codebase-memory-mcp`
+### Instalación canónica (Claude + Codex)
 
-## Piezas principales
+```bash
+git clone https://github.com/Dujekunbrazo/GobernanzaIA.git
+cd GobernanzaIA
+python scripts/migration/bootstrap_governance.py \
+  --target /ruta/a/tu/repo \
+  --with-ia codex --with-ia claude \
+  --preferred-working-ia claude \
+  --preferred-auditor-ia codex
+```
 
-| Pieza | Responsabilidad |
-| --- | --- |
-| `AGENTS.md` | contrato maestro, 32 reglas duras y routing MCP |
-| `dev/workflow.md` | referencia operativa compacta multi-IA |
-| `dev/governance_guide.md` | guia operativa completa del sistema |
-| `dev/guarantees/` | gates y criterios de paso |
-| `dev/policies/` | restricciones transversales y contratos operativos |
-| `dev/skills/` | capacidades operativas canonicas migradas por fase |
-| `dev/prompts/` | prompts de fase canonicos (atajos manuales a Skills) |
-| `dev/ai/adapters/` | adapters por motor concreto (claude, codex, + extensible via plantilla) |
-| `dev/templates/initiative/` | artefactos de `M3/M4` |
-| `dev/templates/governance/` | perfiles, weekly review, backlogs, adapter template y remediacion |
-| `scripts/dev/` | validadores, enforcement y memory_precheck (Regla 32) |
-| `scripts/migration/` | bootstrap multi-IA y sync de consumidores |
-| `scripts/ops/` | instaladores MCP y soporte operativo |
+### Instalación con IAs no canónicas (ej. Codex + Kimi)
 
----
+```bash
+python scripts/migration/bootstrap_governance.py \
+  --target /ruta/a/tu/repo \
+  --with-ia codex --with-ia kimi \
+  --preferred-working-ia kimi \
+  --preferred-auditor-ia codex \
+  --generate-adapter-template-for kimi
+```
 
-## Stack canonico de contexto
+El flag `--generate-adapter-template-for <ia>` (repetible) genera
+`dev/ai/adapters/<ia>.md` desde `dev/templates/governance/adapter_template.md`
+para que el consumidor lo rellene.
 
-La gobernanza trabaja con cuatro capas explicitamente separadas:
+### Dry-run (sin escribir archivos)
 
-1. `gobernanza normativa`
-2. `codigo vivo local`
-3. `memoria estructural persistente`
-4. `evidencia runtime real`
+```bash
+python scripts/migration/bootstrap_governance.py \
+  --target /ruta/a/tu/repo \
+  --with-ia codex --with-ia claude \
+  --preferred-working-ia claude --preferred-auditor-ia codex \
+  --dry-run
+```
 
-Routing oficial:
+### Listar packs disponibles
 
-- gobernanza -> `governance_search`
-- codigo vivo local -> `symdex_code`
-- wiring, impacto, legacy, dead code -> `codebase-memory-mcp`
-- validacion observable -> chat del producto, `trace on`, terminal y evidencia real
-
-La memoria conversacional no cuenta como continuidad valida.
-
----
-
-## Workflow canonico
-
-### Modos
-
-- `M0 CONVERSACION`
-- `M1 ANALISIS`
-- `M2 DEBUG`
-- `M3 IMPLEMENTACION_MENOR`
-- `M4 INICIATIVA_COMPLETA`
-
-Reglas clave:
-
-- si el usuario no declara modo, se empieza en `M0`
-- para entrar en `M3` o `M4` hace falta aprobacion explicita
-- no existe motor por defecto
-- el usuario designa `motor_activo`
-- en `M4`, el usuario designa `motor_auditor` en `F2`
-
-### Carril iniciativa `F1-F7`
-
-| Fase | Salida principal |
-| --- | --- |
-| `F1` | `plan.md` propuesto |
-| `F2` | `plan_audit.md` y congelado de plan |
-| `F3` | `execution.md` |
-| `F4` | `post_audit.md` |
-| `F5` | `real_validation.md` cuando aplique |
-| `F6` | `closeout.md` |
-| `F7` | `lessons_learned.md` |
-
-Reglas fuertes:
-
-- el primer artefacto formal es `plan.md` (no hay fases ASK)
-- no se implementa sin `PLAN CONGELADO`
-- las auditorias formales son solo `PASS` o `FAIL`
-- `F5` es obligatoria cuando hay comportamiento observable
-- no se cierra con wiring parcial, legacy vivo o paths paralelos
-
-### Carril weekly review `W1-W4`
-
-| Fase | Proposito |
-| --- | --- |
-| `W1` | briefing factual |
-| `W2` | review estrategica |
-| `W3` | actualizacion de findings y backlog |
-| `W4` | promocion opcional a iniciativa |
-
-Reglas fuertes:
-
-- el weekly no genera `plan.md`
-- el weekly descubre y prioriza; la iniciativa formal nace en `M0`
-- el primer weekly de un repo nuevo se ejecuta como `BASELINE`
-
----
-
-## Review semanal MIT
-
-La review semanal es una capacidad canonica separada de `M4`.
-
-No sirve para implementar.
-Sirve para detectar, clasificar y preparar trabajo gobernable.
-
-### Modos de review
-
-- `BASELINE_INICIAL_MIT`
-  - primera corrida profunda
-  - crea la linea base del repo
-  - crea el registro vivo inicial de hallazgos
-
-- `DELTA_SEMANAL_MIT`
-  - compara contra la ultima review valida
-  - distingue hallazgos nuevos, persistentes, resueltos y reclasificados
-
-### Artefactos semanales
-
-- `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_briefing.md`
-- `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_review.md`
-- `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_review_delta.md`
-- `dev/records/reviews/weekly/<yyyy-mm-dd>/weekly_review_audit.md`
-- `dev/records/reviews/weekly/<yyyy-mm-dd>/candidate_initiatives.md`
-
-### Memoria operativa viva
-
-- `dev/records/reviews/architecture_findings_register.md` — hallazgos persistentes
-- `dev/records/reviews/initiative_backlog.md` — ideas y candidatas accionables
-- `dev/records/reviews/initiative_architecture_backlog.md` — remanentes de iniciativas cerradas
-
-### Flujo de remediacion
-
-1. la review detecta hallazgos
-2. el findings register los mantiene vivos
-3. se agrupan en `candidate_initiatives.md`
-4. el usuario aprueba y se abre una iniciativa `M3` o `M4` en `M0`
-
-No se abre `M4` automaticamente sin aprobacion humana explicita.
-
----
-
-## Distribucion a repos consumidores
-
-El modelo es:
-
-- `GobernanzaIA` = fuente de verdad viva
-- repo consumidor = baseline distribuido + overlay local minima
-
-### Entra en el baseline exportable
-
-- `AGENTS.md`
-- `dev/workflow.md`
-- `dev/guarantees/`
-- `dev/policies/`
-- `dev/prompts/`
-- `dev/templates/initiative/`
-- `dev/templates/governance/`
-- scripts canonicos
-- documentacion reusable
-- scaffolding vacio de `dev/records/`
-
-### No entra en el baseline exportable
-
-- iniciativas reales
-- historicos reales de `dev/records/`
-- caches, logs, sesiones y outputs generados
-- configuraciones locales efimeras
-- artefactos de una capa ejecutiva externa
-
-### Overlay local minima
-
-- `dev/repo_governance_profile.md`
-
-Esa overlay se preserva en actualizaciones del baseline.
+```bash
+python scripts/migration/bootstrap_governance.py --list-packs
+```
 
 ---
 
@@ -295,139 +147,414 @@ Esa overlay se preserva en actualizaciones del baseline.
 
 ```text
 GobernanzaIA/
-├─ AGENTS.md
-├─ CLAUDE.md
-├─ README.md
+├─ AGENTS.md                # contrato maestro (32 reglas duras)
+├─ CHANGELOG.md             # historial de versiones
+├─ CLAUDE.md                # bootstrap para Claude (re-exporta AGENTS.md)
+├─ README.md                # este archivo
 ├─ dev/
-│  ├─ workflow.md
-│  ├─ governance_guide.md
-│  ├─ repo_governance_profile.md
+│  ├─ workflow.md           # workflow operativo compacto
+│  ├─ governance_guide.md   # guía operativa completa
+│  ├─ repo_governance_profile.md  # perfil local del repo (overlay)
 │  ├─ ai/
-│  │  └─ adapters/         # adapters por motor concreto (claude, codex, ...)
-│  ├─ checklists/
-│  ├─ guarantees/
-│  ├─ policies/
-│  ├─ prompts/             # atajos manuales a las Skills canonicas
-│  ├─ runbooks/
-│  ├─ skills/              # capacidades operativas canonicas por fase
-│  ├─ templates/
-│  │  ├─ initiative/
-│  │  └─ governance/       # incluye adapter_template.md
-│  └─ records/
-│     ├─ bitacora/
-│     ├─ initiatives/
-│     └─ reviews/
+│  │  ├─ README.md
+│  │  └─ adapters/          # adapters por motor concreto (claude, codex, ...)
+│  ├─ checklists/           # state0.md y otros
+│  ├─ guarantees/           # gates F2/F4/M3/docs
+│  ├─ logs/                 # log de decisiones interno
+│  ├─ policies/             # 35+ policies operativas
+│  ├─ prompts/              # atajos manuales a Skills (plan_create, plan_audit, ...)
+│  ├─ records/              # scaffolding (initiatives/, reviews/, bitacora/)
+│  ├─ runbooks/             # runbooks y registry de estado
+│  ├─ skills/               # 9 Skills canónicas migradas + REGISTRY + CONTRACT
+│  └─ templates/
+│     ├─ governance/        # weekly, backlogs, repo_profile, adapter_template
+│     ├─ initiative/        # plan.md, plan_audit, execution, post_audit, ...
+│     └─ orchestrator/      # execution_checkpoint.md
 ├─ doc/
-│  └─ architecture/
+│  ├─ architecture/         # ai_engineering_dossier, context_retrieval
+│  ├─ governance_prompts/   # cadena F1-F7 + 96.x M0 investigada + weekly
+│  └─ governance_ping_pong_guide.md
 ├─ scripts/
-│  ├─ dev/
-│  ├─ migration/
-│  └─ ops/
-└─ tests/
+│  ├─ dev/                  # validadores: check_*, memory_precheck, refresh_*
+│  ├─ migration/            # bootstrap_governance + sync_governance_consumers
+│  └─ ops/                  # instaladores MCP, bitácora, context_mcp/
+└─ tests/                   # 21 tests cubriendo bootstrap, sync, MCP installs
 ```
 
 ---
 
-## Quickstart
+## Workflow canónico
 
-### Abrir una iniciativa `M4`
+### Modos M0-M4
 
-1. Trabajar la idea en `M0` con el motor auditor (lectura de codigo y aterrizaje tecnico)
-2. Generar un `input de planificacion` transitorio
-3. Usar `dev/skills/f1_plan_creation/SKILL.md` (o `dev/prompts/plan_create.md` como atajo) para generar `plan.md`
-4. Auditar con `dev/skills/f2_plan_audit/SKILL.md`
-5. Implementar con `dev/skills/f3_implementation_execute/SKILL.md`
-6. Post-auditar con `dev/skills/f4_post_audit/SKILL.md`
-7. Validar con `dev/skills/f5_real_validation/SKILL.md` si aplica
-8. Cerrar con `dev/skills/f6_closeout/SKILL.md` + `dev/skills/f7_lessons/SKILL.md`
+| Modo | Propósito |
+|------|-----------|
+| `M0 CONVERSACION` | ideación, lectura de código, aterrizaje técnico sin ejecución |
+| `M1 ANALISIS` | diagnóstico técnico sin cambios de código |
+| `M2 DEBUG` | reproducción y aislamiento de fallos sin implementar fix |
+| `M3 IMPLEMENTACION_MENOR` | cambio acotado y trazable |
+| `M4 INICIATIVA_COMPLETA` | cambio mediano/grande con trazabilidad formal |
 
-### Lanzar review semanal
+Reglas clave:
 
-1. Generar `weekly_briefing.md` con el motor activo (modelo de menor coste si aplica)
-2. Ejecutar la review estrategica con el motor activo (modelo de mayor capacidad si aplica)
-3. Actualizar `architecture_findings_register.md` e `initiative_backlog.md`
-4. Opcional: promover candidatas a iniciativa via `M0`
+- si el usuario no declara modo, se empieza en `M0`
+- para entrar en `M3` o `M4` hace falta aprobación explícita
+- los motores concretos se declaran al instalar (`installation_profile`)
+- en `M4`, el motor auditor conduce `F2`, `F4` y `F5`-`F7`
+
+### Carril iniciativa F1-F7
+
+| Fase | Salida principal | Conduce |
+|------|------------------|---------|
+| `F1` | `plan.md` propuesto | motor activo |
+| `F2` | `plan_audit.md` + plan congelado | motor auditor |
+| `F3` | `execution.md` | motor activo |
+| `F4` | `post_audit.md` | motor auditor |
+| `F5` | `real_validation.md` (si aplica) | motor auditor |
+| `F6` | `closeout.md` | motor auditor |
+| `F7` | `lessons_learned.md` | motor auditor |
+
+Reglas duras:
+
+- el primer artefacto formal es `plan.md` (no hay fases ASK ni input formal)
+- no se implementa sin `PLAN CONGELADO`
+- las auditorías formales son solo `PASS` o `FAIL`
+- `F5` es obligatoria cuando hay comportamiento observable del producto
+- no se cierra con wiring parcial, legacy vivo o paths paralelos
+
+### Carril weekly review W1-W4
+
+| Fase | Propósito |
+|------|-----------|
+| `W1` | briefing factual |
+| `W2` | review estratégica (MIT + Krug) |
+| `W3` | actualización de findings y backlog |
+| `W4` | promoción opcional a iniciativa |
+
+Reglas duras:
+
+- el weekly **no** genera `plan.md`
+- el weekly descubre y prioriza; la iniciativa formal nace después en `M0`
+- el primer weekly de un repo nuevo se ejecuta como `BASELINE_INICIAL_MIT`
+
+Artefactos semanales en `dev/records/reviews/weekly/<yyyy-mm-dd>/`:
+`weekly_briefing.md`, `weekly_review.md`, `weekly_review_delta.md`,
+`weekly_review_audit.md`, `candidate_initiatives.md`.
 
 ---
 
-## Instalacion en un repo nuevo
+## Capa de Skills (`dev/skills/`)
 
-El bootstrap acepta **cualquier IA** como motor activo y auditor (no solo
-Claude+Codex). El catalogo conocido por defecto incluye 10 IAs: `claude`,
-`codex`, `gpt`, `gemini`, `kimi`, `grok`, `deepseek`, `qwen`, `mistral`,
-`llama`. Otras IAs se aceptan con un WARN pero el install continua.
+Las **Skills** son la capa operativa canónica del kit. Tienen precedencia
+sobre los adapters por motor (`AGENTS.md` §1 carveout operativo): si una
+capability está migrada a una Skill, esa Skill es el owner operativo y un
+adapter no puede sustituirla.
 
-Bootstrap canonico (codex + claude):
+### Skills canónicas migradas
+
+| Skill | Capability | Fase |
+|-------|------------|------|
+| [`f1_plan_creation`](./dev/skills/f1_plan_creation/SKILL.md) | crear/remediar `plan.md` | F1 |
+| [`f2_plan_audit`](./dev/skills/f2_plan_audit/SKILL.md) | auditar `plan.md` | F2 |
+| [`f2_auditor_autofix`](./dev/skills/f2_auditor_autofix/SKILL.md) | autofix mecánico tras `F2 FAIL` | F2 |
+| [`f3_implementation_execute`](./dev/skills/f3_implementation_execute/SKILL.md) | ejecutar `plan.md` congelado | F3 |
+| [`f4_post_audit`](./dev/skills/f4_post_audit/SKILL.md) | auditar implementación | F4 |
+| [`f5_real_validation`](./dev/skills/f5_real_validation/SKILL.md) | validar evidencia real guiada | F5 |
+| [`f6_closeout`](./dev/skills/f6_closeout/SKILL.md) | cierre documental, README y Git | F6 |
+| [`f7_lessons`](./dev/skills/f7_lessons/SKILL.md) | lecciones finales y backlogs | F7 |
+| [`skill_lifecycle_audit`](./dev/skills/skill_lifecycle_audit/SKILL.md) | auditar contrato/lifecycle de Skills | meta |
+
+Más:
+- [`dev/skills/SKILL_CONTRACT.md`](./dev/skills/SKILL_CONTRACT.md): contrato de qué tiene que cumplir una Skill.
+- [`dev/skills/REGISTRY.md`](./dev/skills/REGISTRY.md): índice canónico de resolución (estados `CANONICA`, `PILOTO_ACTIVO`, `DEPRECATED`, `RETIRADA`).
+
+`dev/prompts/*.md` y `doc/governance_prompts/*.md` son atajos manuales a
+estas Skills (compatibilidad con flujos pre-Skills); las Skills son la
+fuente de verdad operativa.
+
+---
+
+## Regla 32 — memory_precheck
+
+`AGENTS.md` §5 R32 obliga: **antes de proponer canon nuevo** (nueva
+capability, identificador, `access_pattern`, arquetipo, seed o renombrado
+de algo ya canonizado), ejecutar:
 
 ```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> \
-  --with-ia codex --with-ia claude \
-  --preferred-working-ia claude --preferred-auditor-ia codex
+python scripts/dev/memory_precheck.py <termino_candidato>
 ```
 
-Bootstrap con IAs no canonicas (ej. codex + kimi):
+Debe aparecer en chat `Verdict: ALLOW` (exit 0) o `Verdict: BLOCK`
+(exit 1). Si es `BLOCK`, la propuesta no avanza hasta inventariar matches
+activos y decidir si lo propuesto es **reconciliación** con canon
+existente (no canon nuevo) o si **se retira**.
+
+Las fuentes de canon escaneadas son parametrizables:
 
 ```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> \
+# Anadir fuentes ad-hoc via CLI
+python scripts/dev/memory_precheck.py mi_termino \
+  --canon-source doc/mi_doc_canon.md \
+  --canon-source doc/otro_doc.md
+
+# O via variable de entorno (separadas por os.pathsep)
+export MEMORY_PRECHECK_SOURCES="doc/canon1.md:doc/canon2.md"
+python scripts/dev/memory_precheck.py mi_termino
+```
+
+Por defecto cubre la memoria estructural del kit:
+`dev/records/reviews/{initiative_backlog,architecture_findings_register,initiative_architecture_backlog}.md`.
+
+---
+
+## Stack canónico de contexto
+
+La gobernanza opera sobre **cuatro capas** explícitamente separadas:
+
+| Capa | Resuelve | Tool canónica |
+|------|----------|---------------|
+| 1. Gobernanza normativa | reglas, workflow, guarantees, policies, adapters, skills | `governance_search` MCP |
+| 2. Código vivo local | lectura fina de símbolos y bloques concretos | `symdex_code` MCP |
+| 3. Memoria estructural | wiring global, impacto, legacy, dead code | `codebase-memory-mcp` MCP |
+| 4. Evidencia runtime real | comportamiento observable, trazas, terminal | producto + `trace on` |
+
+La memoria conversacional **no** cuenta como continuidad válida. Detalle
+completo del routing en [`AGENTS.md`](./AGENTS.md) §10.
+
+---
+
+## Soporte multi-IA
+
+### Catálogo de IAs
+
+`scripts/migration/bootstrap_governance.py` mantiene un `IA_CATALOG`
+extensible. Catálogo inicial v0.2.0:
+
+| IA | Vendor | Adapter en kit |
+|----|--------|----------------|
+| `claude` | Anthropic | ✓ ([`dev/ai/adapters/claude.md`](./dev/ai/adapters/claude.md)) |
+| `codex` | OpenAI | ✓ ([`dev/ai/adapters/codex.md`](./dev/ai/adapters/codex.md)) |
+| `gpt` | OpenAI | — (generar desde plantilla) |
+| `gemini` | Google | — (generar desde plantilla) |
+| `kimi` | Moonshot | — (generar desde plantilla) |
+| `grok` | xAI | — (generar desde plantilla) |
+| `deepseek` | DeepSeek | — (generar desde plantilla) |
+| `qwen` | Alibaba | — (generar desde plantilla) |
+| `mistral` | Mistral | — (generar desde plantilla) |
+| `llama` | Meta | — (generar desde plantilla) |
+
+`--with-ia` acepta **cualquier string**. Las IAs fuera del catálogo emiten
+un WARN pero el install continúa.
+
+### Adapters por motor
+
+Un adapter (`dev/ai/adapters/<motor>.md`) afina detalles concretos del
+motor (modelos, continuidad durable, routing MCP soportado, convenciones,
+fallbacks). **No crea workflow ni routing paralelos al canon**.
+
+Si el motor instalado no tiene adapter, el bootstrap puede generarlo:
+
+```bash
+python scripts/migration/bootstrap_governance.py \
+  --target /ruta/a/repo \
   --with-ia codex --with-ia kimi \
   --preferred-working-ia kimi --preferred-auditor-ia codex \
   --generate-adapter-template-for kimi
 ```
 
-El flag `--generate-adapter-template-for <ia>` (repetible) genera
-`dev/ai/adapters/<ia>.md` desde la plantilla
-`dev/templates/governance/adapter_template.md` para que el consumidor la
-rellene. Util cuando la IA elegida no tiene adapter en el kit.
+Esto copia [`dev/templates/governance/adapter_template.md`](./dev/templates/governance/adapter_template.md) →
+`dev/ai/adapters/kimi.md` con placeholders para rellenar.
 
-Dry run:
+### Añadir una IA nueva al catálogo
 
-```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> --dry-run
+En `scripts/migration/bootstrap_governance.py`, añade una línea al dict
+`IA_CATALOG`:
+
+```python
+IA_CATALOG: dict[str, dict[str, str | bool]] = {
+    # ... entradas existentes ...
+    "mi_nueva_ia": {"vendor": "MiVendor", "has_adapter_in_kit": False},
+}
 ```
 
-Sync de consumidores (el dict `KNOWN_CONSUMERS` esta vacio por defecto;
-el consumidor del kit anade sus propios destinos):
-
-```bash
-python scripts/migration/sync_governance_consumers.py --dry-run
-```
+Y opcionalmente, en `dev/ai/adapters/mi_nueva_ia.md`, crea el adapter
+canónico desde la plantilla.
 
 ---
 
 ## Packs opcionales
 
-| Pack | Para que sirve |
-| --- | --- |
-| `governance_search` | retrieval canonico de gobernanza |
-| `symdex` | lectura fina de codigo vivo local y busqueda semantica local cuando este validada |
-| `codebase_memory` | memoria estructural persistente (`codebase-memory-mcp`) |
-| `claude` | `CLAUDE.md` reusable en la raiz del repo destino |
-| `codex`, `gpt`, `gemini`, `kimi`, `grok`, `deepseek`, `qwen`, `mistral`, `llama` | packs vacios extensibles por IA del catalogo (placeholder para futuras superficies nativas) |
+| Pack | Para qué sirve |
+|------|----------------|
+| `core` | baseline canónico (siempre instalado por defecto) |
+| `governance_search` | MCP local de retrieval canónico de gobernanza |
+| `symdex` | lectura fina de código vivo y búsqueda semántica local |
+| `codebase_memory` | memoria estructural persistente vía `codebase-memory-mcp` |
+| `claude` | `CLAUDE.md` raíz reusable |
+| `codex`, `gpt`, `gemini`, `kimi`, `grok`, `deepseek`, `qwen`, `mistral`, `llama` | packs vacíos extensibles por IA |
 
-Ejemplo con todos los MCPs:
+Ejemplo con los 3 MCPs:
 
 ```bash
-python scripts/migration/bootstrap_governance.py --target <ruta_repo_destino> \
+python scripts/migration/bootstrap_governance.py \
+  --target /ruta/a/repo \
   --with-ia codex --with-ia claude \
   --preferred-working-ia claude --preferred-auditor-ia codex \
-  --include-pack governance_search --include-pack symdex --include-pack codebase_memory
+  --include-pack governance_search \
+  --include-pack symdex \
+  --include-pack codebase_memory
 ```
+
+Los packs MCP ejecutan post-copy actions que instalan los servidores
+locales (npm/uv) y registran wiring en `.mcp.json` del repo destino.
 
 ---
 
-## Validacion del baseline
+## Distribución a repos consumidores
 
-Comandos utiles:
+Modelo:
+
+- **`GobernanzaIA`** = fuente de verdad viva
+- **Repo consumidor** = baseline distribuido + overlay local mínima
+
+### Lo que viaja al baseline exportable
+
+- `AGENTS.md`, `dev/workflow.md`, `dev/governance_guide.md`
+- `dev/guarantees/`, `dev/policies/`, `dev/skills/`, `dev/prompts/`
+- `dev/templates/initiative/`, `dev/templates/governance/`
+- `dev/ai/adapters/*.md`
+- `scripts/dev/` (validadores + memory_precheck + refresh `.ps1`)
+- `scripts/migration/` (bootstrap + sync)
+- `scripts/ops/` (instaladores MCP + context_mcp/)
+- `doc/architecture/`, `doc/governance_prompts/`, `doc/governance_ping_pong_guide.md`
+- Scaffolding vacío de `dev/records/`
+
+### Lo que NO viaja
+
+- Iniciativas reales del repo origen
+- `dev/records/initiatives/`, `dev/records/bitacora/`, `dev/records/reviews/` con contenido
+- `dev/logs/decisions.md` (log histórico interno)
+- Caches, logs, sesiones, outputs generados
+- `tests/` (son tests del kit, no del consumidor)
+- Configuraciones locales (`.symdex`, `node_modules/`, `__pycache__/`)
+
+### Overlay local mínima
+
+- `dev/repo_governance_profile.md`
+
+El bootstrap preserva esta overlay con `PRESERVE_IF_EXISTS` en
+actualizaciones del baseline. Si no existe, se genera desde la plantilla
+`dev/templates/governance/repo_governance_profile.md` para que el
+consumidor lo rellene.
+
+### Sync entre múltiples consumidores
+
+`scripts/migration/sync_governance_consumers.py` puede sincronizar el
+baseline a varios repos consumidores declarados en `KNOWN_CONSUMERS` del
+propio script:
+
+```python
+KNOWN_CONSUMERS: dict[str, ConsumerProfile] = {
+    "mi_consumidor": ConsumerProfile(
+        key="mi_consumidor",
+        repo_dir="MiRepo",
+        installed_ias=("codex", "claude"),
+        preferred_working_ia="claude",
+        preferred_auditor_ia="codex",
+        include_packs=("governance_search", "symdex", "codebase_memory"),
+    ),
+}
+```
+
+Por defecto el dict está vacío (es overlay del propio mantenedor del kit).
+El consumidor puede invocar `bootstrap_governance.py` directamente sin
+pasar por sync.
+
+---
+
+## Dependencias externas y atribución
+
+`GobernanzaIA` define el canon, el wiring y los instaladores. **No reclama
+autoría** sobre herramientas externas integradas:
+
+- [`SymDex`](https://github.com/husnainpk/SymDex): motor semántico de código.
+- [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp/): memoria estructural persistente.
+
+Lo que vive aquí: política de uso, routing canónico, instaladores, wiring
+MCP común, integración operativa.
+
+Nota sobre backend semántico de SymDex:
+
+- baseline canónico usa backend `local` por defecto
+- `voyage` es opcional
+- la búsqueda semántica solo se considera disponible cuando backend e
+  indexado están validados de verdad
+
+---
+
+## Validación del baseline
 
 ```bash
+# Validadores estructurales del kit
 python scripts/dev/check_naming_compliance.py
 python scripts/dev/check_state0.py
-python -m py_compile scripts/migration/bootstrap_governance.py scripts/migration/sync_governance_consumers.py
+
+# Compilación sintáctica de scripts críticos
+python -m py_compile \
+  scripts/migration/bootstrap_governance.py \
+  scripts/migration/sync_governance_consumers.py \
+  scripts/dev/memory_precheck.py
+
+# Smoke de instalación con dry-run
+python scripts/migration/bootstrap_governance.py \
+  --target /tmp/test_dst \
+  --with-ia codex --with-ia claude \
+  --preferred-working-ia claude --preferred-auditor-ia codex \
+  --dry-run
 ```
 
 El baseline se considera sano cuando:
 
 - el bootstrap exporta solo lo exportable
-- la weekly review funciona como control separado
-- la remediacion semanal entra por `M3/M4` con aprobacion humana
-- no hay records reales dentro del repo canonico
+- la weekly review funciona como control separado del carril iniciativa
+- la remediación semanal entra por `M3/M4` con aprobación humana explícita
+- no hay records reales dentro del repo canónico (solo scaffolding)
+- la instalación con cualquier par de IAs distintas produce manifest válido
+
+---
+
+## Tests
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+21 tests en verde tras v0.2.0:
+
+- `tests/test_bootstrap_governance.py` (8): incluye glob recursivo de
+  skills, scripts nuevos en core, argparse acepta IA fuera de catálogo,
+  IA_CATALOG mantiene mínimo las 10 IAs documentadas.
+- `tests/test_sync_governance_consumers.py` (1): comando bootstrap
+  construido correctamente.
+- `tests/test_install_symdex.py` (varios): instalación de SymDex con
+  backend semántico.
+- `tests/test_install_codebase_memory_mcp.py` (varios).
+- `tests/test_governance_ping_pong.py` (varios).
+
+Los tests son del kit, **no viajan al consumidor**.
+
+---
+
+## Changelog
+
+Detalle completo de cambios por versión: [`CHANGELOG.md`](./CHANGELOG.md).
+
+Versión actual: **v0.2.0** (2026-05-25).
+
+---
+
+## Licencia
+
+MIT. Ver [LICENSE](./LICENSE) si existe, o el header de los archivos
+fuente. Las dependencias externas (SymDex, codebase-memory-mcp) mantienen
+sus propias licencias en sus repos upstream.
