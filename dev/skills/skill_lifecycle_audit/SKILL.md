@@ -1,0 +1,53 @@
+# SKILL
+
+- `name`: `skill_lifecycle_audit`
+- `purpose`: auditar que una Skill cumple contrato, registry, owner, compatibilidad y retirada sin legacy operativo
+- `when_to_use`:
+  - se crea o modifica una Skill
+  - se migra una capability a `dev/skills/`
+  - se audita la biblioteca de Skills
+- `when_not_to_use`:
+  - no usar para crear la Skill
+  - no usar para legislar policies nuevas
+  - no usar para auditar producto
+- `motor`: `codex_preferred`
+- `agent_id`: `n/a`
+- `agent_profile`: `codex_skill_lifecycle_auditor`
+- `phase`: `meta`
+- `preconditions`:
+  - existe `dev/skills/REGISTRY.md`
+  - existe `dev/skills/SKILL_CONTRACT.md`
+  - existe al menos una Skill objetivo
+- `inputs`:
+  - Skill o conjunto de Skills a auditar
+  - registry
+  - prompts legacy afectados
+- `read_set`:
+  - `AGENTS.md`
+  - `dev/workflow.md`
+  - `dev/skills/REGISTRY.md`
+  - `dev/skills/SKILL_CONTRACT.md`
+  - Skills objetivo
+  - prompts legacy afectados
+- `write_set`:
+  - informe de auditoria de la iniciativa o respuesta de auditoria
+- `hard_rules`:
+  - una Skill canonica requiere registry completo
+  - no aceptar prompt legacy como fuente operativa alternativa
+  - no aceptar write set abierto
+  - no aceptar triggers solapados sin criterio de prioridad
+- `required_references`:
+  - `dev/skills/REGISTRY.md`
+  - `dev/skills/SKILL_CONTRACT.md`
+  - `dev/policies/skill_policy.md`
+- `optional_references`:
+  - prompts legacy sustituidos
+  - adapters y workflow si hay owner por motor
+- `exit_checklist`:
+  - contrato de 16 campos verificado
+  - registry completo verificado
+  - compatibilidad y retirada verificadas
+  - no legacy operativo verificado
+- `fallback_and_escalation`:
+  - si falta registry o contrato, emitir `FAIL`
+  - si hay dualidad canonica, bloquear cierre

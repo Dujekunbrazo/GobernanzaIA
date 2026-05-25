@@ -1,4 +1,11 @@
 # WEEKLY MIT + KRUG REVIEW
+> [!IMPORTANT]
+> Bootstrap obligatorio de gobernanza antes de usar este prompt:
+> leer `AGENTS.md`, cargar la Skill canonica si existe, usar `governance_search`
+> para gobernanza con `phase`/`document_type` cuando aplique, usar `symdex_code`
+> para codigo vivo y `codebase-memory-mcp` para wiring/impacto/legacy cuando
+> toque codigo, y declarar cualquier degradacion antes de recurrir a lectura
+> bruta.
 
 Usar como review semanal en dos capas:
 - `Claude Sonnet` para generar o actualizar `weekly_briefing.md`

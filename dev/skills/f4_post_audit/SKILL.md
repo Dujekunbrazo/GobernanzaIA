@@ -1,0 +1,54 @@
+# SKILL
+
+- `name`: `f4_post_audit`
+- `purpose`: auditar formalmente la implementacion contra `plan.md`, `execution.md` y evidencia real
+- `when_to_use`:
+  - `F3` ha terminado
+  - existe `execution.md`
+  - toca emitir `post_audit.md`
+- `when_not_to_use`:
+  - no usar para implementar fixes
+  - no usar para validacion real `F5`
+  - no usar si falta evidencia minima de ejecucion
+- `motor`: `codex_preferred`
+- `agent_id`: `m4.f4.codex.bug_structural_auditor`
+- `agent_profile`: `codex_bug_structural_auditor`
+- `phase`: `F4`
+- `preconditions`:
+  - `plan.md` congelado
+  - `execution.md` actualizado
+  - validacion ejecutada o bloqueo explicito
+- `inputs`:
+  - `plan.md`
+  - `execution.md`
+  - diff real
+  - salidas de validacion
+- `read_set`:
+  - `AGENTS.md`
+  - `dev/workflow.md`
+  - `dev/prompts/post_audit.md`
+  - `dev/policies/audit_finding_contract_policy.md`
+- `write_set`:
+  - `dev/records/initiatives/<initiative_id>/post_audit.md`
+- `hard_rules`:
+  - emitir solo `PASS` o `FAIL`
+  - actuar como auditor de ejecucion: buscar bugs, evidencia insuficiente,
+    wiring parcial, legacy vivo, paths paralelos y desviaciones del plan
+  - no dar `PASS` con hallazgos pendientes
+  - cada `FAIL` debe tener contrato de hallazgo completo
+  - no reescribir implementacion
+  - cerrar la respuesta de chat con `HANDOFF_SIGUIENTE_AGENTE` para `F3`
+    si hay `FAIL`, o para `F5`/cierre si hay `PASS`
+- `required_references`:
+  - `dev/prompts/post_audit.md`
+  - `dev/policies/audit_finding_contract_policy.md`
+- `optional_references`:
+  - `doc/governance_prompts/05_f4_post_auditoria.md`
+- `exit_checklist`:
+  - `post_audit.md` existe
+  - veredicto `PASS` o `FAIL`
+  - hallazgos tipados si hay `FAIL`
+  - evidencia revisada
+- `fallback_and_escalation`:
+  - si falta evidencia, emitir `FAIL`
+  - si hay legacy o dualidad dentro del scope, bloquear con hallazgo
