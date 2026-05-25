@@ -24,7 +24,7 @@
 
 ## Validacion real
 
-- F8 observable: NO_APLICA
+- F5 observable: NO_APLICA
 - Motivo: no hay comportamiento observable de producto; las iniciativas de este repo son de gobernanza pura
 
 ## Restricciones locales
