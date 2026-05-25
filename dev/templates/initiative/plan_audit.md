@@ -10,9 +10,16 @@
 
 - `Sin hallazgos materiales ni pendientes.` o lista numerada con:
   - Severidad
+  - Tipo
+  - Artefacto afectado
+  - Seccion exacta
+  - Archivos permitidos
+  - Archivos prohibidos
+  - Cambio minimo requerido
+  - Criterio de cierre
+  - Rerun scope
+  - Reapertura requerida
   - Evidencia
-  - Impacto
-  - Decisión
 
 ## Justificación del veredicto
 
@@ -22,7 +29,7 @@
 
 ## Escalado de remediacion
 
-- `Motor sugerido:` `Claude` | `Codex` | `N/A`
+- `Motor sugerido:` `motor activo` | `motor auditor` | `N/A`
 - `Esfuerzo sugerido:` `medium` | `high` | `max` | `n/a`
 - `Motivo:`
 

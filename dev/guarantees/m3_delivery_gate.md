@@ -9,8 +9,8 @@ estructuralmente completo antes del cierre.
 - Ruta: `dev/records/initiatives/<initiative_id>/`
 - Modo:
 - Fecha:
-- Motor activo: `Claude`
-- Motor auditor: `Codex`
+- Motor activo: `<motor_activo>` (ver dev/governance_baseline.json)
+- Motor auditor: `<motor_auditor>` (ver dev/governance_baseline.json)
 
 ## Prerequisitos
 

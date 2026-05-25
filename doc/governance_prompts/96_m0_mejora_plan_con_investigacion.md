@@ -8,14 +8,14 @@
 > bruta.
 
 Usa este prompt cuando ya existe una idea o un borrador de plan y quieres que
-Codex lo refuerce con investigación externa y mejores prácticas actuales antes
+motor auditor lo refuerce con investigación externa y mejores prácticas actuales antes
 de pasar a `F1`.
 
 Objetivo:
 
 - encontrar papers o fuentes fuertes sobre el problema real
 - destilar implicaciones prácticas para esta iniciativa
-- devolver un input de planificación más sólido para `Claude`
+- devolver un input de planificación más sólido para `motor activo`
 
 Prompt base:
 
@@ -59,4 +59,4 @@ Reglas:
 - úsalo en `M0`, no dentro de `F1-F4`
 - sirve para fortalecer el input, no para sustituir `plan.md`
 - el resultado debe volver a aterrizarse en el canon del repo antes de pasarlo
-  a `Claude`
+  a `motor activo`

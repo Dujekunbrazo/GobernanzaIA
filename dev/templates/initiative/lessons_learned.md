@@ -3,8 +3,8 @@
 - Initiative ID:
 - Modo:
 - Fecha:
-- Motor activo: Claude
-- Motor auditor: Codex
+- Motor activo: motor auditor
+- Motor auditor: <motor_auditor> (ver dev/governance_baseline.json)
 
 ## Resumen de la iniciativa
 

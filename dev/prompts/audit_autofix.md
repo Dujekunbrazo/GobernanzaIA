@@ -75,7 +75,7 @@ hallazgo formal ya demuestra que:
 
 - aplica solo el cambio minimo requerido para cerrar los hallazgos elegibles
 - si el fallo es mecanico y elegible, corrigelo en el acto; no lo devuelvas a
-  Claude por ceremonia
+  motor activo por ceremonia
 - respeta literalmente `Archivos permitidos`, `Rerun scope` y
   `Reapertura requerida`
 - no abras alcance nuevo

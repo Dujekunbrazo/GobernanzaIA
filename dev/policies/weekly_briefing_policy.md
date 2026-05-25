@@ -37,7 +37,7 @@ El briefing debe incluir, como minimo:
 - el briefing usa el stack de contexto canonico
 - no sustituye el informe final de review
 - no sustituye el registro vivo de hallazgos
-- sirve a `Claude Sonnet` como capa factual previa a `Claude Opus`
+- sirve al motor activo (modelo de menor coste) como capa factual previa al motor activo (modelo de mayor capacidad)
 
 ## Regla especifica de baseline
 

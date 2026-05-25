@@ -4,8 +4,8 @@
 - Modo:
 - Estado:
 - Fecha:
-- Motor activo: Claude
-- Motor auditor: Codex
+- Motor activo: motor auditor
+- Motor auditor: <motor_auditor> (ver dev/governance_baseline.json)
 - Rama:
 
 ## Objetivo de validacion
@@ -31,6 +31,10 @@
 
 ## Riesgos remanentes
 
-## Decision final
+## Decisión final
 
-- `APTA_PARA_F6` | `REABRIR_F3` | `NO_APLICA`
+Registrar la decisión en la línea obligatoria siguiente.
+Sustituir el valor placeholder por uno de los tres valores permitidos y
+borrar los que no aplican.
+
+- Decisión final: APTA_PARA_F6 | REABRIR_F3 | NO_APLICA

@@ -20,7 +20,7 @@ veces.
 - una weekly review no sustituye una iniciativa
 - un hecho se escribe una vez
 - retrieval dirigido antes que lectura masiva
-- `Claude` produce y `Codex` audita
+- el motor activo produce y el motor auditor audita
 - MIT rige arquitectura y seguridad de evolucion
 - Krug rige claridad para producto, UI, CLI y DX
 - la validacion real decide la aceptabilidad final
@@ -46,22 +46,22 @@ La memoria viva conecta conversaciones, weeklies e iniciativas cerradas.
 
 ### 4.2 Flujo completo
 
-1. conversacion tecnica en `M0` con Codex
+1. conversacion tecnica en `M0` con el motor auditor
 2. `input de planificacion` transitorio
-3. `plan.md` con Claude Opus
-4. `plan_audit.md` con Codex
-5. `execution.md` con Claude Sonnet
-6. `post_audit.md` con Codex
-7. `real_validation.md` si aplica
-8. `closeout.md`
-9. `lessons_learned.md`
+3. `plan.md` con el motor activo (modelo de mayor capacidad si aplica)
+4. `plan_audit.md` con el motor auditor
+5. `execution.md` con el motor activo (modelo balanceado si aplica)
+6. `post_audit.md` con el motor auditor
+7. `real_validation.md` con el motor auditor si aplica
+8. `closeout.md` con el motor auditor
+9. `lessons_learned.md` con el motor auditor
 
 ### 4.3 Primer artefacto formal
 
 El primer artefacto formal de iniciativa es `plan.md`.
 
 El `input de planificacion` no es un artefacto formal.
-Es solo un puente transitorio entre la conversacion `M0` y Claude.
+Es solo un puente transitorio entre la conversacion `M0` y el motor activo.
 
 ### 4.4 Qué ya no existe
 
@@ -77,8 +77,8 @@ Es solo un puente transitorio entre la conversacion `M0` y Claude.
 
 ### 5.2 Flujo completo
 
-1. `Claude Sonnet` produce `weekly_briefing.md`
-2. `Claude Opus` produce la review estrategica
+1. el motor activo produce `weekly_briefing.md` (modelo de menor coste si aplica)
+2. el motor activo produce la review estrategica (modelo de mayor capacidad si aplica)
 3. se actualizan findings y backlog
 4. salen candidate initiatives
 
@@ -122,27 +122,42 @@ Recoge remanentes y follow-ups de iniciativas cerradas.
 - backlog -> iniciativa real
 - closeout -> `initiative_architecture_backlog.md` o cierre limpio
 
-## 7. Modelos Y Roles
+## 7. Motores Y Roles
 
-### 7.1 Claude
+### 7.1 Motor activo
 
-- `Opus`, `medium` para `plan.md`
-- `Sonnet`, `medium` para implementacion
-- `Sonnet`, `low` para validacion, cierre y lecciones
-- `Sonnet` factual y `Opus` estrategico en weekly
+- conduce conversacion, lectura de codigo, propuesta y ejecucion
+- produce `plan.md` desde el input `M0`
+- ejecuta `F3` sin replanificar
+- puede usar modelos de distinta capacidad/coste segun la fase:
+  - modelo de mayor capacidad para planificacion estrategica
+  - modelo balanceado para implementacion
+  - modelo de menor coste para validacion factual y lecturas masivas
 
-### 7.2 Codex
+### 7.2 Motor auditor
 
 - companero tecnico en `M0`
-- auditor formal de planes
-- auditor formal de implementacion
+- auditor formal de planes (`F2`)
+- auditor formal de implementacion (`F4`)
+- conduce validacion real guiada (`F5`)
+- cierra el expediente y el estado Git (`F6`)
+- extrae lecciones finales (`F7`)
 - apoyo para convertir hallazgos o ideas en iniciativas
 
 ### 7.3 Canon activo
 
-El canon activo de esta gobernanza es solo:
-- `Claude`
-- `Codex`
+El canon activo de esta gobernanza requiere dos motores: un motor activo y un
+motor auditor. Sus nombres concretos se declaran durante la instalacion en
+`dev/governance_baseline.json` bajo `installation_profile.preferred_working_ia`
+y `installation_profile.preferred_auditor_ia`. El consumidor puede elegir
+cualquier par de IAs (ej. `codex` + `claude`, `codex` + `kimi`,
+`gemini` + `grok`, etc.) siempre que cumplan los roles definidos en los §§ 7.1
+y 7.2.
+
+Los `agent_id` historicos del kit pueden contener el sufijo nominal
+`claude`/`codex` (ej. `m4.f1.claude.plan_architect`,
+`m4.f2.codex.plan_auditor`); ese sufijo es legado nominal y no impone el motor
+concreto que ejecuta el rol.
 
 ## 8. Tooling Y Routing
 
@@ -185,9 +200,9 @@ Tu frase de arranque normal es:
 
 Cuando la idea ya está madura:
 
-`Convierte esta conversación en input de planificación para Claude.`
+`Convierte esta conversación en input de planificación para el motor activo.`
 
-Yo te devuelvo un bloque listo para pegar en Claude.
+Yo te devuelvo un bloque listo para pegar en el motor activo.
 
 Luego:
 
@@ -222,7 +237,7 @@ Si una candidata te convence:
 - limpiar contexto al pasar de plan a implementacion si viene cargado
 - no releer `plan.md` entero si basta la cabecera o el tramo activo
 - no pegar logs completos
-- no usar `Opus` para lectura factual que puede hacer `Sonnet`
+- no usar modelos caros para lectura factual cuando un modelo barato basta
 
 ## 14. Criterios De Calidad
 
@@ -248,7 +263,7 @@ Una buena weekly:
 - usar weekly para planificar implementacion
 - rehacer el plan en otro artefacto
 - usar backlog como pseudoplan
-- usar `Opus` para leer bruto
+- usar modelos caros para lectura bruta
 - mezclar ideas, hallazgos y remanentes en un mismo sitio
 - reinyectar toda la historia por comodidad
 
@@ -286,6 +301,7 @@ Una buena weekly:
 - `dev/policies/`
 - `dev/guarantees/`
 - `dev/prompts/`
+- `dev/skills/`
 - `doc/governance_prompts/`
 - `dev/repo_governance_profile.md`
 

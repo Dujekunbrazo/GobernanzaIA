@@ -43,7 +43,7 @@
   - no cerrar la iniciativa desde `F3`
   - parar si aparece desviacion material
   - cerrar la respuesta de chat con `HANDOFF_SIGUIENTE_AGENTE` para `F4`
-    cuando el usuario vaya a copiarla a Codex
+    cuando el usuario vaya a copiarla a motor auditor
 - `required_references`:
   - `dev/prompts/implementation_execute.md`
   - `dev/guarantees/implementation_gate.md`

@@ -120,24 +120,24 @@ En esta policy no se degrada por debajo de `claude-sonnet-4-6` ni de
 Los agentes operativos especializan la invocacion real del motor por fase sin
 crear fases, artefactos ni rutas paralelas. El canon sigue siendo:
 
-- motor activo: `Claude`
-- motor auditor: `Codex`
+- motor activo: `motor activo`
+- motor auditor: `motor auditor`
 - artefactos: los ya definidos por `F1-F7`
 
 Matriz canonica:
 
 | Fase | Motor | agent_id | agent_profile | Responsabilidad |
 | ---- | ----- | -------- | ------------- | --------------- |
-| `F1` | Claude | `m4.f1.claude.plan_architect` | `claude_plan_architect` | convertir input de `M0` en `plan.md` congelable, con alcance, riesgos, DoD y validacion |
-| `F2` | Codex | `m4.f2.codex.plan_auditor` | `codex_plan_auditor` | auditar congelabilidad del plan; no auditar implementacion inexistente |
-| `F2/F4 AUTOFIX` | Codex | `m4.audit.codex.safe_autofix` | `codex_auditor_autofix` | corregir solo fallos mecanicos elegibles del expediente |
-| `F3` | Claude | `m4.f3.claude.implementation_executor` | `claude_implementation_executor` | ejecutar el plan congelado sin replanificar ni ampliar alcance |
-| `F3_FINAL` | Claude | `m4.f3_final.claude.final_validation_executor` | `claude_final_validation_executor` | registrar validacion amplia/final del plan congelado ya ejecutado |
-| `F4` | Codex | `m4.f4.codex.bug_structural_auditor` | `codex_bug_structural_auditor` | auditar bugs, evidencia, wiring parcial, legacy, paths paralelos y desviaciones |
-| `F4_FINAL` | Codex | `m4.f4_final.codex.final_consistency_auditor` | `codex_final_consistency_auditor` | auditar suficiencia de validacion final sin exigir fases posteriores |
-| `F5` | Codex | `m4.f5.codex.real_validation_guide` | `codex_real_validation_guide` | conducir evidencia observable real con el usuario |
-| `F6` | Codex | `m4.f6.codex.closeout_auditor` | `codex_closeout_auditor` | cerrar expediente, README y estado Git cuando aplique |
-| `F7` | Codex | `m4.f7.codex.lessons_curator` | `codex_lessons_curator` | extraer lecciones y enrutar remanentes vivos |
+| `F1` | motor activo | `m4.f1.claude.plan_architect` | `claude_plan_architect` | convertir input de `M0` en `plan.md` congelable, con alcance, riesgos, DoD y validacion |
+| `F2` | motor auditor | `m4.f2.codex.plan_auditor` | `codex_plan_auditor` | auditar congelabilidad del plan; no auditar implementacion inexistente |
+| `F2/F4 AUTOFIX` | motor auditor | `m4.audit.codex.safe_autofix` | `codex_auditor_autofix` | corregir solo fallos mecanicos elegibles del expediente |
+| `F3` | motor activo | `m4.f3.claude.implementation_executor` | `claude_implementation_executor` | ejecutar el plan congelado sin replanificar ni ampliar alcance |
+| `F3_FINAL` | motor activo | `m4.f3_final.claude.final_validation_executor` | `claude_final_validation_executor` | registrar validacion amplia/final del plan congelado ya ejecutado |
+| `F4` | motor auditor | `m4.f4.codex.bug_structural_auditor` | `codex_bug_structural_auditor` | auditar bugs, evidencia, wiring parcial, legacy, paths paralelos y desviaciones |
+| `F4_FINAL` | motor auditor | `m4.f4_final.codex.final_consistency_auditor` | `codex_final_consistency_auditor` | auditar suficiencia de validacion final sin exigir fases posteriores |
+| `F5` | motor auditor | `m4.f5.codex.real_validation_guide` | `codex_real_validation_guide` | conducir evidencia observable real con el usuario |
+| `F6` | motor auditor | `m4.f6.codex.closeout_auditor` | `codex_closeout_auditor` | cerrar expediente, README y estado Git cuando aplique |
+| `F7` | motor auditor | `m4.f7.codex.lessons_curator` | `codex_lessons_curator` | extraer lecciones y enrutar remanentes vivos |
 
 Reglas:
 
@@ -154,7 +154,7 @@ Reglas:
 
 ## 9) Contrato de respuesta y handoff manual
 
-Cuando el usuario use el chat como puente manual entre `Claude` y `Codex`, la
+Cuando el usuario use el chat como puente manual entre `motor activo` y `motor auditor`, la
 respuesta final del motor que acaba de trabajar debe cerrar con un bloque
 pegable `HANDOFF_SIGUIENTE_AGENTE`.
 

@@ -40,7 +40,7 @@
 - `hard_rules`:
   - aplicar solo el cambio minimo requerido
   - respetar literalmente `Archivos permitidos`, `Rerun scope` y `Reapertura requerida`
-  - corregir en el acto los fallos mecanicos elegibles; no devolver a Claude
+  - corregir en el acto los fallos mecanicos elegibles; no devolver a motor activo
     por ceremonia
   - no tocar prompts canonicos, policies ni codigo de producto
   - no reescribir el artefacto de auditoria

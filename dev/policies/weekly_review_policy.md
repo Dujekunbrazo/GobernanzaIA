@@ -14,9 +14,9 @@ claridad del repo sin mezclarla con una iniciativa `M3` o `M4`.
 - no cierra ni reabre fases de una iniciativa existente salvo que sus hallazgos
   se traduzcan despues a trabajo gobernado
 - opera en dos capas:
-  - capa factual con `Claude Sonnet`
-  - capa estrategica con `Claude Opus`
-- `Codex` puede intervenir despues para aterrizar una candidata en `M0`
+  - capa factual con `motor activo Sonnet`
+  - capa estrategica con `motor activo Opus`
+- `motor auditor` puede intervenir despues para aterrizar una candidata en `M0`
 
 ## Modos de revision semanal
 
@@ -59,7 +59,8 @@ La review semanal debe poder:
 
 ## Relacion con el resto de la gobernanza
 
-- `F8` sigue siendo la validacion real de una iniciativa concreta
+- `F5` sigue siendo la validacion real guiada de una iniciativa concreta,
+  cuando aplica
 - la review semanal inspecciona la salud del repo, no valida el cierre de una
   iniciativa concreta
 - si la review detecta trabajo material, ese trabajo debe abrir despues un flujo
@@ -73,7 +74,7 @@ La review semanal debe poder:
 
 - toda afirmacion material de la review debe anclarse a evidencia del repo,
   signals operativas disponibles o retrieval canonico del stack de contexto
-- si falta evidencia, el estado correcto es `BLOQUEADO` o `NO_EVIDENCIA`
+- si falta evidencia, el estado correcto es `BLOQUEADO`
 
 ## Criterio de aceptabilidad
 

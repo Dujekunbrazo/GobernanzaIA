@@ -52,7 +52,7 @@
   - no implementar
   - no introducir alcance nuevo fuera del input validado
   - cerrar la respuesta de chat con `HANDOFF_SIGUIENTE_AGENTE` para `F2`
-    cuando el usuario vaya a copiarla a Codex
+    cuando el usuario vaya a copiarla a motor auditor
   - usar headings y metadata canonicos
   - no omitir secciones obligatorias
   - si una seccion aplica poco, rellenarla explicitamente

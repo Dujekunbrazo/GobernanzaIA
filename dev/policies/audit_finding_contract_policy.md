@@ -106,7 +106,7 @@ Si alguno de esos casos aparece, el punto debe escalar a hallazgo bloqueante.
 
 ## SAFE_AUDITOR_AUTOFIX
 
-Para reducir iteraciones mecanicas de gobernanza, `Codex` puede corregir
+Para reducir iteraciones mecanicas de gobernanza, `motor auditor` puede corregir
 directamente ciertos fallos del propio expediente y reauditar en el mismo loop,
 sin devolver el control al motor activo.
 
@@ -150,10 +150,10 @@ Casos no elegibles:
 Reglas:
 
 - el autofix del auditor debe ser minimo, mecanico y trazable
-- si el fallo es de artefactos de iniciativa y cumple estas condiciones, Codex
-  debe corregirlo en el acto; no se devuelve a Claude por ceremonia
+- si el fallo es de artefactos de iniciativa y cumple estas condiciones, motor auditor
+  debe corregirlo en el acto; no se devuelve a motor activo por ceremonia
 - tras el autofix, la fase debe reauditarse inmediatamente
 - si el autofix no cierra el hallazgo, el flujo vuelve al comportamiento
   normal de `FAIL`
-- esta via no autoriza a `Codex` a cambiar producto; solo expediente y
+- esta via no autoriza a `motor auditor` a cambiar producto; solo expediente y
   reconciliaciones mecanicas de gobernanza ya cerradas

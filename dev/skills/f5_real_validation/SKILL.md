@@ -1,7 +1,7 @@
 # SKILL
 
 - `name`: `f5_real_validation`
-- `purpose`: conducir con Codex y el usuario la validacion real observable y registrar `real_validation.md`
+- `purpose`: conducir con motor auditor y el usuario la validacion real observable y registrar `real_validation.md`
 - `when_to_use`:
   - `post_audit.md` tiene `PASS`
   - la iniciativa cambia comportamiento observable o superficie operativa

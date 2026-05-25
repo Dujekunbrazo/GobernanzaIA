@@ -18,9 +18,9 @@ Proposito:
 ## 2) Mapa corto del sistema
 
 - `M0`:
-  - conversacion tecnica con `Codex`
+  - conversacion tecnica con `motor auditor`
   - lectura de codigo y aterrizaje de idea
-  - posible `input de planificacion` transitorio para `Claude`
+  - posible `input de planificacion` transitorio para `motor activo`
 - iniciativa:
   - `plan.md`
   - `plan_audit.md`

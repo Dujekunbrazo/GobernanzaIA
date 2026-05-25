@@ -8,8 +8,8 @@
 > bruta.
 
 Usar como review semanal en dos capas:
-- `Claude Sonnet` para generar o actualizar `weekly_briefing.md`
-- `Claude Opus` para producir la revision estrategica final
+- `motor activo Sonnet` para generar o actualizar `weekly_briefing.md`
+- `motor activo Opus` para producir la revision estrategica final
 
 ## Mision
 

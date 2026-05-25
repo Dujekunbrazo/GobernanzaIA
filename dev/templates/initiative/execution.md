@@ -3,7 +3,7 @@
 - Initiative ID:
 - Modo:
 - Fecha:
-- Motor activo: Claude
+- Motor activo: <motor_activo> (ver dev/governance_baseline.json)
 - Rama:
 
 ## Referencia al plan congelado
@@ -23,6 +23,12 @@
    - Resultado:
 
 ## Evidencia de validacion
+
+> [!WARNING]
+> Ejecutar los runners reales (pytest, smoke, checks) ANTES de escribir
+> esta seccion. La evidencia debe obtenerse de la salida real observada,
+> no reconstruirse de memoria. Divergencia entre lo documentado y lo
+> ejecutable es causa de FAIL en F4.
 
 ## Riesgos detectados
 

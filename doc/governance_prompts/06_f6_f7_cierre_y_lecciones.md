@@ -1,4 +1,4 @@
-# F6/F7 — Cierre Con Codex + Lecciones
+# F6/F7 — Cierre Con motor auditor + Lecciones
 > [!IMPORTANT]
 > Bootstrap obligatorio de gobernanza antes de usar este prompt:
 > leer `AGENTS.md`, cargar la Skill canonica si existe, usar `governance_search`
@@ -8,7 +8,7 @@
 > bruta.
 
 Atajo de compatibilidad para el tramo final posterior a
-`READY_FOR_CODEX_CLOSEOUT`. Este estado significa cierre completo con Codex, no
+`READY_FOR_CODEX_CLOSEOUT`. Este estado significa cierre completo con motor auditor, no
 handoff manual por subpasos.
 
 Usa la iniciativa activa de esta conversación.

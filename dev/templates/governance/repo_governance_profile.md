@@ -8,14 +8,19 @@
 
 ## Motores y modelos canonicos
 
-- Motor activo: Claude
-- Motor auditor: Codex
-- Planificacion de iniciativa: Claude Opus, medium
-- Implementacion: Claude Sonnet, medium
-- Validacion real, cierre y lecciones: Claude Sonnet, low
-- Weekly factual: Claude Sonnet
-- Weekly estrategico: Claude Opus
-- Baseline weekly profundo: Claude Sonnet + Claude Opus
+- Motor activo: <nombre_motor_activo>
+- Motor auditor: <nombre_motor_auditor>
+- Planificacion de iniciativa: <modelo_planificacion>
+- Implementacion: <modelo_implementacion>
+- Validacion real, cierre y lecciones: <modelo_validacion_y_cierre>
+- Weekly factual: <modelo_weekly_factual>
+- Weekly estrategico: <modelo_weekly_estrategico>
+- Baseline weekly profundo: <modelos_baseline_profundo>
+
+Los nombres concretos de los motores se declaran tambien en
+`dev/governance_baseline.json` durante la instalacion. Este perfil duplica los
+campos legibles para que el consumidor anote modelos y costes asociados sin
+tocar el manifest.
 
 ## Capacidades de gobernanza
 
