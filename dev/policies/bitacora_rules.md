@@ -8,7 +8,7 @@ Aplica a interacciones de trabajo con:
 - motor auditor
 - motor activo
 
-No aplica al runtime de Kiminion.
+No aplica al runtime de producto del repo.
 
 ## 2) Ruta canónica
 

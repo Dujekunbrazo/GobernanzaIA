@@ -29,7 +29,7 @@ from core.contracts.events import EventEnvelope  # Solo contracts permitidos
 Valida `capability_closure.md` de una iniciativa.
 
 ```bash
-python scripts/dev/check_capability_closure.py --initiative-id 2026-03-26_demo
+python scripts/dev/check_capability_closure.py --initiative-id 2026-01-15_demo
 ```
 
 Usa `--required` si la initiative debe tener ese artefacto.
@@ -39,13 +39,13 @@ Usa `--required` si la initiative debe tener ese artefacto.
 Valida que exista evidencia de bitácora para una IA o una iniciativa.
 
 ```bash
-python scripts/dev/check_bitacora_compliance.py --initiative-id 2026-03-26_demo
+python scripts/dev/check_bitacora_compliance.py --initiative-id 2026-01-15_demo
 ```
 
 Filtrando por IA y fase:
 
 ```bash
-python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-03-26_demo --phase F9
+python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-01-15_demo --phase F9
 ```
 
 ## check_exception_record.py
@@ -53,7 +53,7 @@ python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-
 Valida `exception_record.md` de una iniciativa.
 
 ```bash
-python scripts/dev/check_exception_record.py --initiative-id 2026-03-26_demo
+python scripts/dev/check_exception_record.py --initiative-id 2026-01-15_demo
 ```
 
 Usa `--required` si la initiative declara excepción formal.
@@ -63,13 +63,13 @@ Usa `--required` si la initiative declara excepción formal.
 Hace preflight de una iniciativa formal antes de implementar o cerrar.
 
 ```bash
-python scripts/dev/initiative_preflight.py --initiative-id 2026-03-26_demo --mode M3
+python scripts/dev/initiative_preflight.py --initiative-id 2026-01-15_demo --mode M3
 ```
 
 Si el worktree está sucio pero hay excepción explícita en `ask.md`:
 
 ```bash
-python scripts/dev/initiative_preflight.py --initiative-id 2026-03-26_demo --mode M3 --allow-dirty-with-ask-exception
+python scripts/dev/initiative_preflight.py --initiative-id 2026-01-15_demo --mode M3 --allow-dirty-with-ask-exception
 ```
 
 ## governance_ping_pong.py
@@ -87,10 +87,10 @@ Subcomandos:
 Uso recomendado:
 
 ```bash
-python scripts/dev/governance_ping_pong.py init --initiative-id 2026-03-27_demo --with-handoff
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
-python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-03-27_demo --motor-auditor codex
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py init --initiative-id 2026-01-15_demo --with-handoff
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
+python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-01-15_demo --motor-auditor codex
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
 ```
 
 Notas:

@@ -31,9 +31,10 @@
 > cerrada.
 >
 > Sin esto, el TTL puede olvidarse entre iniciativas (caso historico:
-> B2.6 declaro TTL a B2.7 para retirar SourceRunResult; B2.7 cerro
-> sin aplicarlo; la deuda quedo viva 2 semanas hasta detectarla en
-> analisis profundo §6 D4.f, requiriendo B2.7.1 para sanear).
+> una iniciativa declaro TTL a la siguiente para retirar un tipo legacy;
+> la siguiente cerro sin aplicarlo; la deuda quedo viva varias semanas
+> hasta detectarse en analisis profundo, requiriendo una tercera
+> iniciativa para sanear).
 
 - TTL_declarations_count: 0 | 1 | 2+
 

@@ -90,7 +90,7 @@ Antes de usar el script necesitas:
 Formato esperado para `initiative_id`:
 
 - `YYYY-MM-DD_tema_corto`
-- ejemplo: `2026-03-27_demo`
+- ejemplo: `2026-01-15_demo`
 
 ## Cómo arrancar `Claude` y `Codex` en terminal
 
@@ -123,7 +123,7 @@ En VS Code:
 Deberías ver algo equivalente a:
 
 ```powershell
-PS C:\Users\Jorge Ferrer\Documents\GobernanzaIA>
+PS C:\ruta\a\GobernanzaIA>
 ```
 
 ### Paso 2: comprobar que `Claude` existe
@@ -170,7 +170,7 @@ En ese caso, puedes lanzarlo por ruta completa.
 Ejemplo real:
 
 ```powershell
-& "C:\Users\Jorge Ferrer\.vscode\extensions\openai.chatgpt-26.325.21211-win32-x64\bin\windows-x86_64\codex.exe" --version
+& "%USERPROFILE%\.vscode\extensions\openai.chatgpt-<version>-win32-x64\bin\windows-x86_64\codex.exe" --version
 ```
 
 Si eso funciona, el problema no es `codex`: el problema es solo `PATH`.
@@ -178,13 +178,13 @@ Si eso funciona, el problema no es `codex`: el problema es solo `PATH`.
 #### Opción A: usar siempre la ruta completa
 
 ```powershell
-& "C:\Users\Jorge Ferrer\.vscode\extensions\openai.chatgpt-26.325.21211-win32-x64\bin\windows-x86_64\codex.exe" exec "explica este repo"
+& "%USERPROFILE%\.vscode\extensions\openai.chatgpt-<version>-win32-x64\bin\windows-x86_64\codex.exe" exec "explica este repo"
 ```
 
 #### Opción B: añadirlo al `PATH` solo en esa terminal
 
 ```powershell
-$env:PATH += ";C:\Users\Jorge Ferrer\.vscode\extensions\openai.chatgpt-26.325.21211-win32-x64\bin\windows-x86_64"
+$env:PATH += ";%USERPROFILE%\.vscode\extensions\openai.chatgpt-<version>-win32-x64\bin\windows-x86_64"
 codex --version
 ```
 
@@ -193,7 +193,7 @@ Esto solo afecta a la terminal actual.
 #### Opción C: crear un alias temporal en PowerShell
 
 ```powershell
-Set-Alias codex "C:\Users\Jorge Ferrer\.vscode\extensions\openai.chatgpt-26.325.21211-win32-x64\bin\windows-x86_64\codex.exe"
+Set-Alias codex "%USERPROFILE%\.vscode\extensions\openai.chatgpt-<version>-win32-x64\bin\windows-x86_64\codex.exe"
 codex --version
 ```
 
@@ -250,7 +250,7 @@ alias temporal que hayas creado antes.
 Ejemplo:
 
 ```powershell
-& "C:\Users\Jorge Ferrer\.vscode\extensions\openai.chatgpt-26.325.21211-win32-x64\bin\windows-x86_64\codex.exe" login --device-auth
+& "%USERPROFILE%\.vscode\extensions\openai.chatgpt-<version>-win32-x64\bin\windows-x86_64\codex.exe" login --device-auth
 ```
 
 ### Paso 6: comprobar que ambos responden de forma básica
@@ -298,7 +298,7 @@ codex exec "explica este repositorio"
 Cuando ejecutas:
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
 ```
 
 el script no espera que tú tengas `Claude` y `Codex` abiertos a mano.
@@ -320,8 +320,8 @@ claude --version
 codex --version
 claude auth status
 codex login status
-python scripts/dev/governance_ping_pong.py status --initiative-id 2026-03-27_demo
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo --dry-run
+python scripts/dev/governance_ping_pong.py status --initiative-id 2026-01-15_demo
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo --dry-run
 ```
 
 ### Fallos típicos en este punto
@@ -412,8 +412,8 @@ La idea buena es crear un acceso directo por repo.
 
 Ejemplo:
 
-- acceso directo `PingPong Kiminio`
-- acceso directo `PingPong McpBoletines`
+- acceso directo `PingPong <NombreRepo>`
+- acceso directo `PingPong <NombreRepo>`
 
 Ambos apuntan al mismo `.bat`, pero cada acceso directo tiene un `Iniciar en`
 distinto.
@@ -423,21 +423,21 @@ distinto.
 #### Destino
 
 ```text
-C:\Users\Jorge Ferrer\Documents\GobernanzaIA\scripts\dev\governance_ping_pong_launcher.bat
+C:\ruta\a\GobernanzaIA\scripts\dev\governance_ping_pong_launcher.bat
 ```
 
 #### Iniciar en
 
-Para Kiminio:
+Para tu segundo repo (ejemplo):
 
 ```text
-C:\Users\Jorge Ferrer\Documents\Kiminio
+C:\ruta\a\<TuRepo>
 ```
 
-Para McpBoletines:
+Para tu repo destino (ejemplo):
 
 ```text
-C:\Users\Jorge Ferrer\Documents\McpBoletines
+C:\ruta\a\<TuRepo>
 ```
 
 Con eso, el launcher entiende automaticamente contra que repo debe trabajar.
@@ -454,7 +454,7 @@ Esta distinción es importante.
 Desde `F1`, los artefactos guardan una metadata `Rama:` con la rama prevista
 de la iniciativa. Por ejemplo:
 
-- `initiative/2026-03-27-demo`
+- `initiative/2026-01-15-demo`
 
 Esto sirve para que `ask.md` y `plan.md` tengan clara la identidad operativa de
 la iniciativa incluso antes de implementar.
@@ -486,20 +486,20 @@ Sirve para crear el esqueleto de la iniciativa `M4`.
 Ejemplo mínimo:
 
 ```bash
-python scripts/dev/governance_ping_pong.py init --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py init --initiative-id 2026-01-15_demo
 ```
 
 Ejemplo habitual con handoff:
 
 ```bash
-python scripts/dev/governance_ping_pong.py init --initiative-id 2026-03-27_demo --with-handoff
+python scripts/dev/governance_ping_pong.py init --initiative-id 2026-01-15_demo --with-handoff
 ```
 
 Ejemplo más completo:
 
 ```bash
 python scripts/dev/governance_ping_pong.py init ^
-  --initiative-id 2026-03-27_demo ^
+  --initiative-id 2026-01-15_demo ^
   --motor-activo claude ^
   --motor-auditor codex ^
   --with-handoff ^
@@ -560,13 +560,13 @@ Sirve para saber en qué punto estás y cuál es el siguiente paso esperado.
 Ejemplo:
 
 ```bash
-python scripts/dev/governance_ping_pong.py status --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py status --initiative-id 2026-01-15_demo
 ```
 
 Salida típica:
 
 ```text
-initiative_id=2026-03-27_demo
+initiative_id=2026-01-15_demo
 ask_state=PROPUESTO
 ask_audit=<empty>
 plan_state=<empty>
@@ -595,19 +595,19 @@ humano o hasta bloqueo por exceso de fallos.
 Ejemplo base:
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
 ```
 
 Ejemplo seguro en seco:
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo --dry-run
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo --dry-run
 ```
 
 Ejemplo con excepción operativa de worktree sucio:
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo --allow-dirty-with-ask-exception
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo --allow-dirty-with-ask-exception
 ```
 
 ### Qué hace `advance`
@@ -631,7 +631,7 @@ Por defecto cada fase auditada admite hasta `3` intentos:
 Puedes cambiarlo con:
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo --max-audits 3
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo --max-audits 3
 ```
 
 Si se agotan los intentos:
@@ -651,7 +651,7 @@ Cuando `advance` deja la iniciativa en `WAITING_FOR_F2`, abres:
 Revisas alcance, supuestos y preguntas. Si está bien, apruebas:
 
 ```bash
-python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-03-27_demo --motor-auditor codex
+python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-01-15_demo --motor-auditor codex
 ```
 
 ### Qué hace `approve-f2`
@@ -663,7 +663,7 @@ python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-03-27
 Después relanzas:
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
 ```
 
 ## Ejemplo completo de punta a punta
@@ -678,14 +678,14 @@ Quieres abrir una iniciativa `M4` para automatizar un cambio mediano y usar:
 ### Paso 1: crear iniciativa
 
 ```bash
-python scripts/dev/governance_ping_pong.py init --initiative-id 2026-03-27_demo --with-handoff
+python scripts/dev/governance_ping_pong.py init --initiative-id 2026-01-15_demo --with-handoff
 ```
 
 ### Paso 2: escribir handoff
 
 Editas:
 
-- `dev/records/initiatives/2026-03-27_demo/handoff.md`
+- `dev/records/initiatives/2026-01-15_demo/handoff.md`
 
 Ahí dejas:
 
@@ -698,7 +698,7 @@ Ahí dejas:
 ### Paso 3: primer avance
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
 ```
 
 Comportamiento esperado:
@@ -711,7 +711,7 @@ Comportamiento esperado:
 
 Abres:
 
-- `dev/records/initiatives/2026-03-27_demo/ask.md`
+- `dev/records/initiatives/2026-01-15_demo/ask.md`
 
 Compruebas:
 
@@ -724,13 +724,13 @@ Compruebas:
 ### Paso 5: aprobar `F2`
 
 ```bash
-python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-03-27_demo --motor-auditor codex
+python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-01-15_demo --motor-auditor codex
 ```
 
 ### Paso 6: relanzar automatización
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
 ```
 
 Ahora el script hace:
@@ -760,7 +760,7 @@ entras tú.
 
 Abres:
 
-- `dev/records/initiatives/2026-03-27_demo/real_validation.md`
+- `dev/records/initiatives/2026-01-15_demo/real_validation.md`
 
 Y decides:
 
@@ -773,7 +773,7 @@ Y decides:
 Si decides `REABRIR_F6`, simplemente vuelves a ejecutar:
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
 ```
 
 ## Cómo sabe el script qué hacer
@@ -829,7 +829,7 @@ No toca tu rama Git actual.
 
 Solo deja escrita la rama prevista en metadata:
 
-- `Rama: initiative/2026-03-27-demo`
+- `Rama: initiative/2026-01-15-demo`
 
 ### En `F6`
 
@@ -850,7 +850,7 @@ reales.
 Ejemplo:
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo --dry-run
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo --dry-run
 ```
 
 Con `dry-run`:
@@ -876,7 +876,7 @@ Si tu worktree está sucio, el preflight bloqueará salvo que:
 2. lances `advance` con:
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo --allow-dirty-with-ask-exception
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo --allow-dirty-with-ask-exception
 ```
 
 ## Situaciones típicas
@@ -884,19 +884,19 @@ python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_de
 ### Quiero ver dónde estoy
 
 ```bash
-python scripts/dev/governance_ping_pong.py status --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py status --initiative-id 2026-01-15_demo
 ```
 
 ### Quiero preparar la iniciativa pero no ejecutar todavía
 
 ```bash
-python scripts/dev/governance_ping_pong.py init --initiative-id 2026-03-27_demo --with-handoff
+python scripts/dev/governance_ping_pong.py init --initiative-id 2026-01-15_demo --with-handoff
 ```
 
 ### Quiero revisar el flujo antes de lanzar nada real
 
 ```bash
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo --dry-run
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo --dry-run
 ```
 
 ### El script se paró en `WAITING_FOR_F2`
@@ -904,7 +904,7 @@ python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_de
 Abre `ask.md`, revisa y luego:
 
 ```bash
-python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-03-27_demo --motor-auditor codex
+python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-01-15_demo --motor-auditor codex
 ```
 
 ### El script se paró en `WAITING_FOR_F8`

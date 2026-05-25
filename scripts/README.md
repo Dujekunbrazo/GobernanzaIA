@@ -52,7 +52,7 @@ python scripts/ops/bitacora_append.py --ia codex --pregunta "..." --respuesta ".
 Con payload JSON por `stdin`:
 
 ```bash
-echo '{"ia":"codex","pregunta":"...","respuesta":"...","initiative_id":"2026-03-26_demo","phase":"F6"}' | python scripts/ops/bitacora_append.py --stdin-json
+echo '{"ia":"codex","pregunta":"...","respuesta":"...","initiative_id":"2026-01-15_demo","phase":"F6"}' | python scripts/ops/bitacora_append.py --stdin-json
 ```
 
 ### Bitacora compliance
@@ -63,13 +63,13 @@ Script canónico:
 Uso:
 
 ```bash
-python scripts/dev/check_bitacora_compliance.py --initiative-id 2026-03-26_demo
+python scripts/dev/check_bitacora_compliance.py --initiative-id 2026-01-15_demo
 ```
 
 Filtrando por IA y fase:
 
 ```bash
-python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-03-26_demo --phase F9
+python scripts/dev/check_bitacora_compliance.py --ia codex --initiative-id 2026-01-15_demo --phase F9
 ```
 
 ### Ping-pong de gobernanza M4
@@ -81,10 +81,10 @@ Ruta canonica:
 Uso base:
 
 ```bash
-python scripts/dev/governance_ping_pong.py init --initiative-id 2026-03-27_demo --with-handoff
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
-python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-03-27_demo --motor-auditor codex
-python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-03-27_demo
+python scripts/dev/governance_ping_pong.py init --initiative-id 2026-01-15_demo --with-handoff
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
+python scripts/dev/governance_ping_pong.py approve-f2 --initiative-id 2026-01-15_demo --motor-auditor codex
+python scripts/dev/governance_ping_pong.py advance --initiative-id 2026-01-15_demo
 ```
 
 El script automatiza los bucles `F1 <-> F3`, `F4 <-> F5` y `F6 <-> F7`, y se
@@ -268,7 +268,7 @@ python scripts/migration/sync_governance_consumers.py --force --dry-run
 Consumidores específicos:
 
 ```bash
-python scripts/migration/sync_governance_consumers.py --consumer kiminion --consumer mcp_boletinesoficiales --force
+python scripts/migration/sync_governance_consumers.py --consumer <tu_consumidor> --force  # KNOWN_CONSUMERS debe contener "<tu_consumidor>"
 ```
 
 ### Trabajo en `GobernanzaIA` y reimportación en repos consumidores

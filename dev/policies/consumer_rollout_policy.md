@@ -1,7 +1,7 @@
 # Consumer Rollout Policy (Hard)
 
 Propósito:
-- definir cómo expandir el baseline canónico a Kiminion y a futuros repos sin
+- definir cómo expandir el baseline canónico a repos consumidores sin
   tocar código de producto ni destruir overlay local.
 
 ## 1) Instalación en repo nuevo
